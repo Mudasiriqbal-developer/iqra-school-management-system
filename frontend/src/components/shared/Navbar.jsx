@@ -41,7 +41,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
         {/* Notification Bell */}
         <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative focus:outline-none">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-status-danger border border-white"></span>
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 border border-white"></span>
         </button>
 
         {/* Divider */}

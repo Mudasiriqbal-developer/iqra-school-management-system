@@ -6,7 +6,7 @@ import StatusBadge from '../components/shared/StatusBadge';
 
 const AdminDashboard = () => {
   const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
+    { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
     { label: 'Students', icon: Users, path: '/admin/students' },
     { label: 'Faculty', icon: Award, path: '/admin/faculty' },
     { label: 'Attendance', icon: Calendar, path: '/admin/attendance' },

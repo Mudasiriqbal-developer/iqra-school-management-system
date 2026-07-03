@@ -2,11 +2,11 @@ import React from 'react';
 
 const StatCard = ({ icon: Icon, label, value, trend, trendColor }) => {
   // Determine trend color styling classes
-  let badgeClass = 'text-status-active bg-green-50 border-green-100';
+  let badgeClass = 'text-green-600 bg-green-50 border-green-100';
   if (trendColor === 'danger') {
-    badgeClass = 'text-status-danger bg-red-50 border-red-100';
+    badgeClass = 'text-red-600 bg-red-50 border-red-100';
   } else if (trendColor === 'pending') {
-    badgeClass = 'text-status-pending bg-amber-50 border-amber-100';
+    badgeClass = 'text-amber-600 bg-amber-50 border-amber-100';
   } else if (trendColor === 'info') {
     badgeClass = 'text-blue-600 bg-blue-50 border-blue-100';
   }

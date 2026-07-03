@@ -13,11 +13,11 @@ const Login = () => {
     e.preventDefault();
     // Non-functional mock navigation to verify layout routing
     if (activeTab === 'admin') {
-      navigate('/admin');
+      navigate('/admin-dashboard');
     } else if (activeTab === 'teacher') {
-      navigate('/teacher');
+      navigate('/teacher-dashboard');
     } else {
-      navigate('/student');
+      navigate('/student-dashboard');
     }
   };
 

@@ -8,7 +8,7 @@ const StatusBadge = ({ status = 'active', label }) => {
       badgeStyle = 'bg-green-50 text-green-700 border-green-200';
       break;
     case 'pending':
-      badgeStyle = 'bg-amber-50 text-amber-750 border-amber-200';
+      badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200';
       break;
     case 'danger':
       badgeStyle = 'bg-red-50 text-red-700 border-red-200';

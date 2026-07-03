@@ -3,3 +3,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Static classes to bypass Tailwind config dev server caching/hot-reload issues */
+.bg-navy-primary {
+  background-color: #00215E !important;
+}
+
+.text-navy-primary {
+  color: #00215E !important;
+}
+
+.bg-navy-dark {
+  background-color: #00153D !important;
+}
+
+.bg-navy-light {
+  background-color: #002F87 !important;
+}

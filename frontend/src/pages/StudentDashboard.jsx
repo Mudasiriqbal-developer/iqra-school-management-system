@@ -6,7 +6,7 @@ import StatusBadge from '../components/shared/StatusBadge';
 
 const StudentDashboard = () => {
   const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/student' },
+    { label: 'Dashboard', icon: LayoutDashboard, path: '/student-dashboard' },
     { label: 'My Schedule', icon: Calendar, path: '/student/schedule' },
     { label: 'Grades', icon: Award, path: '/student/grades' },
     { label: 'Fees', icon: CreditCard, path: '/student/fees' },

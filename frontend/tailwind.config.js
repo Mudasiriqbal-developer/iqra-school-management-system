@@ -8,10 +8,10 @@ export default {
     extend: {
       colors: {
         navy: {
-          950: '#0F1A45',
-          900: '#1E2A5E',
-          800: '#1E3A8A',
-          700: '#2846A3',
+          950: '#00153D',
+          900: '#00215E', // Rich navy blue matching the reference design
+          800: '#002F87',
+          700: '#003EB0',
         },
         status: {
           active: '#16A34A',   // green
