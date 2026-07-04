@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { GraduationCap, LogOut, Plus, HelpCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ subtitle = "Administrative Suite", navItems = [] }) => {
   const location = useLocation();
+  const { logout } = useAuth();
 
   return (
     <aside className="w-64 bg-navy-primary text-white flex flex-col h-screen fixed top-0 left-0 border-r border-white/5 z-20">
@@ -70,13 +72,13 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [] }) => {
         </a>
 
         {/* Logout Link */}
-        <Link
-          to="/login"
-          className="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-200 hover:bg-red-950/20 hover:text-red-100 transition-colors duration-200"
+        <button
+          onClick={logout}
+          className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-200 hover:bg-red-950/20 hover:text-red-100 transition-colors duration-200 text-left focus:outline-none"
         >
           <LogOut className="h-5 w-5 text-red-300" />
           <span>Logout</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );

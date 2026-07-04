@@ -1,7 +1,25 @@
 import React from 'react';
-import { Search, Bell, HelpCircle } from 'lucide-react';
+import { Search, Bell, HelpCircle, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvatar = "" }) => {
+  const { user, logout } = useAuth();
+
+  // Prefer AuthContext data, fallback to props
+  const name = user?.name || userName;
+  const role = user?.role || userRole;
+
+  // Format roles for nice display
+  const formattedRole = role === 'admin'
+    ? 'Administrator'
+    : role === 'teacher'
+    ? 'Faculty Member'
+    : role === 'student'
+    ? 'Student'
+    : role === 'parent'
+    ? 'Parent'
+    : role;
+
   // Generate color palette index based on length
   const colors = [
     'bg-blue-600 text-blue-100',
@@ -11,9 +29,9 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
     'bg-pink-600 text-pink-100',
     'bg-indigo-600 text-indigo-100'
   ];
-  const colorIndex = userName.length % colors.length;
+  const colorIndex = name.length % colors.length;
   const avatarBg = colors[colorIndex];
-  const initials = userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <header className="bg-white border-b border-gray-200 h-16 px-6 flex items-center justify-between sticky top-0 right-0 z-10 w-full">
@@ -44,19 +62,28 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 border border-white"></span>
         </button>
 
+        {/* Logout Button */}
+        <button
+          onClick={logout}
+          title="Logout"
+          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none"
+        >
+          <LogOut className="h-5 w-5" />
+        </button>
+
         {/* Divider */}
         <div className="h-6 w-px bg-gray-200"></div>
 
         {/* Profile Info */}
         <div className="flex items-center space-x-3">
           <div className="flex flex-col text-right hidden sm:flex">
-            <span className="text-xs font-bold text-gray-900 leading-tight">{userName}</span>
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{userRole}</span>
+            <span className="text-xs font-bold text-gray-900 leading-tight">{name}</span>
+            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{formattedRole}</span>
           </div>
           {userAvatar ? (
             <img
               src={userAvatar}
-              alt={userName}
+              alt={name}
               className="h-9 w-9 rounded-full object-cover border border-gray-100"
             />
           ) : (

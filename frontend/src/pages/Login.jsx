@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Eye, EyeOff, Lock, Mail, School } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState('student'); // 'student' | 'teacher' | 'admin'
@@ -8,16 +10,31 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Non-functional mock navigation to verify layout routing
-    if (activeTab === 'admin') {
-      navigate('/admin-dashboard');
-    } else if (activeTab === 'teacher') {
-      navigate('/teacher-dashboard');
-    } else {
-      navigate('/student-dashboard');
+    setIsSubmitting(true);
+    try {
+      const user = await login(email, password);
+      toast.success(`Welcome back, ${user.name}!`);
+      
+      // Redirect based on role
+      if (user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (user.role === 'teacher') {
+        navigate('/teacher-dashboard');
+      } else if (user.role === 'student' || user.role === 'parent') {
+        navigate('/student-dashboard');
+      } else {
+        toast.error('Unknown role assignment.');
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Login failed. Please try again.';
+      toast.error(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -172,9 +189,14 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-navy-900 text-white py-3 px-4 rounded-xl font-bold hover:bg-navy-800 transition-colors duration-200 shadow-md shadow-navy-900/10 focus:outline-none focus:ring-2 focus:ring-navy-700 focus:ring-offset-2 mt-4"
+              disabled={isSubmitting}
+              className={`w-full py-3 px-4 rounded-xl font-bold transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-navy-700 focus:ring-offset-2 mt-4 flex items-center justify-center space-x-2 ${
+                isSubmitting
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed shadow-none'
+                  : 'bg-navy-900 text-white hover:bg-navy-800 shadow-navy-900/10'
+              }`}
             >
-              Sign In
+              {isSubmitting ? 'Logging in...' : 'Sign In'}
             </button>
           </form>
 
