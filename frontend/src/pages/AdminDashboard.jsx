@@ -8,7 +8,7 @@ const AdminDashboard = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
     { label: 'Students', icon: Users, path: '/admin/students' },
-    { label: 'Faculty', icon: Award, path: '/admin/faculty' },
+    { label: 'Faculty', icon: Award, path: '/admin/teachers' },
     { label: 'Attendance', icon: Calendar, path: '/admin/attendance' },
     { label: 'Finance', icon: DollarSign, path: '/admin/finance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },

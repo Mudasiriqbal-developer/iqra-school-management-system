@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, Award, Calendar, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight, 
-  AlertTriangle, Filter 
+  AlertTriangle 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -10,12 +10,14 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getStudents, deleteStudent, getClasses, getSectionsByClass } from '../features/students/studentService';
-import StudentFormModal from '../features/students/StudentFormModal';
-import StudentViewDrawer from '../features/students/StudentViewDrawer';
+import { getTeachers, deleteTeacher } from '../features/teachers/teacherService';
+import api from '../services/api';
+import TeacherFormModal from '../features/teachers/TeacherFormModal';
+import TeacherViewDrawer from '../features/teachers/TeacherViewDrawer';
+import AssignmentFormModal from '../features/teachers/AssignmentFormModal';
 
-const AdminStudents = () => {
-  // Navigation items for the Sidebar
+const AdminTeachers = () => {
+  // Navigation items for the Sidebar (sync path for Faculty to /admin/teachers)
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
     { label: 'Students', icon: Users, path: '/admin/students' },
@@ -26,32 +28,27 @@ const AdminStudents = () => {
   ];
 
   // States
-  const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [totalStudents, setTotalStudents] = useState(0);
-  const [classesList, setClassesList] = useState([]);
-  const [sectionsList, setSectionsList] = useState([]);
 
-  // Filters State
+  // Search filter State
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [classId, setClassId] = useState('');
-  const [sectionId, setSectionId] = useState('');
-  const [status, setStatus] = useState('');
 
   // Pagination State
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
 
-  // Selected Student & Modal states
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  // Selected entities & Modal states
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
   
   // Deactivation confirmation modal states
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState(null);
+  const [teacherToDelete, setTeacherToDelete] = useState(null);
 
   // Debounce search input
   useEffect(() => {
@@ -61,104 +58,71 @@ const AdminStudents = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Reset page to 1 when any filter changes
+  // Reset page when search term changes
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, classId, sectionId, status]);
+  }, [debouncedSearch]);
 
-  // Load classes on mount
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const res = await getClasses();
-        if (res.success) {
-          setClassesList(res.data);
-        }
-      } catch (err) {
-        console.error('Error fetching classes:', err);
-      }
-    };
-    fetchClasses();
-  }, []);
-
-  // Load sections when class selection changes
-  useEffect(() => {
-    const fetchSections = async () => {
-      if (!classId) {
-        setSectionsList([]);
-        return;
-      }
-      try {
-        const res = await getSectionsByClass(classId);
-        if (res.success) {
-          setSectionsList(res.data);
-        }
-      } catch (err) {
-        console.error('Error fetching sections:', err);
-      }
-    };
-    fetchSections();
-  }, [classId]);
-
-  // Main fetch effect
-  const fetchStudentsList = useCallback(async () => {
+  // Main data loader
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const params = {
-        page,
-        limit,
-        search: debouncedSearch.trim() || undefined,
-        classId: classId || undefined,
-        sectionId: sectionId || undefined,
-        status: status || undefined
-      };
+      const [teachersRes, assignmentsRes] = await Promise.all([
+        getTeachers(),
+        api.get('/assignments')
+      ]);
 
-      const res = await getStudents(params);
-      if (res.success) {
-        setStudents(res.data.students);
-        setTotalStudents(res.data.total);
-        setTotalPages(res.data.pages || 1);
+      if (teachersRes.success) {
+        setTeachers(teachersRes.data || []);
+      }
+      if (assignmentsRes.data?.success) {
+        setAssignments(assignmentsRes.data.data || []);
       }
     } catch (err) {
-      console.error('Error fetching students:', err);
-      toast.error('Failed to load student records');
+      console.error('Error fetching data:', err);
+      toast.error('Failed to load faculty records');
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, classId, sectionId, status, page]);
+  }, []);
 
   useEffect(() => {
-    fetchStudentsList();
-  }, [fetchStudentsList]);
+    fetchData();
+  }, [fetchData]);
 
   // Handlers
   const handleOpenAdd = () => {
-    setSelectedStudent(null);
+    setSelectedTeacher(null);
     setIsFormOpen(true);
   };
 
-  const handleOpenEdit = (student) => {
-    setSelectedStudent(student);
+  const handleOpenEdit = (teacher) => {
+    setSelectedTeacher(teacher);
     setIsFormOpen(true);
   };
 
-  const handleOpenView = (student) => {
-    setSelectedStudent(student);
+  const handleOpenView = (teacher) => {
+    setSelectedTeacher(teacher);
     setIsViewOpen(true);
   };
 
-  const handleOpenDeleteConfirm = (student) => {
-    setStudentToDelete(student);
+  const handleOpenAssign = (teacher) => {
+    setSelectedTeacher(teacher);
+    setIsAssignOpen(true);
+  };
+
+  const handleOpenDeleteConfirm = (teacher) => {
+    setTeacherToDelete(teacher);
     setIsDeleteConfirmOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!studentToDelete) return;
+    if (!teacherToDelete) return;
     try {
-      const res = await deleteStudent(studentToDelete._id);
+      const res = await deleteTeacher(teacherToDelete._id);
       if (res.success) {
-        toast.success(`Successfully deactivated ${studentToDelete.fullName}`);
-        fetchStudentsList();
+        toast.success(`Successfully deactivated ${teacherToDelete.userId?.name}`);
+        fetchData();
       } else {
         toast.error(res.message || 'Deactivation failed');
       }
@@ -167,27 +131,20 @@ const AdminStudents = () => {
       toast.error(err.response?.data?.message || 'Server error occurred during deactivation');
     } finally {
       setIsDeleteConfirmOpen(false);
-      setStudentToDelete(null);
+      setTeacherToDelete(null);
     }
   };
 
-  // Helper mapping helper for student status to StatusBadge status
-  const getStatusBadgeProps = (studentStatus) => {
-    switch (studentStatus) {
-      case 'active':
-        return { status: 'active', label: 'Active' };
-      case 'on_leave':
-        return { status: 'pending', label: 'On Leave' };
-      case 'suspended':
-        return { status: 'danger', label: 'Suspended' };
-      default:
-        return { status: 'default', label: studentStatus || 'Unknown' };
-    }
+  // Helper mapping helper for teacher status to StatusBadge
+  const getStatusBadgeProps = (isActive) => {
+    return isActive !== false
+      ? { status: 'active', label: 'Active' }
+      : { status: 'danger', label: 'Deactivated' };
   };
 
   // Helper for initials
   const getInitials = (name) => {
-    if (!name) return 'ST';
+    if (!name) return 'TC';
     return name
       .trim()
       .split(/\s+/)
@@ -197,11 +154,29 @@ const AdminStudents = () => {
       .toUpperCase();
   };
 
-  // Stats Card Calculations
-  const pendingFeeCount = students.filter(s => s.feeInfo?.status !== 'paid').length;
+  // Client-side search filtration
+  const filteredTeachers = teachers.filter((teacher) => {
+    const searchLower = debouncedSearch.toLowerCase().trim();
+    if (!searchLower) return true;
+    const nameMatch = teacher.userId?.name?.toLowerCase().includes(searchLower);
+    const empMatch = teacher.employeeId?.toLowerCase().includes(searchLower);
+    return nameMatch || empMatch;
+  });
 
-  // Build pagination page array
+  // Pagination computations
+  const totalItems = filteredTeachers.length;
+  const totalPages = Math.ceil(totalItems / limit) || 1;
+  const paginatedTeachers = filteredTeachers.slice((page - 1) * limit, page * limit);
   const pagesArray = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  // Statistics Computations
+  const totalTeachersCount = teachers.length;
+  const fullyAssignedCount = teachers.filter(t => 
+    assignments.some(a => (a.teacherId?._id || a.teacherId) === t._id)
+  ).length;
+  const unassignedCount = teachers.filter(t => 
+    !assignments.some(a => (a.teacherId?._id || a.teacherId) === t._id)
+  ).length;
 
   return (
     <DashboardLayout
@@ -213,101 +188,46 @@ const AdminStudents = () => {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Student Management</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage and monitor student records across the school.</p>
+            <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Teacher Management</h1>
+            <p className="text-sm text-gray-500 mt-1">Manage faculty profiles and class assignments.</p>
           </div>
           <button
             onClick={handleOpenAdd}
             className="bg-navy-900 text-white font-bold py-2.5 px-4 rounded-xl flex items-center space-x-2 hover:bg-navy-800 transition-colors shadow-sm text-sm"
           >
             <Plus className="h-4 w-4" />
-            <span>Add Student</span>
+            <span>Add Teacher</span>
           </button>
         </div>
 
-        {/* Filter Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-gray-200/60 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-          {/* Left Side: Search */}
+        {/* Filter / Search Bar */}
+        <div className="bg-white p-4 rounded-2xl border border-gray-200/60 shadow-sm flex items-center justify-between">
           <div className="w-full md:w-80 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <Search className="h-4 w-4" />
             </div>
             <input
               type="text"
-              placeholder="Search by name or reg no..."
+              placeholder="Search by name or employee ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 text-xs bg-gray-50 focus:bg-white transition-all"
             />
           </div>
-
-          {/* Right Side: Selects */}
-          <div className="w-full md:w-auto flex flex-wrap md:flex-nowrap gap-3 items-center justify-end">
-            <div className="flex items-center space-x-1.5 text-gray-400">
-              <Filter className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:inline">Filters</span>
-            </div>
-
-            {/* Class Dropdown */}
-            <select
-              value={classId}
-              onChange={(e) => {
-                setClassId(e.target.value);
-                setSectionId('');
-              }}
-              className="px-3 py-2 border border-gray-200 rounded-xl text-xs bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-navy-700/50"
-            >
-              <option value="">All Classes</option>
-              {classesList.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Section Dropdown */}
-            <select
-              value={sectionId}
-              onChange={(e) => setSectionId(e.target.value)}
-              disabled={!classId}
-              className="px-3 py-2 border border-gray-200 rounded-xl text-xs bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-navy-700/50 disabled:bg-gray-50 disabled:text-gray-400"
-            >
-              <option value="">
-                {!classId ? 'Select class first' : 'All Sections'}
-              </option>
-              {sectionsList.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Status Dropdown */}
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-xl text-xs bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-navy-700/50"
-            >
-              <option value="">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="on_leave">On Leave</option>
-              <option value="suspended">Suspended</option>
-            </select>
-          </div>
         </div>
 
-        {/* Student Records Table */}
+        {/* Teacher Records Table */}
         <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
           {loading ? (
             <div className="py-24 flex flex-col items-center justify-center space-y-3">
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-navy-900"></div>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Loading students...</span>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Loading faculty records...</span>
             </div>
-          ) : students.length === 0 ? (
+          ) : paginatedTeachers.length === 0 ? (
             <div className="py-20 text-center">
               <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 font-semibold text-sm">No student records found</p>
-              <p className="text-xs text-gray-400 mt-1">Try adjusting your filters or search queries.</p>
+              <p className="text-gray-500 font-semibold text-sm">No teacher records found</p>
+              <p className="text-xs text-gray-400 mt-1">Try adjusting your search queries.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -315,18 +235,24 @@ const AdminStudents = () => {
                 <thead>
                   <tr className="bg-gray-50/70 border-b border-gray-100">
                     <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Photo</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Name / Reg</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Class / Section</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Father's Contact</th>
+                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Name / ID</th>
+                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Qualification</th>
+                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Assigned Classes</th>
                     <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {students.map((student) => {
-                    const statusProps = getStatusBadgeProps(student.status);
+                  {paginatedTeachers.map((teacher) => {
+                    const statusProps = getStatusBadgeProps(teacher.userId?.isActive);
                     
-                    // Generate color palette index based on student name length
+                    // Filter assignments for this teacher
+                    const teacherAsgs = assignments.filter(
+                      (a) => (a.teacherId?._id || a.teacherId) === teacher._id
+                    );
+
+                    // Generate color palette index based on teacher name length
                     const colors = [
                       'bg-blue-600 text-blue-100',
                       'bg-purple-600 text-purple-100',
@@ -335,41 +261,58 @@ const AdminStudents = () => {
                       'bg-pink-600 text-pink-100',
                       'bg-indigo-600 text-indigo-100'
                     ];
-                    const colorIndex = (student.fullName || '').length % colors.length;
+                    const colorIndex = (teacher.userId?.name || '').length % colors.length;
                     const avatarBg = colors[colorIndex];
 
                     return (
-                      <tr key={student._id} className="hover:bg-gray-50/40 transition-colors">
-                        {/* Student Photo */}
+                      <tr key={teacher._id} className="hover:bg-gray-50/40 transition-colors">
+                        {/* Photo avatar */}
                         <td className="py-4 px-6 text-sm">
-                          {student.photoUrl ? (
+                          {teacher.photoUrl ? (
                             <img
-                              src={student.photoUrl}
-                              alt={student.fullName}
+                              src={teacher.photoUrl}
+                              alt={teacher.userId?.name}
                               className="h-10 w-10 rounded-full object-cover border border-gray-100 shadow-sm"
                             />
                           ) : (
                             <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-sm ${avatarBg}`}>
-                              {getInitials(student.fullName)}
+                              {getInitials(teacher.userId?.name)}
                             </div>
                           )}
                         </td>
 
-                        {/* Name + Registration Number */}
+                        {/* Name + Employee ID */}
                         <td className="py-4 px-6 text-sm">
-                          <div className="font-bold text-navy-950">{student.fullName}</div>
-                          <div className="text-xs text-gray-400 font-semibold mt-0.5">{student.registrationNumber}</div>
+                          <div className="font-bold text-navy-950">{teacher.userId?.name || 'N/A'}</div>
+                          <div className="text-xs text-gray-400 font-semibold mt-0.5">{teacher.employeeId}</div>
                         </td>
 
-                        {/* Class / Section */}
-                        <td className="py-4 px-6 text-sm">
-                          <div className="font-bold text-gray-700">{student.classId?.name || 'N/A'}</div>
-                          <div className="text-xs text-gray-400 font-medium mt-0.5">{student.sectionId?.name || 'N/A'}</div>
+                        {/* Email */}
+                        <td className="py-4 px-6 text-sm font-semibold text-gray-600 break-all">
+                          {teacher.userId?.email || 'N/A'}
                         </td>
 
-                        {/* Father's Contact */}
-                        <td className="py-4 px-6 text-sm font-semibold text-gray-600">
-                          {student.fatherContact}
+                        {/* Qualification */}
+                        <td className="py-4 px-6 text-sm text-gray-500 font-medium max-w-xs truncate">
+                          {teacher.qualification || 'N/A'}
+                        </td>
+
+                        {/* Assigned Classes */}
+                        <td className="py-4 px-6 text-sm">
+                          {teacherAsgs.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5 max-w-xs">
+                              {teacherAsgs.map((asg) => {
+                                const combo = `${asg.classId?.name || 'Class'} - ${asg.sectionId?.name || 'Sec'} - ${asg.subjectId?.name || 'Sub'}`;
+                                return (
+                                  <span key={asg._id} className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-navy-50 text-navy-800 border border-navy-100">
+                                    {combo}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400 font-medium">Not Assigned</span>
+                          )}
                         </td>
 
                         {/* Status Badge */}
@@ -381,23 +324,23 @@ const AdminStudents = () => {
                         <td className="py-4 px-6 text-sm text-right">
                           <div className="flex items-center justify-end space-x-2.5">
                             <button
-                              onClick={() => handleOpenView(student)}
-                              title="View Details"
+                              onClick={() => handleOpenView(teacher)}
+                              title="View Profile Details"
                               className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
                             >
                               <Eye className="h-4.5 w-4.5" />
                             </button>
                             <button
-                              onClick={() => handleOpenEdit(student)}
-                              title="Edit Record"
+                              onClick={() => handleOpenEdit(teacher)}
+                              title="Edit Profile"
                               className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
                             >
                               <Pencil className="h-4.5 w-4.5" />
                             </button>
                             <button
-                              onClick={() => handleOpenDeleteConfirm(student)}
-                              title="Deactivate Student"
-                              disabled={student.status === 'suspended'}
+                              onClick={() => handleOpenDeleteConfirm(teacher)}
+                              title="Deactivate Teacher"
+                              disabled={teacher.userId?.isActive === false}
                               className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                             >
                               <Trash2 className="h-4.5 w-4.5" />
@@ -413,10 +356,10 @@ const AdminStudents = () => {
           )}
 
           {/* Table Footer / Pagination */}
-          {!loading && students.length > 0 && (
+          {!loading && totalItems > 0 && (
             <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                Showing {students.length} of {totalStudents} Student(s)
+                Showing {paginatedTeachers.length} of {totalItems} Teacher(s)
               </span>
 
               <div className="flex items-center space-x-2">
@@ -463,53 +406,68 @@ const AdminStudents = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
           <StatCard
             icon={Users}
-            label="Total Students"
-            value={totalStudents.toString()}
-            trend="Active View"
+            label="Total Teachers"
+            value={totalTeachersCount.toString()}
+            trend="Faculty Count"
             trendColor="info"
           />
           <StatCard
             icon={Award}
-            label="Active Today (Overall)"
-            value={totalStudents.toString()}
-            trend="100%"
+            label="Fully Assigned Count"
+            value={fullyAssignedCount.toString()}
+            trend="Active Combos"
             trendColor="active"
           />
           <StatCard
-            icon={DollarSign}
-            label="Pending Fee Count (Page)"
-            value={pendingFeeCount.toString()}
-            trend="Needs Attention"
-            trendColor={pendingFeeCount > 0 ? 'danger' : 'active'}
+            icon={AlertTriangle}
+            label="Unassigned Count"
+            value={unassignedCount.toString()}
+            trend="Needs Assignment"
+            trendColor={unassignedCount > 0 ? 'danger' : 'active'}
           />
         </div>
 
       </div>
 
-      {/* Modals & Popups */}
-      
-      {/* Student Form Modal (Add / Edit) */}
-      <StudentFormModal
+      {/* Teacher Form Modal (Add / Edit) */}
+      <TeacherFormModal
         isOpen={isFormOpen}
         onClose={() => {
           setIsFormOpen(false);
-          setSelectedStudent(null);
+          setSelectedTeacher(null);
         }}
-        student={selectedStudent}
-        onSuccess={fetchStudentsList}
+        teacher={selectedTeacher}
+        onSuccess={fetchData}
       />
 
-      {/* Student Detail Viewer Modal */}
-      <StudentViewDrawer
+      {/* Teacher Detail Drawer */}
+      <TeacherViewDrawer
         isOpen={isViewOpen}
         onClose={() => {
           setIsViewOpen(false);
-          setSelectedStudent(null);
+          setSelectedTeacher(null);
         }}
-        student={selectedStudent}
+        teacher={selectedTeacher}
+        assignments={assignments.filter(
+          (a) => (a.teacherId?._id || a.teacherId) === selectedTeacher?._id
+        )}
+        onRefresh={fetchData}
+        onAddAssignment={(teacher) => {
+          handleOpenAssign(teacher);
+        }}
       />
 
-      {/* Delete Confirmation Modal */}
+      {/* Assignment Link Form Modal */}
+      <AssignmentFormModal
+        isOpen={isAssignOpen}
+        onClose={() => {
+          setIsAssignOpen(false);
+        }}
+        teacher={selectedTeacher}
+        onSuccess={fetchData}
+      />
+
+      {/* Delete/Deactivate Confirmation Modal */}
       {isDeleteConfirmOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
@@ -518,13 +476,13 @@ const AdminStudents = () => {
               <h3 className="text-lg font-bold text-navy-950">Confirm Deactivation</h3>
             </div>
             <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to deactivate <span className="font-bold text-navy-900">{studentToDelete?.fullName}</span>? This can be reversed by an admin later.
+              Are you sure you want to deactivate <span className="font-bold text-navy-950">{teacherToDelete?.userId?.name}</span>? This is a soft delete and will disable their account login. This can be reversed by an admin later.
             </p>
             <div className="flex items-center justify-end space-x-3">
               <button
                 onClick={() => {
                   setIsDeleteConfirmOpen(false);
-                  setStudentToDelete(null);
+                  setTeacherToDelete(null);
                 }}
                 className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors"
               >
@@ -544,4 +502,4 @@ const AdminStudents = () => {
   );
 };
 
-export default AdminStudents;
+export default AdminTeachers;
