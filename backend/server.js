@@ -4,6 +4,12 @@ const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const classRoutes = require('./routes/classRoutes');
+const sectionRoutes = require('./routes/sectionRoutes');
+const subjectRoutes = require('./routes/subjectRoutes');
+const teacherRoutes = require('./routes/teacherRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
+const studentRoutes = require('./routes/studentRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -27,6 +33,12 @@ app.get('/api/health', (req, res) => {
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/classes', classRoutes);
+app.use('/api/sections', sectionRoutes);
+app.use('/api/subjects', subjectRoutes);
+app.use('/api/teachers', teacherRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/students', studentRoutes);
 
 // Centralized Error Handler Middleware (Must be after routes)
 app.use(errorHandler);
