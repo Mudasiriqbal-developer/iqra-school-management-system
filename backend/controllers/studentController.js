@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
@@ -408,10 +409,212 @@ const deleteStudent = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Set fee structure for a student
+ * @route   PATCH /api/students/:id/fee-structure
+ * @access  Private (Admin Only)
+ */
+const setFeeStructure = async (req, res, next) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Student not found',
+      });
+    }
+
+    const { amountDue, dueDate } = req.body;
+
+    // Initialize feeInfo if not present
+    if (!student.feeInfo) {
+      student.feeInfo = { amountDue: 0, amountPaid: 0, status: 'pending', history: [] };
+    }
+
+    // Updates ONLY these two fields on the student's feeInfo — does not touch history or amountPaid
+    student.feeInfo.amountDue = amountDue;
+    if (dueDate !== undefined) {
+      student.feeInfo.dueDate = dueDate;
+    }
+
+    // Recalculate status after update using the same logic
+    const amountPaid = student.feeInfo.amountPaid || 0;
+    const today = new Date();
+    
+    let status = 'pending';
+    if (amountPaid >= amountDue && amountDue > 0) {
+      status = 'paid';
+    } else if (student.feeInfo.dueDate && today > new Date(student.feeInfo.dueDate) && amountPaid < amountDue) {
+      status = 'overdue';
+    } else {
+      status = 'pending';
+    }
+    student.feeInfo.status = status;
+
+    const updatedStudent = await student.save();
+    const populated = await updatedStudent.populate(['classId', 'sectionId']);
+
+    return res.status(200).json({
+      success: true,
+      data: populated,
+      message: 'Student fee structure updated successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Record fee payment for a student
+ * @route   POST /api/students/:id/fee-payment
+ * @access  Private (Admin Only)
+ */
+const recordFeePayment = async (req, res, next) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Student not found',
+      });
+    }
+
+    const { amount, method, paidOn } = req.body;
+
+    // Initialize feeInfo if not present
+    if (!student.feeInfo) {
+      student.feeInfo = { amountDue: 0, amountPaid: 0, status: 'pending', history: [] };
+    }
+
+    // Push a new entry to feeInfo.history
+    const paymentEntry = {
+      amount,
+      method: method || 'cash',
+      paidOn: paidOn ? new Date(paidOn) : new Date(),
+    };
+    student.feeInfo.history.push(paymentEntry);
+
+    // Increment feeInfo.amountPaid by the payment amount
+    student.feeInfo.amountPaid = (student.feeInfo.amountPaid || 0) + amount;
+
+    // Recalculate feeInfo.status using this logic
+    const amountPaid = student.feeInfo.amountPaid || 0;
+    const amountDue = student.feeInfo.amountDue || 0;
+    const dueDate = student.feeInfo.dueDate;
+    const today = new Date();
+
+    let status = 'pending';
+    if (amountPaid >= amountDue && amountDue > 0) {
+      status = 'paid';
+    } else if (dueDate && today > new Date(dueDate) && amountPaid < amountDue) {
+      status = 'overdue';
+    } else {
+      status = 'pending';
+    }
+    student.feeInfo.status = status;
+
+    const updatedStudent = await student.save();
+    const populated = await updatedStudent.populate(['classId', 'sectionId']);
+
+    return res.status(200).json({
+      success: true,
+      data: populated,
+      message: 'Payment recorded successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get fee summary aggregated by class and/or section, or school-wide
+ * @route   GET /api/students/fee-summary
+ * @access  Private (Admin Only)
+ */
+const getFeeSummaryByClass = async (req, res, next) => {
+  try {
+    const { classId, sectionId } = req.query;
+
+    const filter = {};
+
+    // Validate if classId is a valid Mongo ID if provided
+    if (classId) {
+      if (!mongoose.Types.ObjectId.isValid(classId)) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Invalid Class ID format',
+        });
+      }
+      filter.classId = classId;
+    }
+
+    // Validate if sectionId is a valid Mongo ID if provided
+    if (sectionId) {
+      if (!mongoose.Types.ObjectId.isValid(sectionId)) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Invalid Section ID format',
+        });
+      }
+      filter.sectionId = sectionId;
+    }
+
+    // Fetch matching students
+    const students = await Student.find(filter);
+
+    let totalStudents = students.length;
+    let paidCount = 0;
+    let pendingCount = 0;
+    let overdueCount = 0;
+    let totalCollected = 0;
+    let totalOutstanding = 0;
+
+    for (const student of students) {
+      const amountPaid = student.feeInfo?.amountPaid || 0;
+      const amountDue = student.feeInfo?.amountDue || 0;
+      const status = student.feeInfo?.status || 'pending';
+
+      if (status === 'paid') {
+        paidCount++;
+      } else if (status === 'overdue') {
+        overdueCount++;
+      } else {
+        pendingCount++;
+      }
+
+      totalCollected += amountPaid;
+      // sum of amountDue - amountPaid across matched students
+      totalOutstanding += (amountDue - amountPaid);
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalStudents,
+        paidCount,
+        pendingCount,
+        overdueCount,
+        totalCollected,
+        totalOutstanding,
+      },
+      message: 'Fee summary fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createStudent,
   getAllStudents,
   getStudentById,
   updateStudent,
   deleteStudent,
+  setFeeStructure,
+  recordFeePayment,
+  getFeeSummaryByClass,
 };

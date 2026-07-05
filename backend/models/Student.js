@@ -55,6 +55,14 @@ const studentSchema = new mongoose.Schema(
       required: [true, 'Section ID is required'],
     },
     feeInfo: {
+      amountDue: {
+        type: Number,
+        default: 0,
+      },
+      amountPaid: {
+        type: Number,
+        default: 0,
+      },
       status: {
         type: String,
         enum: ['paid', 'pending', 'overdue'],
@@ -67,7 +75,12 @@ const studentSchema = new mongoose.Schema(
         {
           amount: { type: Number, required: true },
           paidOn: { type: Date, default: Date.now },
-          method: { type: String, required: true },
+          method: {
+            type: String,
+            required: true,
+            enum: ['cash', 'bank_transfer', 'card', 'other'],
+            default: 'cash',
+          },
         },
       ],
     },

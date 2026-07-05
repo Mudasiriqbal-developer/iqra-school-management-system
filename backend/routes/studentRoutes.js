@@ -6,6 +6,9 @@ const {
   getStudentById,
   updateStudent,
   deleteStudent,
+  setFeeStructure,
+  recordFeePayment,
+  getFeeSummaryByClass,
 } = require('../controllers/studentController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -20,6 +23,13 @@ router.use(protect);
  * @access  Private (Admin, Teacher)
  */
 router.get('/', authorize('admin', 'teacher'), getAllStudents);
+
+/**
+ * @route   GET /api/students/fee-summary
+ * @desc    Get fee summary aggregated by class/section, or school-wide
+ * @access  Private (Admin Only)
+ */
+router.get('/fee-summary', authorize('admin'), getFeeSummaryByClass);
 
 /**
  * @route   GET /api/students/:id
@@ -86,5 +96,38 @@ router.put(
  * @access  Private (Admin Only)
  */
 router.delete('/:id', authorize('admin'), deleteStudent);
+
+/**
+ * @route   PATCH /api/students/:id/fee-structure
+ * @desc    Set fee structure for a student
+ * @access  Private (Admin Only)
+ */
+router.patch(
+  '/:id/fee-structure',
+  authorize('admin'),
+  [
+    check('amountDue', 'Amount due must be a number greater than 0').isFloat({ gt: 0 }),
+    check('dueDate', 'Due date must be a valid ISO8601 date').optional({ nullable: true }).isISO8601(),
+  ],
+  validateRequest,
+  setFeeStructure
+);
+
+/**
+ * @route   POST /api/students/:id/fee-payment
+ * @desc    Record fee payment for a student
+ * @access  Private (Admin Only)
+ */
+router.post(
+  '/:id/fee-payment',
+  authorize('admin'),
+  [
+    check('amount', 'Payment amount must be a number greater than 0').isFloat({ gt: 0 }),
+    check('method', 'Payment method must be cash, bank_transfer, card, or other').optional().isIn(['cash', 'bank_transfer', 'card', 'other']),
+    check('paidOn', 'Paid date must be a valid ISO8601 date').optional({ nullable: true }).isISO8601(),
+  ],
+  validateRequest,
+  recordFeePayment
+);
 
 module.exports = router;
