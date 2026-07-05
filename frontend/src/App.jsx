@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminStudents from './pages/AdminStudents';
 import AdminTeachers from './pages/AdminTeachers';
+import AdminAcademics from './pages/AdminAcademics';
 import TeacherDashboard from './pages/TeacherDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -49,6 +50,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminTeachers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/academics"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminAcademics />
             </ProtectedRoute>
           }
         />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, Award, Calendar, DollarSign, BarChart3, Plus, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Users, Award, BookOpen, Calendar, DollarSign, BarChart3, Plus, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
@@ -9,6 +9,7 @@ const AdminDashboard = () => {
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
     { label: 'Students', icon: Users, path: '/admin/students' },
     { label: 'Faculty', icon: Award, path: '/admin/teachers' },
+    { label: 'Academic Structure', icon: BookOpen, path: '/admin/academics' },
     { label: 'Attendance', icon: Calendar, path: '/admin/attendance' },
     { label: 'Finance', icon: DollarSign, path: '/admin/finance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, Award, Calendar, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight, 
-  AlertTriangle 
+  AlertTriangle, BookOpen
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -22,6 +22,7 @@ const AdminTeachers = () => {
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
     { label: 'Students', icon: Users, path: '/admin/students' },
     { label: 'Faculty', icon: Award, path: '/admin/teachers' },
+    { label: 'Academic Structure', icon: BookOpen, path: '/admin/academics' },
     { label: 'Attendance', icon: Calendar, path: '/admin/attendance' },
     { label: 'Finance', icon: DollarSign, path: '/admin/finance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
