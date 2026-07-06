@@ -10,6 +10,7 @@ const subjectRoutes = require('./routes/subjectRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -39,6 +40,7 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Centralized Error Handler Middleware (Must be after routes)
 app.use(errorHandler);
