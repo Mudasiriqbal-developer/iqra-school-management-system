@@ -481,11 +481,23 @@ const recordFeePayment = async (req, res, next) => {
       });
     }
 
-    const { amount, method, paidOn } = req.body;
+    let { amount, method, paidOn, forMonth } = req.body;
 
     // Initialize feeInfo if not present
     if (!student.feeInfo) {
       student.feeInfo = { amountDue: 0, amountPaid: 0, status: 'pending', history: [] };
+    }
+
+    // Infer forMonth if not provided
+    if (!forMonth) {
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const referenceDate = student.feeInfo.dueDate
+        ? new Date(student.feeInfo.dueDate)
+        : (paidOn ? new Date(paidOn) : new Date());
+      forMonth = `${monthNames[referenceDate.getMonth()]} ${referenceDate.getFullYear()}`;
     }
 
     // Push a new entry to feeInfo.history
@@ -493,6 +505,7 @@ const recordFeePayment = async (req, res, next) => {
       amount,
       method: method || 'cash',
       paidOn: paidOn ? new Date(paidOn) : new Date(),
+      forMonth,
     };
     student.feeInfo.history.push(paymentEntry);
 
@@ -514,6 +527,31 @@ const recordFeePayment = async (req, res, next) => {
       status = 'pending';
     }
     student.feeInfo.status = status;
+
+    // --- AUTOMATIC NEXT MONTH FEE ROLLOVER ---
+    if (status === 'paid') {
+      const currentDueDate = student.feeInfo.dueDate ? new Date(student.feeInfo.dueDate) : new Date();
+      
+      // Calculate 28th of next month safely to avoid overflow
+      const nextMonthDate = new Date(currentDueDate);
+      nextMonthDate.setDate(28);
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+
+      // Carry over any overpayment
+      const overpayment = Math.max(0, amountPaid - amountDue);
+
+      // Roll over fee structure
+      student.feeInfo.amountDue = amountDue; // same fee structure amount
+      student.feeInfo.amountPaid = overpayment;
+      student.feeInfo.dueDate = nextMonthDate;
+
+      // Calculate status for next cycle
+      if (overpayment >= amountDue && amountDue > 0) {
+        student.feeInfo.status = 'paid';
+      } else {
+        student.feeInfo.status = 'pending';
+      }
+    }
 
     const updatedStudent = await student.save();
     const populated = await updatedStudent.populate(['classId', 'sectionId']);

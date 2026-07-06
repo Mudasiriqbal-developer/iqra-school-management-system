@@ -81,6 +81,9 @@ const studentSchema = new mongoose.Schema(
             enum: ['cash', 'bank_transfer', 'card', 'other'],
             default: 'cash',
           },
+          forMonth: {
+            type: String,
+          },
         },
       ],
     },

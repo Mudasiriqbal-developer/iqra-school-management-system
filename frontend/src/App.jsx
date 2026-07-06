@@ -6,6 +6,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminStudents from './pages/AdminStudents';
 import AdminTeachers from './pages/AdminTeachers';
 import AdminAcademics from './pages/AdminAcademics';
+import AdminFees from './pages/AdminFees';
 import TeacherDashboard from './pages/TeacherDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -58,6 +59,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminAcademics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/fees"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminFees />
             </ProtectedRoute>
           }
         />
