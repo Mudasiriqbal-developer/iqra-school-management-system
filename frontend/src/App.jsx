@@ -10,6 +10,7 @@ import AdminFees from './pages/AdminFees';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherAttendance from './pages/TeacherAttendance';
 import StudentDashboard from './pages/StudentDashboard';
+import AdminReports from './pages/AdminReports';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 
 function App() {
@@ -68,6 +69,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminFees />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminReports />
             </ProtectedRoute>
           }
         />
