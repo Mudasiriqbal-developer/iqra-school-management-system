@@ -7,6 +7,8 @@ import AdminStudents from './pages/AdminStudents';
 import AdminTeachers from './pages/AdminTeachers';
 import AdminAcademics from './pages/AdminAcademics';
 import AdminFees from './pages/AdminFees';
+import AdminExpenses from './pages/AdminExpenses';
+import AdminPayroll from './pages/AdminPayroll';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherAttendance from './pages/TeacherAttendance';
 import StudentDashboard from './pages/StudentDashboard';
@@ -70,6 +72,22 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminFees />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/expenses"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminExpenses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/payroll"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminPayroll />
             </ProtectedRoute>
           }
         />

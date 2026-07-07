@@ -12,7 +12,8 @@ import {
   Layers,
   BookMarked,
   Loader2,
-  Wallet
+  Wallet,
+  TrendingUp
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -41,6 +42,8 @@ const AdminAcademics = () => {
     { label: 'Faculty', icon: Award, path: '/admin/teachers' },
     { label: 'Academic Structure', icon: BookOpen, path: '/admin/academics' },
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
+    { label: 'Expense Tracker', icon: TrendingUp, path: '/admin/expenses' },
+    { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];

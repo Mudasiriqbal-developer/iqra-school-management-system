@@ -13,6 +13,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
     phone: '',
     joiningDate: '',
     photoUrl: '',
+    baseSalary: 0,
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -32,6 +33,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
           phone: teacher.userId?.phone || '',
           joiningDate: teacher.joiningDate ? teacher.joiningDate.substring(0, 10) : '',
           photoUrl: teacher.photoUrl || '',
+          baseSalary: teacher.baseSalary || 0,
         });
       } else {
         setFormData({
@@ -43,6 +45,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
           phone: '',
           joiningDate: new Date().toISOString().substring(0, 10),
           photoUrl: '',
+          baseSalary: 0,
         });
       }
     }
@@ -114,6 +117,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
         phone: formData.phone.trim() || undefined,
         photoUrl: formData.photoUrl.trim() || undefined,
         joiningDate: formData.joiningDate || undefined,
+        baseSalary: Number(formData.baseSalary) || 0,
       };
 
       if (teacher) {
@@ -308,6 +312,23 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
                 value={formData.joiningDate}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm focus:border-navy-700"
+              />
+            </div>
+
+            {/* Base Salary */}
+            <div className="flex flex-col">
+              <label htmlFor="baseSalary" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
+                Base Salary (Rs.)
+              </label>
+              <input
+                id="baseSalary"
+                type="number"
+                name="baseSalary"
+                value={formData.baseSalary}
+                onChange={handleChange}
+                placeholder="e.g. 45000"
+                min="0"
+                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm focus:border-navy-700 font-bold"
               />
             </div>
 

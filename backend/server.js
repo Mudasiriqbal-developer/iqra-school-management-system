@@ -12,6 +12,8 @@ const assignmentRoutes = require('./routes/assignmentRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
+const payrollRoutes = require('./routes/payrollRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/assignments', assignmentRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/payroll', payrollRoutes);
 
 // Centralized Error Handler Middleware (Must be after routes)
 app.use(errorHandler);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight, 
-  AlertTriangle, BookOpen, Wallet
+  AlertTriangle, BookOpen, Wallet, TrendingUp
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -24,6 +24,8 @@ const AdminTeachers = () => {
     { label: 'Faculty', icon: Award, path: '/admin/teachers' },
     { label: 'Academic Structure', icon: BookOpen, path: '/admin/academics' },
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
+    { label: 'Expense Tracker', icon: TrendingUp, path: '/admin/expenses' },
+    { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];

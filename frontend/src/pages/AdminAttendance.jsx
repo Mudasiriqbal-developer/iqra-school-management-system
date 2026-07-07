@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   LayoutDashboard, Users, Award, BookOpen, Wallet, CalendarCheck, BarChart3,
-  Calendar, CheckCircle, XCircle, Clock, Info, RefreshCw, AlertCircle, Eye
+  Calendar, CheckCircle, XCircle, Clock, Info, RefreshCw, AlertCircle, Eye,
+  TrendingUp, DollarSign
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -21,6 +22,8 @@ const AdminAttendance = () => {
     { label: 'Faculty', icon: Award, path: '/admin/teachers' },
     { label: 'Academic Structure', icon: BookOpen, path: '/admin/academics' },
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
+    { label: 'Expense Tracker', icon: TrendingUp, path: '/admin/expenses' },
+    { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];

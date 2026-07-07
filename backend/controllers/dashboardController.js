@@ -1,6 +1,8 @@
 const Student = require('../models/Student');
 const User = require('../models/User');
 const Attendance = require('../models/Attendance');
+const Expense = require('../models/Expense');
+const Payroll = require('../models/Payroll');
 
 /**
  * @desc    Get dashboard summary statistics
@@ -120,6 +122,29 @@ const getDashboardSummary = async (req, res, next) => {
       });
     }
 
+    // 6. Financial Profit & Loss Calculations
+    const expenseAgg = await Expense.aggregate([
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+    const totalExpensesOut = expenseAgg.length > 0 ? (expenseAgg[0].total || 0) : 0;
+
+    const payrollAgg = await Payroll.aggregate([
+      { $match: { status: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$netSalary' } } },
+    ]);
+    const totalPayrollOut = payrollAgg.length > 0 ? (payrollAgg[0].total || 0) : 0;
+
+    const totalSpent = totalExpensesOut + totalPayrollOut;
+    const netProfit = totalCollected - totalSpent;
+    const profitMargin = totalCollected > 0 ? Math.round((netProfit / totalCollected) * 100) : 0;
+
+    const financialSummary = {
+      totalIncome: totalCollected,
+      totalExpenses: totalSpent,
+      netProfit,
+      profitMargin,
+    };
+
     return res.status(200).json({
       success: true,
       data: {
@@ -127,9 +152,10 @@ const getDashboardSummary = async (req, res, next) => {
         totalTeachers,
         feesSummary,
         attendanceToday,
-        monthlyAttendanceTrend
+        monthlyAttendanceTrend,
+        financialSummary,
       },
-      message: 'Dashboard summary retrieved successfully'
+      message: 'Dashboard summary retrieved successfully',
     });
   } catch (error) {
     next(error);

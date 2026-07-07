@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Award, BookOpen, Calendar, CalendarCheck, DollarSign, BarChart3, Plus, ArrowRight, Wallet, GraduationCap, AlertCircle, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, Users, Award, BookOpen, Calendar, CalendarCheck, DollarSign, BarChart3, Plus, ArrowRight, Wallet, GraduationCap, AlertCircle, RefreshCw, TrendingUp } from 'lucide-react';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
@@ -65,6 +65,8 @@ const AdminDashboard = () => {
     { label: 'Faculty', icon: Award, path: '/admin/teachers' },
     { label: 'Academic Structure', icon: BookOpen, path: '/admin/academics' },
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
+    { label: 'Expense Tracker', icon: TrendingUp, path: '/admin/expenses' },
+    { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];
@@ -114,10 +116,11 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* 4 StatCards Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* StatCards Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {loading ? (
             <>
+              <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
@@ -129,6 +132,7 @@ const AdminDashboard = () => {
               <StatCard icon={GraduationCap} label="Total Faculty" value="--" />
               <StatCard icon={DollarSign} label="Fees Collected" value="--" />
               <StatCard icon={Calendar} label="Attendance Today" value="--" />
+              <StatCard icon={TrendingUp} label="Net P&L" value="--" />
             </>
           ) : (
             <>
@@ -192,6 +196,15 @@ const AdminDashboard = () => {
                     ? 'pending'
                     : null
                 }
+              />
+
+              {/* 5. Profit & Loss Margin */}
+              <StatCard
+                icon={TrendingUp}
+                label="Net P&L (Profit/Loss)"
+                value={`Rs. ${(dashboardData?.financialSummary?.netProfit || 0).toLocaleString()}`}
+                trend={`Spent: Rs. ${(dashboardData?.financialSummary?.totalExpenses || 0).toLocaleString()} (${dashboardData?.financialSummary?.profitMargin || 0}% margin)`}
+                trendColor={(dashboardData?.financialSummary?.netProfit || 0) >= 0 ? 'active' : 'danger'}
               />
             </>
           )}

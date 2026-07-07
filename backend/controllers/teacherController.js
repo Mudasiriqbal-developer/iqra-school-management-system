@@ -9,7 +9,7 @@ const Teacher = require('../models/Teacher');
 const createTeacher = async (req, res, next) => {
   let createdUser = null;
   try {
-    const { name, email, password, employeeId, qualification, phone, joiningDate, photoUrl } = req.body;
+    const { name, email, password, employeeId, qualification, phone, joiningDate, photoUrl, baseSalary } = req.body;
 
     // 1. Check if User with email already exists
     const userExists = await User.findOne({ email });
@@ -48,6 +48,7 @@ const createTeacher = async (req, res, next) => {
         qualification,
         joiningDate: joiningDate || Date.now(),
         photoUrl: photoUrl || '',
+        baseSalary: baseSalary || 0,
       });
 
       return res.status(201).json({
@@ -132,7 +133,7 @@ const getTeacherById = async (req, res, next) => {
  */
 const updateTeacher = async (req, res, next) => {
   try {
-    const { name, email, phone, employeeId, qualification, joiningDate, photoUrl } = req.body;
+    const { name, email, phone, employeeId, qualification, joiningDate, photoUrl, baseSalary } = req.body;
 
     const teacher = await Teacher.findById(req.params.id);
     if (!teacher) {
@@ -189,6 +190,7 @@ const updateTeacher = async (req, res, next) => {
     if (qualification !== undefined) teacher.qualification = qualification;
     if (joiningDate !== undefined) teacher.joiningDate = joiningDate;
     if (photoUrl !== undefined) teacher.photoUrl = photoUrl;
+    if (baseSalary !== undefined) teacher.baseSalary = baseSalary;
 
     const updatedTeacher = await teacher.save();
     const populated = await updatedTeacher.populate('userId', 'name email phone isActive role');

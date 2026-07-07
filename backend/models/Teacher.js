@@ -26,6 +26,11 @@ const teacherSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    baseSalary: {
+      type: Number,
+      default: 0,
+      min: [0, 'Salary cannot be negative'],
+    },
   },
   {
     timestamps: true,
