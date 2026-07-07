@@ -36,6 +36,18 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isActivated: {
+      type: Boolean,
+      default: true,
+    },
+    activationTokenHash: {
+      type: String,
+      default: null,
+    },
+    activationTokenExpires: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

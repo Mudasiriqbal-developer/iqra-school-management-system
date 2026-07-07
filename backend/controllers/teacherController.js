@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const Teacher = require('../models/Teacher');
 const Section = require('../models/Section');
+const crypto = require('crypto');
+const { generateActivationToken } = require('../utils/tokenUtils');
+const { sendTeacherInvitationEmail } = require('../utils/emailService');
 
 /**
  * @desc    Create a new teacher (and associated User login)
@@ -10,7 +13,7 @@ const Section = require('../models/Section');
 const createTeacher = async (req, res, next) => {
   let createdUser = null;
   try {
-    const { name, email, password, employeeId, qualification, phone, joiningDate, photoUrl, baseSalary } = req.body;
+    const { name, email, employeeId, qualification, phone, joiningDate, photoUrl, baseSalary } = req.body;
 
     // 1. Check if User with email already exists
     const userExists = await User.findOne({ email });
@@ -32,16 +35,23 @@ const createTeacher = async (req, res, next) => {
       });
     }
 
-    // 3. Create the User (role is 'teacher')
+    // 3. Generate activation token & placeholder password
+    const tokenData = generateActivationToken();
+    const placeholderPassword = crypto.randomBytes(24).toString('hex');
+
+    // 4. Create the User (role is 'teacher', isActivated is false)
     createdUser = await User.create({
       name,
       email,
-      password,
+      password: placeholderPassword,
       role: 'teacher',
       phone,
+      isActivated: false,
+      activationTokenHash: tokenData.tokenHash,
+      activationTokenExpires: tokenData.expiresAt,
     });
 
-    // 4. Create the Teacher profile
+    // 5. Create the Teacher profile
     try {
       const teacher = await Teacher.create({
         userId: createdUser._id,
@@ -51,6 +61,24 @@ const createTeacher = async (req, res, next) => {
         photoUrl: photoUrl || '',
         baseSalary: baseSalary || 0,
       });
+
+      // 6. Build activation link & send invitation email (wrapped in separate try/catch)
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
+      let emailSent = false;
+      let emailError = null;
+
+      try {
+        await sendTeacherInvitationEmail(email, name, activationLink);
+        emailSent = true;
+      } catch (mailErr) {
+        emailError = mailErr.message || mailErr;
+        console.error('Failed to send teacher invitation email:', mailErr);
+      }
+
+      const responseMessage = emailSent
+        ? 'Teacher and user login created successfully, and invitation email sent'
+        : 'Teacher and user login created successfully, but the invitation email failed to send. Use Resend Invitation to retry.';
 
       return res.status(201).json({
         success: true,
@@ -62,9 +90,10 @@ const createTeacher = async (req, res, next) => {
             email: createdUser.email,
             role: createdUser.role,
             phone: createdUser.phone,
+            isActivated: createdUser.isActivated,
           },
         },
-        message: 'Teacher and user login created successfully',
+        message: responseMessage,
       });
     } catch (err) {
       // Rollback: delete the created User if Teacher profile creation fails
@@ -86,7 +115,7 @@ const createTeacher = async (req, res, next) => {
 const getAllTeachers = async (req, res, next) => {
   try {
     const teachers = await Teacher.find()
-      .populate('userId', 'name email phone isActive role')
+      .populate('userId', 'name email phone isActive role isActivated activationTokenExpires')
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -107,7 +136,7 @@ const getAllTeachers = async (req, res, next) => {
 const getTeacherById = async (req, res, next) => {
   try {
     const teacher = await Teacher.findById(req.params.id)
-      .populate('userId', 'name email phone isActive role');
+      .populate('userId', 'name email phone isActive role isActivated activationTokenExpires');
 
     if (!teacher) {
       return res.status(404).json({
@@ -194,7 +223,7 @@ const updateTeacher = async (req, res, next) => {
     if (baseSalary !== undefined) teacher.baseSalary = baseSalary;
 
     const updatedTeacher = await teacher.save();
-    const populated = await updatedTeacher.populate('userId', 'name email phone isActive role');
+    const populated = await updatedTeacher.populate('userId', 'name email phone isActive role isActivated activationTokenExpires');
 
     return res.status(200).json({
       success: true,
@@ -273,6 +302,71 @@ const getMyClassSection = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Resend invitation to a teacher (Admin Only)
+ * @route   PATCH /api/teachers/:id/resend-invitation
+ * @access  Private (Admin)
+ */
+const resendInvitation = async (req, res, next) => {
+  try {
+    const teacher = await Teacher.findById(req.params.id).populate('userId');
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Teacher profile not found',
+      });
+    }
+
+    const user = teacher.userId;
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Associated User account not found',
+      });
+    }
+
+    if (user.isActivated) {
+      return res.status(400).json({
+        success: false,
+        data: null,
+        message: "This teacher's account is already active",
+      });
+    }
+
+    // Generate a NEW activation token (invalidates the old link)
+    const tokenData = generateActivationToken();
+
+    user.activationTokenHash = tokenData.tokenHash;
+    user.activationTokenExpires = tokenData.expiresAt;
+    await user.save();
+
+    // Send invitation email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
+    
+    try {
+      await sendTeacherInvitationEmail(user.email, user.name, activationLink);
+    } catch (mailErr) {
+      console.error('Failed to send teacher invitation email during resend:', mailErr);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: 'Teacher record updated but invitation email failed to send. Try again.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: null,
+      message: 'Invitation email resent successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createTeacher,
   getAllTeachers,
@@ -280,4 +374,5 @@ module.exports = {
   updateTeacher,
   deleteTeacher,
   getMyClassSection,
+  resendInvitation,
 };

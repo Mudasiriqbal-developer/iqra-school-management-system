@@ -1,9 +1,11 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
+const { check, param, validationResult } = require('express-validator');
 const {
   registerUser,
   loginUser,
   getCurrentUser,
+  validateActivationToken,
+  activateAccount,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -75,5 +77,34 @@ router.post(
  * @access  Private
  */
 router.get('/me', protect, getCurrentUser);
+
+/**
+ * @route   GET /api/auth/activate/:token
+ * @desc    Validate activation token
+ * @access  Public
+ */
+router.get(
+  '/activate/:token',
+  [
+    param('token', 'Token is required').notEmpty(),
+  ],
+  validateRequest,
+  validateActivationToken
+);
+
+/**
+ * @route   POST /api/auth/activate/:token
+ * @desc    Activate account and set password
+ * @access  Public
+ */
+router.post(
+  '/activate/:token',
+  [
+    param('token', 'Token is required').notEmpty(),
+    check('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
+  ],
+  validateRequest,
+  activateAccount
+);
 
 module.exports = router;

@@ -7,6 +7,7 @@ const {
   updateTeacher,
   deleteTeacher,
   getMyClassSection,
+  resendInvitation,
 } = require('../controllers/teacherController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -48,7 +49,6 @@ router.post(
   [
     check('name', 'Name is required').trim().notEmpty(),
     check('email', 'Please include a valid email address').trim().isEmail().normalizeEmail(),
-    check('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
     check('employeeId', 'Employee ID is required').trim().notEmpty(),
     check('qualification', 'Qualification must be a string').optional().trim(),
     check('phone', 'Phone must be a string').optional().trim(),
@@ -86,5 +86,12 @@ router.put(
  * @access  Private (Admin Only)
  */
 router.delete('/:id', authorize('admin'), deleteTeacher);
+
+/**
+ * @route   PATCH /api/teachers/:id/resend-invitation
+ * @desc    Resend activation email to a teacher
+ * @access  Private (Admin Only)
+ */
+router.patch('/:id/resend-invitation', authorize('admin'), resendInvitation);
 
 module.exports = router;
