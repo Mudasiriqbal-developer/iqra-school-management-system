@@ -21,20 +21,20 @@ export const getStudentsByClassSection = async (classId, sectionId) => {
 };
 
 /**
- * Fetch existing attendance record for a class/section/subject/date.
+ * Fetch existing attendance record for a class/section/date.
  * GET /api/attendance
  * Falls back to localStorage mock if the endpoint doesn't exist (404/network errors).
  */
-export const getExistingAttendance = async (classId, sectionId, subjectId, date) => {
+export const getExistingAttendance = async (classId, sectionId, date) => {
   try {
     const response = await api.get('/attendance', {
-      params: { classId, sectionId, subjectId, date },
+      params: { classId, sectionId, date },
     });
     return response.data;
   } catch (error) {
     // If endpoint returns 404 or any error, fall back to local storage mock
     console.warn('Backend /api/attendance not fully configured. Using LocalStorage fallback.');
-    const key = `attendance_${classId}_${sectionId}_${subjectId}_${date}`;
+    const key = `attendance_${classId}_${sectionId}_${date}`;
     const localData = localStorage.getItem(key);
     if (localData) {
       return { success: true, data: JSON.parse(localData) };
@@ -54,13 +54,12 @@ export const submitAttendance = async (data) => {
     return response.data;
   } catch (error) {
     console.warn('Backend /api/attendance not fully configured. Saving to LocalStorage fallback.');
-    const { classId, sectionId, subjectId, date, records } = data;
-    const key = `attendance_${classId}_${sectionId}_${subjectId}_${date}`;
+    const { classId, sectionId, date, records } = data;
+    const key = `attendance_${classId}_${sectionId}_${date}`;
     const mockRecord = {
       _id: `mock_${Date.now()}`,
       classId,
       sectionId,
-      subjectId,
       date,
       records: records.map((r) => ({
         studentId: r.studentId,
@@ -73,3 +72,13 @@ export const submitAttendance = async (data) => {
     return { success: true, data: mockRecord, message: 'Attendance saved locally (fallback)' };
   }
 };
+
+/**
+ * Fetch the homeroom section where the logged-in teacher is the class teacher.
+ * GET /api/teachers/my-class
+ */
+export const getMyClassSection = async () => {
+  const response = await api.get('/teachers/my-class');
+  return response.data;
+};
+

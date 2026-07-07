@@ -19,7 +19,7 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import { useAuth } from '../context/AuthContext';
 import {
-  getMyAssignments,
+  getMyClassSection,
   getStudentsByClassSection,
   getExistingAttendance,
   submitAttendance,
@@ -38,7 +38,7 @@ const TeacherAttendance = () => {
   ];
 
   // Core States
-  const [assignments, setAssignments] = useState([]);
+  const [myClassSection, setMyClassSection] = useState(null);
   const [students, setStudents] = useState([]);
   const [attendanceStatuses, setAttendanceStatuses] = useState({}); // { studentId: status }
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -46,62 +46,39 @@ const TeacherAttendance = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // Parse active parameters from URL search params
-  const activeClassId = searchParams.get('classId') || '';
-  const activeSectionId = searchParams.get('sectionId') || '';
-  const activeSubjectId = searchParams.get('subjectId') || '';
-  
   // Date parameter (defaults to today YYYY-MM-DD)
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
   const activeDate = searchParams.get('date') || todayStr;
 
-  // Load all assignments on mount
+  // Load class section on mount
   useEffect(() => {
-    const fetchAssignments = async () => {
+    const fetchClassSection = async () => {
       try {
         setIsPageLoading(true);
         setError(null);
-        const res = await getMyAssignments();
+        const res = await getMyClassSection();
         if (res.success) {
-          setAssignments(res.data || []);
-          
-          // If no active parameters in URL, auto-select the first assignment
-          if (res.data && res.data.length > 0 && (!activeClassId || !activeSectionId || !activeSubjectId)) {
-            const first = res.data[0];
-            setSearchParams({
-              classId: first.classId._id,
-              sectionId: first.sectionId._id,
-              subjectId: first.subjectId._id,
-              date: activeDate,
-            }, { replace: true });
-          }
+          setMyClassSection(res.data || null);
         } else {
-          throw new Error(res.message || 'Failed to retrieve assignments.');
+          throw new Error(res.message || 'Failed to retrieve class details.');
         }
       } catch (err) {
-        console.error('Error loading assignments:', err);
-        setError(err.message || 'Could not load your assigned classes. Please try again.');
+        console.error('Error loading class section:', err);
+        setError(err.message || 'Could not load class assignment. Please try again.');
       } finally {
         setIsPageLoading(false);
       }
     };
 
-    fetchAssignments();
-  }, [setSearchParams, activeClassId, activeSectionId, activeSubjectId, activeDate]);
-
-  // Find the selected assignment metadata from list
-  const activeAssignment = useMemo(() => {
-    return assignments.find(
-      (asg) =>
-        asg.classId._id === activeClassId &&
-        asg.sectionId._id === activeSectionId &&
-        asg.subjectId._id === activeSubjectId
-    );
-  }, [assignments, activeClassId, activeSectionId, activeSubjectId]);
+    fetchClassSection();
+  }, []);
 
   // Load student roster and existing attendance when assignment or date changes
   useEffect(() => {
-    if (!activeClassId || !activeSectionId || !activeSubjectId) return;
+    if (!myClassSection) return;
+
+    const classId = myClassSection.classId?._id;
+    const sectionId = myClassSection._id;
 
     const loadRosterAndAttendance = async () => {
       try {
@@ -110,8 +87,8 @@ const TeacherAttendance = () => {
 
         // Fetch students and existing attendance in parallel
         const [studentsRes, attendanceRes] = await Promise.all([
-          getStudentsByClassSection(activeClassId, activeSectionId),
-          getExistingAttendance(activeClassId, activeSectionId, activeSubjectId, activeDate),
+          getStudentsByClassSection(classId, sectionId),
+          getExistingAttendance(classId, sectionId, activeDate),
         ]);
 
         let roster = [];
@@ -130,7 +107,6 @@ const TeacherAttendance = () => {
 
         if (attendanceRes.success && attendanceRes.data && attendanceRes.data.records) {
           attendanceRes.data.records.forEach((record) => {
-            // Statuses: 'present' | 'absent' | 'late' | 'excused' (Leave maps to excused)
             statusMap[record.studentId] = record.status;
           });
         }
@@ -145,7 +121,7 @@ const TeacherAttendance = () => {
     };
 
     loadRosterAndAttendance();
-  }, [activeClassId, activeSectionId, activeSubjectId, activeDate]);
+  }, [myClassSection, activeDate]);
 
   // Calculate live statistics
   const stats = useMemo(() => {
@@ -169,19 +145,6 @@ const TeacherAttendance = () => {
   }, [students, attendanceStatuses]);
 
   // Event handlers
-  const handleAssignmentChange = (e) => {
-    const selectedIndex = e.target.value;
-    if (selectedIndex === '') return;
-
-    const selected = assignments[selectedIndex];
-    setSearchParams({
-      classId: selected.classId._id,
-      sectionId: selected.sectionId._id,
-      subjectId: selected.subjectId._id,
-      date: activeDate,
-    });
-  };
-
   const handleDateChange = (e) => {
     const selectedDate = e.target.value;
     // Prevent future dates
@@ -190,9 +153,6 @@ const TeacherAttendance = () => {
       return;
     }
     setSearchParams({
-      classId: activeClassId,
-      sectionId: activeSectionId,
-      subjectId: activeSubjectId,
       date: selectedDate,
     });
   };
@@ -227,9 +187,8 @@ const TeacherAttendance = () => {
       }));
 
       const payload = {
-        classId: activeClassId,
-        sectionId: activeSectionId,
-        subjectId: activeSubjectId,
+        classId: myClassSection.classId?._id,
+        sectionId: myClassSection._id,
         date: activeDate,
         records,
       };
@@ -296,28 +255,11 @@ const TeacherAttendance = () => {
           </div>
 
           {/* Selector / Date Controls */}
-          {!isPageLoading && assignments.length > 0 && (
+          {!isPageLoading && myClassSection && (
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 w-full lg:w-auto">
-              <div className="flex-1 sm:w-64">
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
-                  Active Class Assignment
-                </label>
-                <select
-                  value={assignments.findIndex(
-                    (asg) =>
-                      asg.classId._id === activeClassId &&
-                      asg.sectionId._id === activeSectionId &&
-                      asg.subjectId._id === activeSubjectId
-                  )}
-                  onChange={handleAssignmentChange}
-                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-semibold text-navy-950 focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 shadow-sm"
-                >
-                  {assignments.map((asg, idx) => (
-                    <option key={asg._id} value={idx}>
-                      {asg.classId.name} - {asg.sectionId.name} ({asg.subjectId.name})
-                    </option>
-                  ))}
-                </select>
+              <div className="flex-grow flex items-center bg-gray-50 border border-gray-200/50 rounded-xl px-4 py-2 text-xs font-semibold text-navy-950 shadow-sm min-w-[200px]">
+                <span className="text-gray-500 mr-2 font-bold uppercase tracking-wider text-[10px]">Homeroom:</span>
+                {myClassSection.classId?.name} - {myClassSection.name}
               </div>
 
               <div>
@@ -354,12 +296,12 @@ const TeacherAttendance = () => {
               <div key={i} className="bg-white p-6 rounded-2xl border border-gray-200/60 h-32" />
             ))}
           </div>
-        ) : assignments.length === 0 ? (
-          <div className="bg-white border border-gray-200/60 rounded-2xl p-12 text-center max-w-lg mx-auto">
+        ) : !myClassSection ? (
+          <div className="bg-white border border-gray-200/60 rounded-2xl p-12 text-center max-w-lg mx-auto shadow-sm">
             <Users className="mx-auto h-12 w-12 text-gray-300" />
-            <h3 className="mt-4 text-lg font-bold text-navy-950">No Classes Assigned</h3>
+            <h3 className="mt-4 text-lg font-bold text-navy-950">Not Assigned as Class Teacher</h3>
             <p className="mt-2 text-sm text-gray-500">
-              You are not currently assigned to any classes, sections, or subjects. Please contact the administrator.
+              You are not assigned as a Class Teacher for any section. Please contact the administrator to assign you.
             </p>
           </div>
         ) : (
@@ -395,11 +337,10 @@ const TeacherAttendance = () => {
               <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
                 <div>
                   <h2 className="text-lg font-bold text-navy-950">
-                    Student Roster - {activeAssignment?.classId.name || 'Class'} (Section{' '}
-                    {activeAssignment?.sectionId.name || 'Section'})
+                    Student Roster - {myClassSection.classId?.name} (Section {myClassSection.name})
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    Subject: {activeAssignment?.subjectId.name || 'Subject'} | Date: {activeDate}
+                    Date: {activeDate}
                   </p>
                 </div>
                 {!isStudentsLoading && students.length > 0 && (

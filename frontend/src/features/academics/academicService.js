@@ -68,3 +68,17 @@ export const deleteSubject = async (id) => {
   const response = await api.delete(`/subjects/${id}`);
   return response.data;
 };
+
+/**
+ * Class Teacher API Calls
+ */
+export const assignClassTeacher = async (sectionId, teacherId) => {
+  const response = await api.put(`/sections/${sectionId}/class-teacher`, { teacherId });
+  return response.data;
+};
+
+export const unassignClassTeacher = async (sectionId) => {
+  const response = await api.delete(`/sections/${sectionId}/class-teacher`);
+  return response.data;
+};
+

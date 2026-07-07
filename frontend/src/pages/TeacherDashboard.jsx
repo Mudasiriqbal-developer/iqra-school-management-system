@@ -15,7 +15,7 @@ import {
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import { useAuth } from '../context/AuthContext';
-import { getMyAssignments } from '../features/attendance/attendanceService';
+import { getMyAssignments, getMyClassSection } from '../features/attendance/attendanceService';
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
@@ -30,30 +30,41 @@ const TeacherDashboard = () => {
 
   // Component States
   const [assignments, setAssignments] = useState([]);
+  const [myClassSection, setMyClassSection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load teacher assignments on mount
+  // Load teacher assignments & class teacher homeroom on mount
   useEffect(() => {
-    const fetchAssignments = async () => {
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await getMyAssignments();
-        if (res.success) {
-          setAssignments(res.data || []);
+        const [asgRes, myClassRes] = await Promise.all([
+          getMyAssignments(),
+          getMyClassSection()
+        ]);
+
+        if (asgRes.success) {
+          setAssignments(asgRes.data || []);
         } else {
-          throw new Error(res.message || 'Failed to retrieve assignments.');
+          throw new Error(asgRes.message || 'Failed to retrieve assignments.');
+        }
+
+        if (myClassRes.success) {
+          setMyClassSection(myClassRes.data);
+        } else {
+          throw new Error(myClassRes.message || 'Failed to retrieve homeroom class.');
         }
       } catch (err) {
-        console.error('Error fetching teacher assignments:', err);
-        setError(err.message || 'Could not load your assigned classes. Please try again.');
+        console.error('Error fetching teacher dashboard data:', err);
+        setError(err.message || 'Could not load dashboard resources. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAssignments();
+    fetchDashboardData();
   }, []);
 
   // Compute dynamic stats
@@ -83,10 +94,8 @@ const TeacherDashboard = () => {
   }, [assignments]);
 
   // Navigate to mark attendance screen
-  const handleMarkAttendance = (asg) => {
-    navigate(
-      `/teacher/attendance?classId=${asg.classId._id}&sectionId=${asg.sectionId._id}&subjectId=${asg.subjectId._id}`
-    );
+  const handleMarkAttendance = () => {
+    navigate('/teacher/attendance');
   };
 
   return (
@@ -134,78 +143,109 @@ const TeacherDashboard = () => {
           </div>
         )}
 
-        {/* My Classes Table / List */}
-        <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        {/* Class Teacher Section & Subjects You Teach */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Homeroom Assignment Card */}
+          <div className="md:col-span-1 bg-white p-6 rounded-2xl border border-gray-200/60 shadow-sm flex flex-col justify-between min-h-[220px]">
             <div>
-              <h2 className="text-lg font-bold text-navy-950">My Classes & Rosters</h2>
-              <p className="text-xs text-gray-400 mt-0.5">
-                List of your assigned classes, sections, and subjects. Select a row to mark attendance.
-              </p>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Homeroom Assignment</span>
+              {loading ? (
+                <div className="py-8 text-center animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                </div>
+              ) : !myClassSection ? (
+                <div className="mt-4 flex flex-col items-center text-center space-y-2">
+                  <AlertCircle className="h-10 w-10 text-amber-500" />
+                  <p className="text-sm font-bold text-navy-950">No Homeroom Class</p>
+                  <p className="text-xs text-gray-500">
+                    You are not currently assigned as a Class Teacher. Contact your admin if you believe this is incorrect.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-4 space-y-2">
+                  <h3 className="text-xl font-black text-navy-950">
+                    {myClassSection.classId?.name} - {myClassSection.name}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    You are the designated Class Teacher for this homeroom section.
+                  </p>
+                </div>
+              )}
             </div>
+            
+            {!loading && myClassSection && (
+              <button
+                onClick={handleMarkAttendance}
+                className="mt-6 w-full bg-navy-900 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-navy-800 transition-colors shadow-sm text-sm"
+              >
+                <span>Mark Attendance</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
-          {loading ? (
-            <div className="p-12 text-center">
-              <RefreshCw className="animate-spin h-8 w-8 text-navy-800 mx-auto" />
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-3">
-                Fetching assigned classes...
-              </p>
+          {/* Subjects You Teach (Informational) */}
+          <div className="md:col-span-2 bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="p-6 border-b border-gray-100">
+                <h2 className="text-lg font-bold text-navy-950">Subjects You Teach</h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  An overview of the classes, sections, and subjects mapped to your account.
+                </p>
+              </div>
+
+              {loading ? (
+                <div className="p-12 text-center">
+                  <RefreshCw className="animate-spin h-8 w-8 text-navy-800 mx-auto" />
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-3">
+                    Fetching teaching assignments...
+                  </p>
+                </div>
+              ) : assignments.length === 0 ? (
+                <div className="p-12 text-center max-w-md mx-auto">
+                  <BookOpen className="mx-auto h-10 w-10 text-gray-300" />
+                  <h3 className="mt-4 text-sm font-bold text-navy-950">No Subjects Assigned</h3>
+                  <p className="mt-2 text-xs text-gray-500">
+                    You are not assigned to teach any subjects.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Class Name
+                        </th>
+                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Section
+                        </th>
+                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Subject
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {assignments.map((asg) => (
+                        <tr key={asg._id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="py-3.5 px-6 text-sm font-bold text-navy-950">
+                            {asg.classId?.name}
+                          </td>
+                          <td className="py-3.5 px-6 text-sm font-semibold text-gray-600">
+                            {asg.sectionId?.name}
+                          </td>
+                          <td className="py-3.5 px-6 text-sm text-gray-600 font-medium">
+                            {asg.subjectId?.name}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          ) : assignments.length === 0 ? (
-            <div className="p-12 text-center max-w-md mx-auto">
-              <Users className="mx-auto h-12 w-12 text-gray-300" />
-              <h3 className="mt-4 text-base font-bold text-navy-950">No Classes Assigned</h3>
-              <p className="mt-2 text-xs text-gray-500">
-                You have no assigned classes yet. Please contact your admin to map classes to your profile.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Class Name
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Section
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Subject
-                    </th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {assignments.map((asg) => (
-                    <tr key={asg._id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4 px-6 text-sm font-bold text-navy-950">
-                        {asg.classId.name}
-                      </td>
-                      <td className="py-4 px-6 text-sm font-semibold text-gray-600">
-                        {asg.sectionId.name}
-                      </td>
-                      <td className="py-4 px-6 text-sm text-gray-600 font-medium">
-                        {asg.subjectId.name}
-                      </td>
-                      <td className="py-4 px-6 text-sm text-right">
-                        <button
-                          onClick={() => handleMarkAttendance(asg)}
-                          className="bg-navy-900 text-white font-bold py-2 px-4 rounded-xl flex items-center space-x-1.5 hover:bg-navy-800 transition-colors shadow-sm text-xs ml-auto"
-                        >
-                          <span>Mark Attendance</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </DashboardLayout>

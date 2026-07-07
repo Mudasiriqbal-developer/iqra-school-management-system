@@ -10,7 +10,7 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getClasses, getSectionsByClass, getSubjectsByClass } from '../features/academics/academicService';
+import { getClasses, getSectionsByClass } from '../features/academics/academicService';
 import { getAttendanceByFilters } from '../features/attendance/adminAttendanceService';
 import StudentAttendanceHistoryModal from '../features/attendance/StudentAttendanceHistoryModal';
 
@@ -35,12 +35,10 @@ const AdminAttendance = () => {
   // Cascading lists states
   const [classesList, setClassesList] = useState([]);
   const [sectionsList, setSectionsList] = useState([]);
-  const [subjectsList, setSubjectsList] = useState([]);
 
   // Selected filters states
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
-  const [subjectId, setSubjectId] = useState('');
   const [date, setDate] = useState(todayStr);
 
   // Data states
@@ -76,23 +74,18 @@ const AdminAttendance = () => {
     fetchClasses();
   }, []);
 
-  // 2. Fetch sections and subjects when classId changes
+  // 2. Fetch sections when classId changes
   useEffect(() => {
-    const fetchSectionsAndSubjects = async () => {
+    const fetchSections = async () => {
       if (!classId) {
         setSectionsList([]);
-        setSubjectsList([]);
         setSectionId('');
-        setSubjectId('');
         return;
       }
 
       try {
         setLoadingFilters(true);
-        const [sectionsRes, subjectsRes] = await Promise.all([
-          getSectionsByClass(classId),
-          getSubjectsByClass(classId)
-        ]);
+        const sectionsRes = await getSectionsByClass(classId);
 
         if (sectionsRes.success) {
           const rawSections = sectionsRes.data || [];
@@ -110,39 +103,22 @@ const AdminAttendance = () => {
           setSectionsList(filtered);
         }
 
-        if (subjectsRes.success) {
-          const rawSubjects = subjectsRes.data || [];
-          const filtered = rawSubjects.filter(sub => {
-            const subClassId = sub.classId?._id || sub.classId;
-            return subClassId === classId;
-          });
-          setSubjectsList(filtered);
-        } else {
-          const rawSubjects = Array.isArray(subjectsRes) ? subjectsRes : [];
-          const filtered = rawSubjects.filter(sub => {
-            const subClassId = sub.classId?._id || sub.classId;
-            return subClassId === classId;
-          });
-          setSubjectsList(filtered);
-        }
-
         // Reset sub-selections
         setSectionId('');
-        setSubjectId('');
       } catch (err) {
-        console.error('Error fetching sections/subjects:', err);
-        toast.error('Failed to load sections or subjects');
+        console.error('Error fetching sections:', err);
+        toast.error('Failed to load sections');
       } finally {
         setLoadingFilters(false);
       }
     };
 
-    fetchSectionsAndSubjects();
+    fetchSections();
   }, [classId]);
 
-  // 3. Fetch attendance record based on selected class, section, subject, date
+  // 3. Fetch attendance record based on selected class, section, date
   const fetchAttendance = async () => {
-    if (!classId || !sectionId || !subjectId || !date) {
+    if (!classId || !sectionId || !date) {
       setAttendanceRecord(null);
       return;
     }
@@ -152,14 +128,14 @@ const AdminAttendance = () => {
       setError(null);
       
       console.log('--- ADMIN ATTENDANCE DEBUG ---');
-      console.log('Selected filters:', { classId, sectionId, subjectId, date });
-      const expectedKey = `attendance_${classId}_${sectionId}_${subjectId}_${date}`;
+      console.log('Selected filters:', { classId, sectionId, date });
+      const expectedKey = `attendance_${classId}_${sectionId}_${date}`;
       console.log('Expected key in localStorage:', expectedKey);
       console.log('Value in localStorage:', localStorage.getItem(expectedKey));
       console.log('All localStorage keys starting with "attendance_":', Object.keys(localStorage).filter(k => k.startsWith('attendance_')));
       console.log('------------------------------');
 
-      const params = { classId, sectionId, subjectId, date };
+      const params = { classId, sectionId, date };
       const res = await getAttendanceByFilters(params);
       
       if (res.success) {
@@ -187,7 +163,7 @@ const AdminAttendance = () => {
   // Trigger fetch when any main filter updates
   useEffect(() => {
     fetchAttendance();
-  }, [classId, sectionId, subjectId, date]);
+  }, [classId, sectionId, date]);
 
   // Prevent selecting future date
   const handleDateChange = (e) => {
@@ -282,7 +258,7 @@ const AdminAttendance = () => {
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-gray-200/60 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+        <div className="bg-white p-4 rounded-2xl border border-gray-200/60 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
           {/* Class Select */}
           <div>
             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
@@ -315,24 +291,6 @@ const AdminAttendance = () => {
               <option value="">Select Section</option>
               {sectionsList.map(sec => (
                 <option key={sec._id} value={sec._id}>{sec.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Subject Select */}
-          <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Subject
-            </label>
-            <select
-              value={subjectId}
-              onChange={(e) => setSubjectId(e.target.value)}
-              className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-navy-950 focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-              disabled={!classId || loadingFilters}
-            >
-              <option value="">Select Subject</option>
-              {subjectsList.map(sub => (
-                <option key={sub._id} value={sub._id}>{sub.name}</option>
               ))}
             </select>
           </div>
@@ -371,13 +329,13 @@ const AdminAttendance = () => {
               Loading attendance data...
             </p>
           </div>
-        ) : !classId || !sectionId || !subjectId ? (
+        ) : !classId || !sectionId ? (
           // Filters Incomplete Screen
           <div className="bg-white border border-gray-200/60 rounded-2xl p-16 text-center max-w-lg mx-auto shadow-sm">
             <Calendar className="mx-auto h-12 w-12 text-gray-300" />
             <h3 className="mt-4 text-base font-bold text-navy-950">Select Filters</h3>
             <p className="mt-2 text-xs text-gray-500 max-w-xs mx-auto">
-              Please choose a class, section, and subject above to load the registered student roster and view daily attendance.
+              Please choose a class and section above to load the registered student roster and view daily attendance.
             </p>
           </div>
         ) : !attendanceRecord ? (
@@ -386,7 +344,7 @@ const AdminAttendance = () => {
             <CalendarCheck className="mx-auto h-12 w-12 text-gray-300" />
             <h3 className="mt-4 text-base font-bold text-navy-950">No Records Found</h3>
             <p className="mt-2 text-xs text-gray-500 max-w-xs mx-auto">
-              No attendance marked for this class/subject on this date yet.
+              No attendance marked for this class/section on this date yet.
             </p>
           </div>
         ) : (
@@ -434,7 +392,7 @@ const AdminAttendance = () => {
                     Roster Attendance Details
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    Class: {attendanceRecord.classId?.name} | Section: {attendanceRecord.sectionId?.name} | Subject: {attendanceRecord.subjectId?.name}
+                    Class: {attendanceRecord.classId?.name} | Section: {attendanceRecord.sectionId?.name}
                   </p>
                 </div>
               </div>

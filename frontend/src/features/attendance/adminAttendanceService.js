@@ -12,12 +12,12 @@ export const getAttendanceByFilters = async (params) => {
   } catch (error) {
     console.warn('Backend /api/attendance endpoint not found or failed. Using LocalStorage fallback.');
     
-    const { classId, sectionId, subjectId, date } = params;
-    if (!classId || !sectionId || !subjectId || !date) {
+    const { classId, sectionId, date } = params;
+    if (!classId || !sectionId || !date) {
       return { success: true, data: [] };
     }
 
-    const key = `attendance_${classId}_${sectionId}_${subjectId}_${date}`;
+    const key = `attendance_${classId}_${sectionId}_${date}`;
     const localData = localStorage.getItem(key);
     if (!localData) {
       console.warn(`LocalStorage fallback: key "${key}" not found in localStorage.`);
@@ -27,12 +27,11 @@ export const getAttendanceByFilters = async (params) => {
     try {
       const mockRecord = JSON.parse(localData);
 
-      // Fetch student roster, class, section, and subject info in parallel to build populated shape
-      const [studentsRes, classesRes, sectionsRes, subjectsRes] = await Promise.allSettled([
+      // Fetch student roster, class, and section info in parallel to build populated shape
+      const [studentsRes, classesRes, sectionsRes] = await Promise.allSettled([
         api.get('/students', { params: { classId, sectionId, limit: 200 } }),
         api.get('/classes'),
         api.get('/sections', { params: { classId } }),
-        api.get('/subjects', { params: { classId } })
       ]);
 
       // Resolve names
@@ -46,12 +45,6 @@ export const getAttendanceByFilters = async (params) => {
       if (sectionsRes.status === 'fulfilled' && sectionsRes.value.data?.success) {
         const sec = sectionsRes.value.data.data.find(s => s._id === sectionId);
         if (sec) sectionName = sec.name;
-      }
-
-      let subjectName = 'Subject';
-      if (subjectsRes.status === 'fulfilled' && subjectsRes.value.data?.success) {
-        const sub = subjectsRes.value.data.data.find(s => s._id === subjectId);
-        if (sub) subjectName = sub.name;
       }
 
       // Map records to include student details
@@ -79,7 +72,6 @@ export const getAttendanceByFilters = async (params) => {
           _id: mockRecord._id,
           classId: { _id: classId, name: className },
           sectionId: { _id: sectionId, name: sectionName },
-          subjectId: { _id: subjectId, name: subjectName },
           teacherId: { userId: { name: 'Teacher (Mock)' } },
           date: mockRecord.date,
           records: populatedRecords,
