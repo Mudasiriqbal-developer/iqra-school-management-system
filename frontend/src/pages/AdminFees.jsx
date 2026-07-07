@@ -5,6 +5,7 @@ import {
   Award,
   BookOpen,
   Calendar,
+  CalendarCheck,
   BarChart3,
   Wallet,
   Plus,
@@ -44,7 +45,7 @@ const AdminFees = () => {
     { label: 'Faculty', icon: Award, path: '/admin/teachers' },
     { label: 'Academic Structure', icon: BookOpen, path: '/admin/academics' },
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
-    { label: 'Attendance', icon: Calendar, path: '/admin/attendance' },
+    { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];
 
