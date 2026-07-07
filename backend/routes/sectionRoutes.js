@@ -6,6 +6,8 @@ const {
   getSectionById,
   updateSection,
   deleteSection,
+  assignClassTeacher,
+  unassignClassTeacher,
 } = require('../controllers/sectionController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -66,5 +68,31 @@ router.put(
  * @access  Private (Admin)
  */
 router.delete('/:id', authorize('admin'), deleteSection);
+
+/**
+ * @route   PUT /api/sections/:id/class-teacher
+ * @desc    Assign class teacher to section
+ * @access  Private (Admin)
+ */
+router.put(
+  '/:id/class-teacher',
+  authorize('admin'),
+  [
+    check('teacherId', 'Valid Teacher ID is required').isMongoId(),
+  ],
+  validateRequest,
+  assignClassTeacher
+);
+
+/**
+ * @route   DELETE /api/sections/:id/class-teacher
+ * @desc    Unassign class teacher from section
+ * @access  Private (Admin)
+ */
+router.delete(
+  '/:id/class-teacher',
+  authorize('admin'),
+  unassignClassTeacher
+);
 
 module.exports = router;

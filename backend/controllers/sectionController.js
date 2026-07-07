@@ -192,10 +192,101 @@ const deleteSection = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Assign class teacher to section
+ * @route   PUT /api/sections/:id/class-teacher
+ * @access  Private (Admin)
+ */
+const assignClassTeacher = async (req, res, next) => {
+  try {
+    const { teacherId } = req.body;
+
+    const section = await Section.findById(req.params.id);
+    if (!section) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Section not found',
+      });
+    }
+
+    // Check if this teacherId is already classTeacherId of a DIFFERENT section
+    const otherSection = await Section.findOne({
+      classTeacherId: teacherId,
+      _id: { $ne: req.params.id },
+    }).populate('classId');
+
+    if (otherSection) {
+      const className = otherSection.classId ? otherSection.classId.name : 'Unknown Class';
+      return res.status(409).json({
+        success: false,
+        data: null,
+        message: `This teacher is already the Class Teacher of ${className}/${otherSection.name}. Unassign them first.`,
+      });
+    }
+
+    section.classTeacherId = teacherId;
+    await section.save();
+
+    // Populate classTeacherId -> userId -> name
+    const populated = await Section.findById(section._id)
+      .populate({
+        path: 'classTeacherId',
+        populate: {
+          path: 'userId',
+          select: 'name',
+        },
+      })
+      .populate('classId', 'name');
+
+    return res.status(200).json({
+      success: true,
+      data: populated,
+      message: 'Class teacher assigned successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Unassign class teacher from section
+ * @route   DELETE /api/sections/:id/class-teacher
+ * @access  Private (Admin)
+ */
+const unassignClassTeacher = async (req, res, next) => {
+  try {
+    const section = await Section.findById(req.params.id);
+    if (!section) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Section not found',
+      });
+    }
+
+    section.classTeacherId = undefined;
+    await section.save();
+
+    const populated = await Section.findById(section._id)
+      .populate('classId', 'name');
+
+    return res.status(200).json({
+      success: true,
+      data: populated,
+      message: 'Class teacher unassigned successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSection,
   getAllSections,
   getSectionById,
   updateSection,
   deleteSection,
+  assignClassTeacher,
+  unassignClassTeacher,
 };

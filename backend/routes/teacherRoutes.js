@@ -6,29 +6,36 @@ const {
   getTeacherById,
   updateTeacher,
   deleteTeacher,
+  getMyClassSection,
 } = require('../controllers/teacherController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
 
 const router = express.Router();
 
-// All routes require authentication and admin authority
+// All routes require authentication
 router.use(protect);
-router.use(authorize('admin'));
+
+/**
+ * @route   GET /api/teachers/my-class
+ * @desc    Get the section where the teacher is class teacher
+ * @access  Private (Teacher Only)
+ */
+router.get('/my-class', authorize('teacher'), getMyClassSection);
 
 /**
  * @route   GET /api/teachers
  * @desc    Get all teachers
  * @access  Private (Admin Only)
  */
-router.get('/', getAllTeachers);
+router.get('/', authorize('admin'), getAllTeachers);
 
 /**
  * @route   GET /api/teachers/:id
  * @desc    Get teacher by ID
  * @access  Private (Admin Only)
  */
-router.get('/:id', getTeacherById);
+router.get('/:id', authorize('admin'), getTeacherById);
 
 /**
  * @route   POST /api/teachers
@@ -37,6 +44,7 @@ router.get('/:id', getTeacherById);
  */
 router.post(
   '/',
+  authorize('admin'),
   [
     check('name', 'Name is required').trim().notEmpty(),
     check('email', 'Please include a valid email address').trim().isEmail().normalizeEmail(),
@@ -58,6 +66,7 @@ router.post(
  */
 router.put(
   '/:id',
+  authorize('admin'),
   [
     check('name', 'Name cannot be empty').optional().trim().notEmpty(),
     check('email', 'Please include a valid email address').optional().trim().isEmail().normalizeEmail(),
@@ -76,6 +85,6 @@ router.put(
  * @desc    Delete (soft delete) a teacher
  * @access  Private (Admin Only)
  */
-router.delete('/:id', deleteTeacher);
+router.delete('/:id', authorize('admin'), deleteTeacher);
 
 module.exports = router;

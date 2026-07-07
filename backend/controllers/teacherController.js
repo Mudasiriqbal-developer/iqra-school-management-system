@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Teacher = require('../models/Teacher');
+const Section = require('../models/Section');
 
 /**
  * @desc    Create a new teacher (and associated User login)
@@ -234,10 +235,49 @@ const deleteTeacher = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get the section where the teacher is class teacher
+ * @route   GET /api/teachers/my-class
+ * @access  Private (Teacher Only)
+ */
+const getMyClassSection = async (req, res, next) => {
+  try {
+    // 1. Resolve Teacher profile from req.user.id
+    const teacher = await Teacher.findOne({ userId: req.user.id });
+    if (!teacher) {
+      return res.status(403).json({
+        success: false,
+        data: null,
+        message: 'Forbidden: Current user is not registered as a teacher',
+      });
+    }
+
+    // 2. Find the ONE Section where classTeacherId equals this teacher's _id
+    const section = await Section.findOne({ classTeacherId: teacher._id }).populate('classId', 'name');
+
+    if (!section) {
+      return res.status(200).json({
+        success: true,
+        data: null,
+        message: 'You are not currently assigned as a Class Teacher',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: section,
+      message: 'Class section fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createTeacher,
   getAllTeachers,
   getTeacherById,
   updateTeacher,
   deleteTeacher,
+  getMyClassSection,
 };

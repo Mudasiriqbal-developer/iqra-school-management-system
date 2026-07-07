@@ -12,6 +12,10 @@ const sectionSchema = new mongoose.Schema(
       ref: 'Class',
       required: [true, 'Class ID is required'],
     },
+    classTeacherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Teacher',
+    },
   },
   {
     timestamps: true,
@@ -20,5 +24,8 @@ const sectionSchema = new mongoose.Schema(
 
 // Compound unique index on { name, classId }
 sectionSchema.index({ name: 1, classId: 1 }, { unique: true });
+
+// Sparse unique index on classTeacherId
+sectionSchema.index({ classTeacherId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Section', sectionSchema);
