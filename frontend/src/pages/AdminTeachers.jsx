@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, BookOpen, Wallet, TrendingUp, CalendarClock
+  AlertTriangle, BookOpen, Wallet, TrendingUp, CalendarClock, MailPlus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -10,7 +10,7 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getTeachers, deleteTeacher } from '../features/teachers/teacherService';
+import { getTeachers, deleteTeacher, resendInvitation } from '../features/teachers/teacherService';
 import api from '../services/api';
 import TeacherFormModal from '../features/teachers/TeacherFormModal';
 import TeacherViewDrawer from '../features/teachers/TeacherViewDrawer';
@@ -139,11 +139,41 @@ const AdminTeachers = () => {
     }
   };
 
+  const handleResendInvitation = async (teacherId) => {
+    try {
+      const res = await resendInvitation(teacherId);
+      if (res.success) {
+        toast.success('Invitation resent');
+        fetchData();
+      } else {
+        toast.error(res.message || 'Failed to resend invitation');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Server error occurred during resend');
+    }
+  };
+
   // Helper mapping helper for teacher status to StatusBadge
-  const getStatusBadgeProps = (isActive) => {
-    return isActive !== false
-      ? { status: 'active', label: 'Active' }
-      : { status: 'danger', label: 'Deactivated' };
+  const getStatusBadgeProps = (userObj) => {
+    if (!userObj) return { status: 'default', label: 'Unknown' };
+
+    if (userObj.isActive === false) {
+      return { status: 'danger', label: 'Deactivated' };
+    }
+
+    if (userObj.isActivated) {
+      return { status: 'active', label: 'Active' };
+    }
+
+    const expires = userObj.activationTokenExpires ? new Date(userObj.activationTokenExpires) : null;
+    const isExpired = expires ? expires < new Date() : true;
+
+    if (isExpired) {
+      return { status: 'danger', label: 'Invitation Expired' };
+    }
+
+    return { status: 'pending', label: 'Invitation Pending' };
   };
 
   // Helper for initials
@@ -249,7 +279,7 @@ const AdminTeachers = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {paginatedTeachers.map((teacher) => {
-                    const statusProps = getStatusBadgeProps(teacher.userId?.isActive);
+                    const statusProps = getStatusBadgeProps(teacher.userId);
                     
                     // Filter assignments for this teacher
                     const teacherAsgs = assignments.filter(
@@ -327,6 +357,15 @@ const AdminTeachers = () => {
                         {/* Action Buttons */}
                         <td className="py-4 px-6 text-sm text-right">
                           <div className="flex items-center justify-end space-x-2.5">
+                            {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                              <button
+                                onClick={() => handleResendInvitation(teacher._id)}
+                                title="Resend Activation Email"
+                                className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
+                              >
+                                <MailPlus className="h-4.5 w-4.5" />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleOpenView(teacher)}
                               title="View Profile Details"

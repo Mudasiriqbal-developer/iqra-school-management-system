@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, Mail } from 'lucide-react';
 import { createTeacher, updateTeacher } from './teacherService';
 
 const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
     employeeId: '',
     qualification: '',
     phone: '',
@@ -27,7 +26,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
         setFormData({
           name: teacher.userId?.name || '',
           email: teacher.userId?.email || '',
-          password: '', // Hidden on edit
           employeeId: teacher.employeeId || '',
           qualification: teacher.qualification || '',
           phone: teacher.userId?.phone || '',
@@ -39,7 +37,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
         setFormData({
           name: '',
           email: '',
-          password: '',
           employeeId: '',
           qualification: '',
           phone: '',
@@ -79,12 +76,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
           newErrors.email = 'Invalid email format';
         }
       }
-
-      if (!formData.password) {
-        newErrors.password = 'Password is required';
-      } else if (formData.password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
-      }
     }
 
     if (!formData.employeeId.trim()) {
@@ -123,7 +114,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
       if (teacher) {
         // Remove read-only / security fields on update
         delete payload.email;
-        delete payload.password;
         
         const res = await updateTeacher(teacher._id, payload);
         if (res.success) {
@@ -136,7 +126,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
       } else {
         const res = await createTeacher(payload);
         if (res.success) {
-          toast.success('Teacher created successfully');
+          toast.success('Teacher created — an activation email has been sent');
           onSuccess();
           onClose();
         } else {
@@ -238,30 +228,13 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
               {errors.email && (
                 <span className="text-red-500 text-xs font-medium mt-1">{errors.email}</span>
               )}
+              {!teacher && (
+                <div className="text-gray-500 text-xs mt-1.5 flex items-center gap-1.5 font-medium">
+                  <Mail className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                  <span>An activation email will be sent to this address so the teacher can set their own password.</span>
+                </div>
+              )}
             </div>
-
-            {/* Password (Create Only) */}
-            {!teacher && (
-              <div className="flex flex-col">
-                <label htmlFor="password" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Min 6 characters"
-                  className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
-                    errors.password ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
-                  }`}
-                />
-                {errors.password && (
-                  <span className="text-red-500 text-xs font-medium mt-1">{errors.password}</span>
-                )}
-              </div>
-            )}
 
             {/* Contact Phone */}
             <div className="flex flex-col">

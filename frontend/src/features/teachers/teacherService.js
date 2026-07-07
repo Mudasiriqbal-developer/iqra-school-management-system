@@ -116,3 +116,12 @@ export const getSubjectsByClass = async (classId) => {
   }
   return response.data;
 };
+
+/**
+ * Resend the activation invitation email to a teacher.
+ * @param {string} teacherId - Teacher MongoDB ID
+ */
+export const resendInvitation = async (teacherId) => {
+  const response = await api.patch(`/teachers/${teacherId}/resend-invitation`);
+  return response.data;
+};

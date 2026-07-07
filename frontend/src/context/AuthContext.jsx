@@ -26,16 +26,19 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
+  const setSession = (userData, userToken) => {
+    localStorage.setItem('ihass_token', userToken);
+    localStorage.setItem('ihass_user', JSON.stringify(userData));
+    setToken(userToken);
+    setUser(userData);
+  };
+
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
       const { user: userData, token: userToken } = response.data.data;
 
-      localStorage.setItem('ihass_token', userToken);
-      localStorage.setItem('ihass_user', JSON.stringify(userData));
-
-      setToken(userToken);
-      setUser(userData);
+      setSession(userData, userToken);
 
       return userData;
     } catch (error) {
@@ -48,11 +51,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/register', formData);
       const { user: userData, token: userToken } = response.data.data;
 
-      localStorage.setItem('ihass_token', userToken);
-      localStorage.setItem('ihass_user', JSON.stringify(userData));
-
-      setToken(userToken);
-      setUser(userData);
+      setSession(userData, userToken);
 
       return userData;
     } catch (error) {
@@ -69,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, setSession }}>
       {children}
     </AuthContext.Provider>
   );
