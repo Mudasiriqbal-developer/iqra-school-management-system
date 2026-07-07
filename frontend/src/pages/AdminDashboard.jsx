@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Award, BookOpen, Calendar, CalendarCheck, DollarSign, BarChart3, Plus, ArrowRight, Wallet, GraduationCap, AlertCircle, RefreshCw, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, Award, BookOpen, Calendar, CalendarCheck, DollarSign, BarChart3, Plus, ArrowRight, Wallet, GraduationCap, AlertCircle, RefreshCw, TrendingUp, CalendarClock } from 'lucide-react';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
@@ -67,6 +67,7 @@ const AdminDashboard = () => {
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
     { label: 'Expense Tracker', icon: TrendingUp, path: '/admin/expenses' },
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
+    { label: 'Leave Approvals', icon: CalendarClock, path: '/admin/leaves' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];

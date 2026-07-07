@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   BarChart3, FileSpreadsheet, FileText, Copy, Check, Users, Calendar, CalendarCheck,
   AlertTriangle, Download, Loader2, ArrowRight, LayoutDashboard, Wallet,
-  BookOpen, Award, Filter, TrendingUp, DollarSign
+  BookOpen, Award, Filter, TrendingUp, DollarSign, CalendarClock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -42,6 +42,7 @@ const AdminReports = () => {
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
     { label: 'Expense Tracker', icon: TrendingUp, path: '/admin/expenses' },
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
+    { label: 'Leave Approvals', icon: CalendarClock, path: '/admin/leaves' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];

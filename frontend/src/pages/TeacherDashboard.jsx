@@ -10,6 +10,7 @@ import {
   AlertCircle,
   RefreshCw,
   ArrowRight,
+  CalendarDays
 } from 'lucide-react';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
@@ -24,6 +25,7 @@ const TeacherDashboard = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
+    { label: 'My Leaves', icon: CalendarDays, path: '/teacher/leaves' }
   ];
 
   // Component States
