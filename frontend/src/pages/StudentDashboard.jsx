@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Calendar, Award, BookOpen, Clock, CreditCard, ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
 const StudentDashboard = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [attendance, setAttendance] = useState(null);
+
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/student-dashboard' },
     { label: 'My Schedule', icon: Calendar, path: '/student/schedule' },
@@ -20,11 +27,59 @@ const StudentDashboard = () => {
     { id: 'ASM204', subject: 'Chemistry', type: 'Monthly Unit Test', date: 'July 10, 2026', status: 'pending', label: 'Not Started' },
   ];
 
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [profileRes, attendanceRes] = await Promise.all([
+          api.get('/students/me/profile'),
+          api.get('/students/me/attendance').catch(err => {
+            console.error('Attendance error:', err);
+            return { data: { success: false } };
+          })
+        ]);
+
+        if (profileRes.data.success) {
+          setProfile(profileRes.data.data.student);
+        }
+        if (attendanceRes.data.success) {
+          setAttendance(attendanceRes.data.data.summary);
+        }
+      } catch (error) {
+        console.error('Error fetching student dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <DashboardLayout
+        navItems={navItems}
+        userName={user?.name || 'Student'}
+        userRole="Student"
+        subtitle="Student Portal"
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy-900"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const studentName = profile?.fullName || user?.name || 'Student';
+  const className = profile?.classId?.name || '';
+  const sectionName = profile?.sectionId?.name || '';
+  const displayRole = `Student (${className}${sectionName ? `-${sectionName}` : ''})`;
+
   return (
     <DashboardLayout
       navItems={navItems}
-      userName="Zainab Fatima"
-      userRole="Student (Grade 8-A)"
+      userName={studentName}
+      userRole={displayRole}
       subtitle="Student Portal"
     >
       <div className="space-y-8">
@@ -48,9 +103,9 @@ const StudentDashboard = () => {
           <StatCard
             icon={Calendar}
             label="Attendance Rate"
-            value="98.4%"
-            trend="+0.8%"
-            trendColor="active"
+            value={attendance ? `${attendance.attendanceRate}%` : '0%'}
+            trend={attendance ? `${attendance.absentDays} Absent Days` : 'N/A'}
+            trendColor={attendance?.absentDays > 0 ? 'danger' : 'active'}
           />
           <StatCard
             icon={Clock}
@@ -114,3 +169,4 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
+

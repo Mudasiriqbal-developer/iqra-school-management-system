@@ -4,6 +4,10 @@ const {
   createStudent,
   getAllStudents,
   getStudentById,
+  getMyProfile,
+  getMyAttendance,
+  getMySubjects,
+  getMyFeeHistory,
   updateStudent,
   deleteStudent,
   setFeeStructure,
@@ -30,6 +34,36 @@ router.get('/', authorize('admin', 'teacher'), getAllStudents);
  * @access  Private (Admin Only)
  */
 router.get('/fee-summary', authorize('admin'), getFeeSummaryByClass);
+
+/**
+ * @route   GET /api/students/me/profile
+ * @desc    Get the logged-in student's own profile
+ * @access  Private (Student)
+ */
+router.get('/me/profile', authorize('student'), getMyProfile);
+
+/**
+ * @route   GET /api/students/me/attendance
+ * @desc    Get the logged-in student's attendance rate and day-by-day records
+ * @query   from (ISO date, optional) - start of date range
+ * @query   to   (ISO date, optional) - end of date range
+ * @access  Private (Student)
+ */
+router.get('/me/attendance', authorize('student'), getMyAttendance);
+
+/**
+ * @route   GET /api/students/me/subjects
+ * @desc    Get subjects assigned to the logged-in student's class and section
+ * @access  Private (Student)
+ */
+router.get('/me/subjects', authorize('student'), getMySubjects);
+
+/**
+ * @route   GET /api/students/me/fees
+ * @desc    Get the logged-in student's fee summary and payment history
+ * @access  Private (Student)
+ */
+router.get('/me/fees', authorize('student'), getMyFeeHistory);
 
 /**
  * @route   GET /api/students/:id

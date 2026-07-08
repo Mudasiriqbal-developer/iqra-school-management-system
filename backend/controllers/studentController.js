@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
+const Attendance = require('../models/Attendance');
 const Class = require('../models/Class');
 const Section = require('../models/Section');
+const Subject = require('../models/Subject');
 
 /**
  * @desc    Create a new student
@@ -273,6 +275,236 @@ const getStudentById = async (req, res, next) => {
       success: true,
       data: student,
       message: 'Student fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get the logged-in student's own profile
+ * @route   GET /api/students/me/profile
+ * @access  Private (Student)
+ */
+const getMyProfile = async (req, res, next) => {
+  try {
+    // req.user is the authenticated User document (set by protect middleware)
+    const userEmail = req.user.email;
+
+    // Find Student record whose email matches the logged-in User's email
+    const student = await Student.findOne({ email: userEmail })
+      .populate('classId', 'name')
+      .populate('sectionId', 'name');
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'No student profile found linked to your account',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        student,
+        user: {
+          id: req.user._id,
+          name: req.user.name,
+          email: req.user.email,
+          role: req.user.role,
+          phone: req.user.phone,
+        },
+      },
+      message: 'Student profile fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get the logged-in student's attendance rate and records
+ * @route   GET /api/students/me/attendance
+ * @access  Private (Student)
+ */
+const getMyAttendance = async (req, res, next) => {
+  try {
+    const userEmail = req.user.email;
+
+    const student = await Student.findOne({ email: userEmail });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'No student profile found linked to your account',
+      });
+    }
+
+    // Optional date range filters via query params
+    const { from, to } = req.query;
+    const dateFilter = {};
+    if (from) dateFilter.$gte = new Date(from);
+    if (to) dateFilter.$lte = new Date(to);
+
+    // Build the match stage
+    const matchStage = {
+      classId: student.classId,
+      sectionId: student.sectionId,
+      'records.studentId': student._id,
+    };
+    if (Object.keys(dateFilter).length > 0) {
+      matchStage.date = dateFilter;
+    }
+
+    // Aggregate to pull only this student's record from each attendance doc
+    const results = await Attendance.aggregate([
+      { $match: matchStage },
+      { $unwind: '$records' },
+      { $match: { 'records.studentId': student._id } },
+      { $sort: { date: -1 } },
+      {
+        $project: {
+          _id: 0,
+          date: 1,
+          status: '$records.status',
+        },
+      },
+    ]);
+
+    // Calculate summary statistics
+    const totalDays = results.length;
+    const presentDays = results.filter(r => r.status === 'present').length;
+    const absentDays = results.filter(r => r.status === 'absent').length;
+    const lateDays = results.filter(r => r.status === 'late').length;
+    const leaveDays = results.filter(r => r.status === 'leave').length;
+    const attendanceRate = totalDays > 0
+      ? Math.round(((presentDays + lateDays) / totalDays) * 10000) / 100
+      : 0;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        summary: {
+          totalDays,
+          presentDays,
+          absentDays,
+          lateDays,
+          leaveDays,
+          attendanceRate,
+        },
+        records: results,
+      },
+      message: 'Attendance fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get subjects assigned to the logged-in student's class and section
+ * @route   GET /api/students/me/subjects
+ * @access  Private (Student)
+ */
+const getMySubjects = async (req, res, next) => {
+  try {
+    const userEmail = req.user.email;
+
+    const student = await Student.findOne({ email: userEmail })
+      .populate('classId', 'name')
+      .populate('sectionId', 'name');
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'No student profile found linked to your account',
+      });
+    }
+
+    // Find all teacher-subject assignments for the student's class + section
+    const assignments = await Assignment.find({
+      classId: student.classId._id,
+      sectionId: student.sectionId._id,
+    })
+      .populate('subjectId', 'name')
+      .populate({
+        path: 'teacherId',
+        select: 'fullName qualification',
+      });
+
+    // Map into a cleaner response shape
+    const subjects = assignments.map(a => ({
+      subjectId: a.subjectId?._id,
+      subjectName: a.subjectId?.name,
+      teacher: a.teacherId
+        ? {
+            teacherId: a.teacherId._id,
+            fullName: a.teacherId.fullName,
+            qualification: a.teacherId.qualification,
+          }
+        : null,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        class: student.classId,
+        section: student.sectionId,
+        subjects,
+      },
+      message: 'Subjects fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get the logged-in student's fee info and payment history
+ * @route   GET /api/students/me/fees
+ * @access  Private (Student)
+ */
+const getMyFeeHistory = async (req, res, next) => {
+  try {
+    const userEmail = req.user.email;
+
+    const student = await Student.findOne({ email: userEmail })
+      .populate('classId', 'name')
+      .populate('sectionId', 'name');
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'No student profile found linked to your account',
+      });
+    }
+
+    const feeInfo = student.feeInfo || {
+      amountDue: 0,
+      amountPaid: 0,
+      status: 'pending',
+      dueDate: null,
+      history: [],
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        studentName: student.fullName,
+        registrationNumber: student.registrationNumber,
+        class: student.classId,
+        section: student.sectionId,
+        feeStatus: feeInfo.status,
+        amountDue: feeInfo.amountDue,
+        amountPaid: feeInfo.amountPaid,
+        balance: (feeInfo.amountDue || 0) - (feeInfo.amountPaid || 0),
+        dueDate: feeInfo.dueDate,
+        history: feeInfo.history || [],
+      },
+      message: 'Fee history fetched successfully',
     });
   } catch (error) {
     next(error);
@@ -650,6 +882,10 @@ module.exports = {
   createStudent,
   getAllStudents,
   getStudentById,
+  getMyProfile,
+  getMyAttendance,
+  getMySubjects,
+  getMyFeeHistory,
   updateStudent,
   deleteStudent,
   setFeeStructure,

@@ -15,9 +15,13 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherAttendance from './pages/TeacherAttendance';
 import TeacherLeaves from './pages/TeacherLeaves';
 import StudentDashboard from './pages/StudentDashboard';
+import StudentFees from './pages/StudentFees';
+import StudentSchedule from './pages/StudentSchedule';
+import StudentGrades from './pages/StudentGrades';
 import AdminReports from './pages/AdminReports';
 import AdminAttendance from './pages/AdminAttendance';
 import ProtectedRoute from './components/shared/ProtectedRoute';
+
 
 function App() {
   return (
@@ -151,6 +155,31 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/student/fees"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'parent']}>
+              <StudentFees />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/schedule"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'parent']}>
+              <StudentSchedule />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/grades"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'parent']}>
+              <StudentGrades />
+            </ProtectedRoute>
+          }
+        />
+
 
         {/* Fallback Catch-all Route */}
         <Route path="*" element={<Login />} />
