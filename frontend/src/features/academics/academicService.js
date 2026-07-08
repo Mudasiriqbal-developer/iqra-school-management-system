@@ -82,3 +82,18 @@ export const unassignClassTeacher = async (sectionId) => {
   return response.data;
 };
 
+export const reorderClasses = async (orderedIds) => {
+  const response = await api.put('/classes/reorder', { orderedIds });
+  return response.data;
+};
+
+export const reorderSections = async (orderedIds) => {
+  const response = await api.put('/sections/reorder', { orderedIds });
+  return response.data;
+};
+
+export const reorderSubjects = async (orderedIds) => {
+  const response = await api.put('/subjects/reorder', { orderedIds });
+  return response.data;
+};
+

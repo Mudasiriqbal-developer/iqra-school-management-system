@@ -47,7 +47,7 @@ const getAllSubjects = async (req, res, next) => {
 
     const subjects = await Subject.find(filter)
       .populate('classId', 'name')
-      .sort({ createdAt: -1 });
+      .sort({ orderIndex: 1, createdAt: 1 });
 
     return res.status(200).json({
       success: true,
@@ -170,10 +170,44 @@ const deleteSubject = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Reorder subjects
+ * @route   PUT /api/subjects/reorder
+ * @access  Private (Admin)
+ */
+const reorderSubjects = async (req, res, next) => {
+  try {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'orderedIds must be an array of Subject IDs',
+      });
+    }
+
+    const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { orderIndex: index } },
+      },
+    }));
+
+    await Subject.bulkWrite(bulkOps);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Subjects reordered successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSubject,
   getAllSubjects,
   getSubjectById,
   updateSubject,
   deleteSubject,
+  reorderSubjects,
 };

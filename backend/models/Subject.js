@@ -12,6 +12,10 @@ const subjectSchema = new mongoose.Schema(
       ref: 'Class',
       required: [true, 'Class ID is required'],
     },
+    orderIndex: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
