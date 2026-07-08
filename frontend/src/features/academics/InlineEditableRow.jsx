@@ -1,7 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Pencil, Trash2, Check, X } from 'lucide-react';
+import { Pencil, Trash2, Check, X, GripVertical } from 'lucide-react';
 
-const InlineEditableRow = ({ label, onSave, onDelete, isSelected, onClick }) => {
+const InlineEditableRow = ({
+  label,
+  onSave,
+  onDelete,
+  isSelected,
+  onClick,
+  draggable = false,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  onDragLeave,
+  onDrop,
+  dragOver = false
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(label);
   const inputRef = useRef(null);
@@ -54,11 +67,19 @@ const InlineEditableRow = ({ label, onSave, onDelete, isSelected, onClick }) => 
 
   return (
     <div
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
       onClick={onClick}
       className={`group flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
         isSelected
           ? 'border-navy-900/20 bg-navy-900/5 border-l-4 border-l-navy-900 shadow-sm font-semibold text-navy-900'
           : 'border-gray-200/50 hover:bg-slate-50 text-gray-700'
+      } ${
+        dragOver ? 'border-t-2 border-t-navy-900 border-dashed pt-2.5' : ''
       }`}
     >
       {isEditing ? (
@@ -89,7 +110,12 @@ const InlineEditableRow = ({ label, onSave, onDelete, isSelected, onClick }) => 
         </div>
       ) : (
         <>
-          <span className="text-sm truncate pr-2 flex-grow">{label}</span>
+          <div className="flex items-center flex-grow truncate pr-2">
+            {draggable && (
+              <GripVertical className="h-4 w-4 text-gray-400 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
+            )}
+            <span className="text-sm truncate flex-grow">{label}</span>
+          </div>
           <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={startEditing}

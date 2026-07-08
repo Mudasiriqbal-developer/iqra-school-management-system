@@ -6,6 +6,7 @@ const {
   getSubjectById,
   updateSubject,
   deleteSubject,
+  reorderSubjects,
 } = require('../controllers/subjectController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -13,6 +14,13 @@ const { validateRequest } = require('../middleware/validationMiddleware');
 const router = express.Router();
 
 router.use(protect);
+
+/**
+ * @route   PUT /api/subjects/reorder
+ * @desc    Reorder subjects
+ * @access  Private (Admin)
+ */
+router.put('/reorder', authorize('admin'), reorderSubjects);
 
 /**
  * @route   GET /api/subjects

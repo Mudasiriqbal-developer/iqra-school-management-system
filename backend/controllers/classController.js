@@ -41,7 +41,7 @@ const createClass = async (req, res, next) => {
  */
 const getAllClasses = async (req, res, next) => {
   try {
-    const classes = await Class.find().sort({ createdAt: -1 });
+    const classes = await Class.find().sort({ orderIndex: 1, createdAt: 1 });
 
     return res.status(200).json({
       success: true,
@@ -163,10 +163,44 @@ const deleteClass = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Reorder classes
+ * @route   PUT /api/classes/reorder
+ * @access  Private (Admin)
+ */
+const reorderClasses = async (req, res, next) => {
+  try {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'orderedIds must be an array of Class IDs',
+      });
+    }
+
+    const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { orderIndex: index } },
+      },
+    }));
+
+    await Class.bulkWrite(bulkOps);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Classes reordered successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createClass,
   getAllClasses,
   getClassById,
   updateClass,
   deleteClass,
+  reorderClasses,
 };

@@ -8,6 +8,7 @@ const {
   deleteSection,
   assignClassTeacher,
   unassignClassTeacher,
+  reorderSections,
 } = require('../controllers/sectionController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -15,6 +16,13 @@ const { validateRequest } = require('../middleware/validationMiddleware');
 const router = express.Router();
 
 router.use(protect);
+
+/**
+ * @route   PUT /api/sections/reorder
+ * @desc    Reorder sections
+ * @access  Private (Admin)
+ */
+router.put('/reorder', authorize('admin'), reorderSections);
 
 /**
  * @route   GET /api/sections

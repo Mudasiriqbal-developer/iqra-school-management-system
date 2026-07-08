@@ -8,6 +8,10 @@ const classSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    orderIndex: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

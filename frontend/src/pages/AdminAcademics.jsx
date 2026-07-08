@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -18,7 +18,8 @@ import {
   Pencil,
   Trash2,
   Check,
-  X
+  X,
+  GripVertical
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -38,7 +39,10 @@ import {
   updateSubject,
   deleteSubject,
   assignClassTeacher,
-  unassignClassTeacher
+  unassignClassTeacher,
+  reorderClasses,
+  reorderSections,
+  reorderSubjects
 } from '../features/academics/academicService';
 import { getTeachers } from '../features/teachers/teacherService';
 
@@ -70,6 +74,9 @@ const AdminAcademics = () => {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
 
+  // Ref to track the currently active/selected class ID for avoiding fetch race conditions
+  const activeClassIdRef = useRef(null);
+
   // Form toggle states
   const [isAddingClass, setIsAddingClass] = useState(false);
   const [newClassName, setNewClassName] = useState('');
@@ -84,6 +91,79 @@ const AdminAcademics = () => {
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editSectionValue, setEditSectionValue] = useState('');
   const [assigningSectionId, setAssigningSectionId] = useState(null);
+
+  // Drag and drop states & refs
+  const dragSourceIndexRef = useRef(null);
+  const dragTypeRef = useRef(null);
+  const [dragOverInfo, setDragOverInfo] = useState(null); // { type: 'class'|'section'|'subject', index: number }
+
+  const handleDragOver = (e, index, type) => {
+    if (dragTypeRef.current !== type) return;
+    e.preventDefault();
+    setDragOverInfo({ type, index });
+  };
+
+  const handleDragLeave = () => {
+    setDragOverInfo(null);
+  };
+
+  const handleDragEnd = () => {
+    dragSourceIndexRef.current = null;
+    dragTypeRef.current = null;
+    setDragOverInfo(null);
+  };
+
+  const handleDrop = async (e, targetIndex, type) => {
+    e.preventDefault();
+    if (dragTypeRef.current !== type) return;
+    const sourceIndex = dragSourceIndexRef.current;
+    if (sourceIndex === null || sourceIndex === targetIndex) return;
+
+    if (type === 'class') {
+      const updated = [...classes];
+      const [removed] = updated.splice(sourceIndex, 1);
+      updated.splice(targetIndex, 0, removed);
+      setClasses(updated);
+
+      try {
+        await reorderClasses(updated.map(c => c._id));
+        toast.success('Classes reordered');
+      } catch (err) {
+        toast.error('Failed to save class order');
+        fetchClasses();
+      }
+    } else if (type === 'section') {
+      const updated = [...sections];
+      const [removed] = updated.splice(sourceIndex, 1);
+      updated.splice(targetIndex, 0, removed);
+      setSections(updated);
+
+      try {
+        await reorderSections(updated.map(s => s._id));
+        toast.success('Sections reordered');
+      } catch (err) {
+        toast.error('Failed to save section order');
+        if (selectedClass) {
+          fetchDetailsForClass(selectedClass._id);
+        }
+      }
+    } else if (type === 'subject') {
+      const updated = [...subjects];
+      const [removed] = updated.splice(sourceIndex, 1);
+      updated.splice(targetIndex, 0, removed);
+      setSubjects(updated);
+
+      try {
+        await reorderSubjects(updated.map(s => s._id));
+        toast.success('Subjects reordered');
+      } catch (err) {
+        toast.error('Failed to save subject order');
+        if (selectedClass) {
+          fetchDetailsForClass(selectedClass._id);
+        }
+      }
+    }
+  };
 
   // Fetch all classes on mount
   const fetchClasses = async (autoSelectId = null) => {
@@ -133,6 +213,9 @@ const AdminAcademics = () => {
         getSubjectsByClass(classId)
       ]);
 
+      // Only update state if this class is still the active class
+      if (activeClassIdRef.current !== classId) return;
+
       if (sectionsRes.success) {
         setSections(sectionsRes.data || []);
       } else {
@@ -146,10 +229,14 @@ const AdminAcademics = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Server error loading class details');
+      if (activeClassIdRef.current === classId) {
+        toast.error('Server error loading class details');
+      }
     } finally {
-      setLoadingSections(false);
-      setLoadingSubjects(false);
+      if (activeClassIdRef.current === classId) {
+        setLoadingSections(false);
+        setLoadingSubjects(false);
+      }
     }
   };
 
@@ -177,13 +264,15 @@ const AdminAcademics = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedClass) {
-      fetchDetailsForClass(selectedClass._id);
-    } else {
-      setSections([]);
-      setSubjects([]);
+    const classId = selectedClass?._id;
+    activeClassIdRef.current = classId;
+    setSections([]);
+    setSubjects([]);
+
+    if (classId) {
+      fetchDetailsForClass(classId);
     }
-  }, [selectedClass]);
+  }, [selectedClass?._id]);
 
   // Class teacher assignments
   const handleAssignTeacher = async (sectionId, teacherId) => {
@@ -295,15 +384,16 @@ const AdminAcademics = () => {
     e.preventDefault();
     const name = newSectionName.trim();
     if (!name || !selectedClass) return;
+    const classId = selectedClass._id;
     try {
-      const res = await createSection({ name, classId: selectedClass._id });
+      const res = await createSection({ name, classId });
       if (res.success) {
         toast.success('Section created successfully');
         setNewSectionName('');
         setIsAddingSection(false);
         // Refresh sections
-        const sectionsRes = await getSectionsByClass(selectedClass._id);
-        if (sectionsRes.success) {
+        const sectionsRes = await getSectionsByClass(classId);
+        if (activeClassIdRef.current === classId && sectionsRes.success) {
           setSections(sectionsRes.data || []);
         }
       } else {
@@ -353,15 +443,16 @@ const AdminAcademics = () => {
     e.preventDefault();
     const name = newSubjectName.trim();
     if (!name || !selectedClass) return;
+    const classId = selectedClass._id;
     try {
-      const res = await createSubject({ name, classId: selectedClass._id });
+      const res = await createSubject({ name, classId });
       if (res.success) {
         toast.success('Subject created successfully');
         setNewSubjectName('');
         setIsAddingSubject(false);
         // Refresh subjects
-        const subjectsRes = await getSubjectsByClass(selectedClass._id);
-        if (subjectsRes.success) {
+        const subjectsRes = await getSubjectsByClass(classId);
+        if (activeClassIdRef.current === classId && subjectsRes.success) {
           setSubjects(subjectsRes.data || []);
         }
       } else {
@@ -487,7 +578,7 @@ const AdminAcademics = () => {
                   </p>
                 </div>
               ) : (
-                classes.map((cls) => (
+                classes.map((cls, index) => (
                   <InlineEditableRow
                     key={cls._id}
                     label={cls.name}
@@ -495,6 +586,16 @@ const AdminAcademics = () => {
                     onClick={() => setSelectedClass(cls)}
                     onSave={(newName) => handleUpdateClass(cls._id, newName)}
                     onDelete={() => handleDeleteClass(cls._id)}
+                    draggable={true}
+                    onDragStart={(e) => {
+                      dragSourceIndexRef.current = index;
+                      dragTypeRef.current = 'class';
+                    }}
+                    onDragOver={(e) => handleDragOver(e, index, 'class')}
+                    onDragEnd={handleDragEnd}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index, 'class')}
+                    dragOver={dragOverInfo?.type === 'class' && dragOverInfo?.index === index}
                   />
                 ))
               )}
@@ -582,8 +683,24 @@ const AdminAcademics = () => {
                       </p>
                     </div>
                   ) : (
-                    sections.map((sec) => (
-                      <div key={sec._id} className="p-3.5 rounded-xl border border-gray-200/50 hover:bg-slate-50/50 transition-all duration-200 space-y-2">
+                    sections.map((sec, index) => (
+                      <div
+                        key={sec._id}
+                        draggable={true}
+                        onDragStart={(e) => {
+                          dragSourceIndexRef.current = index;
+                          dragTypeRef.current = 'section';
+                        }}
+                        onDragOver={(e) => handleDragOver(e, index, 'section')}
+                        onDragEnd={handleDragEnd}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, index, 'section')}
+                        className={`p-3.5 rounded-xl border transition-all duration-200 space-y-2 hover:bg-slate-50/50 cursor-pointer ${
+                          dragOverInfo?.type === 'section' && dragOverInfo?.index === index
+                            ? 'border-t-2 border-t-navy-900 border-dashed pt-2.5'
+                            : 'border-gray-200/50'
+                        }`}
+                      >
                         {/* Top Row: Name and Edit/Delete Actions */}
                         <div className="flex items-center justify-between">
                           {editingSectionId === sec._id ? (
@@ -621,7 +738,10 @@ const AdminAcademics = () => {
                             </div>
                           ) : (
                             <>
-                              <span className="text-sm font-semibold text-gray-700">{sec.name}</span>
+                              <div className="flex items-center flex-grow truncate pr-2">
+                                <GripVertical className="h-4 w-4 text-gray-400 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
+                                <span className="text-sm font-semibold text-gray-700">{sec.name}</span>
+                              </div>
                               <div className="flex items-center space-x-1">
                                 <button
                                   onClick={() => {
@@ -798,12 +918,22 @@ const AdminAcademics = () => {
                       </p>
                     </div>
                   ) : (
-                    subjects.map((sub) => (
+                    subjects.map((sub, index) => (
                       <InlineEditableRow
                         key={sub._id}
                         label={sub.name}
                         onSave={(newName) => handleUpdateSubject(sub._id, newName)}
                         onDelete={() => handleDeleteSubject(sub._id)}
+                        draggable={true}
+                        onDragStart={(e) => {
+                          dragSourceIndexRef.current = index;
+                          dragTypeRef.current = 'subject';
+                        }}
+                        onDragOver={(e) => handleDragOver(e, index, 'subject')}
+                        onDragEnd={handleDragEnd}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, index, 'subject')}
+                        dragOver={dragOverInfo?.type === 'subject' && dragOverInfo?.index === index}
                       />
                     ))
                   )}

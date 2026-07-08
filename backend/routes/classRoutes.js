@@ -6,6 +6,7 @@ const {
   getClassById,
   updateClass,
   deleteClass,
+  reorderClasses,
 } = require('../controllers/classController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -14,6 +15,13 @@ const router = express.Router();
 
 // Apply auth protection to all class routes
 router.use(protect);
+
+/**
+ * @route   PUT /api/classes/reorder
+ * @desc    Reorder classes
+ * @access  Private (Admin)
+ */
+router.put('/reorder', authorize('admin'), reorderClasses);
 
 /**
  * @route   GET /api/classes

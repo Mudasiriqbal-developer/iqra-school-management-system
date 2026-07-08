@@ -51,9 +51,14 @@ const createSection = async (req, res, next) => {
  */
 const getAllSections = async (req, res, next) => {
   try {
-    const sections = await Section.find()
+    const filter = {};
+    if (req.query.classId) {
+      filter.classId = req.query.classId;
+    }
+
+    const sections = await Section.find(filter)
       .populate('classId', 'name')
-      .sort({ createdAt: -1 });
+      .sort({ orderIndex: 1, createdAt: 1 });
 
     return res.status(200).json({
       success: true,
@@ -281,6 +286,39 @@ const unassignClassTeacher = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Reorder sections
+ * @route   PUT /api/sections/reorder
+ * @access  Private (Admin)
+ */
+const reorderSections = async (req, res, next) => {
+  try {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'orderedIds must be an array of Section IDs',
+      });
+    }
+
+    const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { $set: { orderIndex: index } },
+      },
+    }));
+
+    await Section.bulkWrite(bulkOps);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Sections reordered successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSection,
   getAllSections,
@@ -289,4 +327,5 @@ module.exports = {
   deleteSection,
   assignClassTeacher,
   unassignClassTeacher,
+  reorderSections,
 };
