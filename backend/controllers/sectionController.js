@@ -51,7 +51,12 @@ const createSection = async (req, res, next) => {
  */
 const getAllSections = async (req, res, next) => {
   try {
-    const sections = await Section.find()
+    const filter = {};
+    if (req.query.classId) {
+      filter.classId = req.query.classId;
+    }
+
+    const sections = await Section.find(filter)
       .populate('classId', 'name')
       .sort({ createdAt: -1 });
 

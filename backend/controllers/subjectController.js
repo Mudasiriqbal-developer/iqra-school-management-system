@@ -40,7 +40,12 @@ const createSubject = async (req, res, next) => {
  */
 const getAllSubjects = async (req, res, next) => {
   try {
-    const subjects = await Subject.find()
+    const filter = {};
+    if (req.query.classId) {
+      filter.classId = req.query.classId;
+    }
+
+    const subjects = await Subject.find(filter)
       .populate('classId', 'name')
       .sort({ createdAt: -1 });
 

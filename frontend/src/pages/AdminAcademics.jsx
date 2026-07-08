@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -70,6 +70,9 @@ const AdminAcademics = () => {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
 
+  // Ref to track the currently active/selected class ID for avoiding fetch race conditions
+  const activeClassIdRef = useRef(null);
+
   // Form toggle states
   const [isAddingClass, setIsAddingClass] = useState(false);
   const [newClassName, setNewClassName] = useState('');
@@ -133,6 +136,9 @@ const AdminAcademics = () => {
         getSubjectsByClass(classId)
       ]);
 
+      // Only update state if this class is still the active class
+      if (activeClassIdRef.current !== classId) return;
+
       if (sectionsRes.success) {
         setSections(sectionsRes.data || []);
       } else {
@@ -146,10 +152,14 @@ const AdminAcademics = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Server error loading class details');
+      if (activeClassIdRef.current === classId) {
+        toast.error('Server error loading class details');
+      }
     } finally {
-      setLoadingSections(false);
-      setLoadingSubjects(false);
+      if (activeClassIdRef.current === classId) {
+        setLoadingSections(false);
+        setLoadingSubjects(false);
+      }
     }
   };
 
@@ -177,13 +187,15 @@ const AdminAcademics = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedClass) {
-      fetchDetailsForClass(selectedClass._id);
-    } else {
-      setSections([]);
-      setSubjects([]);
+    const classId = selectedClass?._id;
+    activeClassIdRef.current = classId;
+    setSections([]);
+    setSubjects([]);
+
+    if (classId) {
+      fetchDetailsForClass(classId);
     }
-  }, [selectedClass]);
+  }, [selectedClass?._id]);
 
   // Class teacher assignments
   const handleAssignTeacher = async (sectionId, teacherId) => {
@@ -295,15 +307,16 @@ const AdminAcademics = () => {
     e.preventDefault();
     const name = newSectionName.trim();
     if (!name || !selectedClass) return;
+    const classId = selectedClass._id;
     try {
-      const res = await createSection({ name, classId: selectedClass._id });
+      const res = await createSection({ name, classId });
       if (res.success) {
         toast.success('Section created successfully');
         setNewSectionName('');
         setIsAddingSection(false);
         // Refresh sections
-        const sectionsRes = await getSectionsByClass(selectedClass._id);
-        if (sectionsRes.success) {
+        const sectionsRes = await getSectionsByClass(classId);
+        if (activeClassIdRef.current === classId && sectionsRes.success) {
           setSections(sectionsRes.data || []);
         }
       } else {
@@ -353,15 +366,16 @@ const AdminAcademics = () => {
     e.preventDefault();
     const name = newSubjectName.trim();
     if (!name || !selectedClass) return;
+    const classId = selectedClass._id;
     try {
-      const res = await createSubject({ name, classId: selectedClass._id });
+      const res = await createSubject({ name, classId });
       if (res.success) {
         toast.success('Subject created successfully');
         setNewSubjectName('');
         setIsAddingSubject(false);
         // Refresh subjects
-        const subjectsRes = await getSubjectsByClass(selectedClass._id);
-        if (subjectsRes.success) {
+        const subjectsRes = await getSubjectsByClass(classId);
+        if (activeClassIdRef.current === classId && subjectsRes.success) {
           setSubjects(subjectsRes.data || []);
         }
       } else {
