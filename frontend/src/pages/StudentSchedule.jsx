@@ -15,7 +15,6 @@ const StudentSchedule = () => {
     { label: 'My Schedule', icon: Calendar, path: '/student/schedule' },
     { label: 'Grades', icon: Award, path: '/student/grades' },
     { label: 'Fees', icon: CreditCard, path: '/student/fees' },
-    { label: 'Resources', icon: BookOpen, path: '/student/resources' },
   ];
 
   useEffect(() => {
@@ -75,7 +74,7 @@ const StudentSchedule = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {scheduleData?.subjects && scheduleData.subjects.length > 0 ? (
             scheduleData.subjects.map((item, index) => (
-              <div 
+              <div
                 key={item.subjectId || index}
                 className="bg-white rounded-2xl border border-gray-200/60 shadow-sm p-6 hover:shadow-md transition-all duration-200 flex flex-col justify-between"
               >

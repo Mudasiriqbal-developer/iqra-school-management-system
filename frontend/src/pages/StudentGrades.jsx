@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LayoutDashboard, Calendar, Award, BookOpen, CreditCard, Star, FileText, CheckCircle, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, Calendar, Award, CreditCard, Star, FileText, CheckCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import DashboardLayout from '../components/shared/DashboardLayout';
@@ -18,7 +18,6 @@ const StudentGrades = () => {
     { label: 'My Schedule', icon: Calendar, path: '/student/schedule' },
     { label: 'Grades', icon: Award, path: '/student/grades' },
     { label: 'Fees', icon: CreditCard, path: '/student/fees' },
-    { label: 'Resources', icon: BookOpen, path: '/student/resources' },
   ];
 
   useEffect(() => {
@@ -61,7 +60,7 @@ const StudentGrades = () => {
       if (g.subjectId?._id || g.subjectId) {
         uniqueSubjects.add(g.subjectId._id || g.subjectId);
       }
-      
+
       const pct = (g.marksObtained / g.totalMarks) * 100;
       if (pct >= 90) totalPoints += 4.0;
       else if (pct >= 85) totalPoints += 4.0;

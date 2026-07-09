@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { LayoutDashboard, Calendar, Award, BookOpen, Clock, CreditCard, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -18,7 +18,6 @@ const StudentDashboard = () => {
     { label: 'My Schedule', icon: Calendar, path: '/student/schedule' },
     { label: 'Grades', icon: Award, path: '/student/grades' },
     { label: 'Fees', icon: CreditCard, path: '/student/fees' },
-    { label: 'Resources', icon: BookOpen, path: '/student/resources' },
   ];
 
   const upcomingAssessments = [
@@ -162,7 +161,7 @@ const StudentDashboard = () => {
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
