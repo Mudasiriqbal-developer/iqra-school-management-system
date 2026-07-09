@@ -72,13 +72,6 @@ const AdminDashboard = () => {
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];
 
-  const recentRegistrations = [
-    { id: 'REG001', name: 'Zainab Fatima', role: 'Student', date: 'July 03, 2026', status: 'active' },
-    { id: 'REG002', name: 'Muhammad Ali', role: 'Student', date: 'July 02, 2026', status: 'active' },
-    { id: 'REG003', name: 'Ayesha Khan', role: 'Teacher', date: 'June 30, 2026', status: 'pending' },
-    { id: 'REG004', name: 'Omar Farooq', role: 'Student', date: 'June 28, 2026', status: 'danger' },
-    { id: 'REG005', name: 'Sana Ahmed', role: 'Student', date: 'June 25, 2026', status: 'active' },
-  ];
 
   return (
     <DashboardLayout
@@ -247,17 +240,37 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {recentRegistrations.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-600">{row.id}</td>
-                    <td className="py-4 px-6 text-sm font-bold text-navy-950">{row.name}</td>
-                    <td className="py-4 px-6 text-sm font-medium text-gray-600">{row.role}</td>
-                    <td className="py-4 px-6 text-sm text-gray-500">{row.date}</td>
-                    <td className="py-4 px-6 text-sm">
-                      <StatusBadge status={row.status} label={row.status === 'active' ? 'Active' : row.status === 'pending' ? 'Pending' : 'Suspended'} />
+                {loading ? (
+                  [1, 2, 3, 4, 5].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-16" /></td>
+                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-28" /></td>
+                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-16" /></td>
+                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-20" /></td>
+                      <td className="py-4 px-6"><div className="h-6 bg-gray-100 rounded-full w-20" /></td>
+                    </tr>
+                  ))
+                ) : (dashboardData?.recentRegistrations && dashboardData.recentRegistrations.length > 0) ? (
+                  dashboardData.recentRegistrations.map((row) => (
+                    <tr key={row.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="py-4 px-6 text-sm font-semibold text-gray-600">{row.id}</td>
+                      <td className="py-4 px-6 text-sm font-bold text-navy-950">{row.name}</td>
+                      <td className="py-4 px-6 text-sm font-medium text-gray-600">{row.role}</td>
+                      <td className="py-4 px-6 text-sm text-gray-500">
+                        {row.date ? new Date(row.date).toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                      </td>
+                      <td className="py-4 px-6 text-sm">
+                        <StatusBadge status={row.status} label={row.status === 'active' ? 'Active' : row.status === 'pending' ? 'Pending' : 'Suspended'} />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="py-8 text-center text-sm text-gray-400 font-medium">
+                      No recent registrations found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

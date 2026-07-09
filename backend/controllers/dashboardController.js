@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Attendance = require('../models/Attendance');
 const Expense = require('../models/Expense');
 const Payroll = require('../models/Payroll');
+const Teacher = require('../models/Teacher');
 
 /**
  * @desc    Get dashboard summary statistics
@@ -145,6 +146,50 @@ const getDashboardSummary = async (req, res, next) => {
       profitMargin,
     };
 
+    // 7. Recent Registrations
+    const recentStudents = await Student.find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const recentTeachers = await Teacher.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('userId', 'name email role isActive isActivated');
+
+    const combinedRegistrations = [];
+
+    recentStudents.forEach(student => {
+      let status = 'active';
+      if (student.status === 'on_leave') status = 'pending';
+      else if (student.status === 'suspended') status = 'danger';
+
+      combinedRegistrations.push({
+        id: student.registrationNumber,
+        name: student.fullName,
+        role: 'Student',
+        date: student.createdAt,
+        status
+      });
+    });
+
+    recentTeachers.forEach(teacher => {
+      let status = 'active';
+      if (teacher.userId) {
+        if (!teacher.userId.isActivated) status = 'pending';
+        else if (!teacher.userId.isActive) status = 'danger';
+      }
+      combinedRegistrations.push({
+        id: teacher.employeeId,
+        name: teacher.userId ? teacher.userId.name : 'Unknown Teacher',
+        role: 'Teacher',
+        date: teacher.createdAt,
+        status
+      });
+    });
+
+    combinedRegistrations.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const recentRegistrations = combinedRegistrations.slice(0, 5);
+
     return res.status(200).json({
       success: true,
       data: {
@@ -154,6 +199,7 @@ const getDashboardSummary = async (req, res, next) => {
         attendanceToday,
         monthlyAttendanceTrend,
         financialSummary,
+        recentRegistrations,
       },
       message: 'Dashboard summary retrieved successfully',
     });
