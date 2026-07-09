@@ -12,7 +12,8 @@ import {
   Save,
   UserCheck,
   RefreshCw,
-  CalendarDays
+  CalendarDays,
+  Award
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/shared/DashboardLayout';
@@ -34,8 +35,10 @@ const TeacherAttendance = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
     { label: 'My Leaves', icon: CalendarDays, path: '/teacher/leaves' }
   ];
+
 
   // Core States
   const [myClassSection, setMyClassSection] = useState(null);

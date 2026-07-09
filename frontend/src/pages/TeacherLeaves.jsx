@@ -9,7 +9,8 @@ import {
   FileText,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  Award
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -34,8 +35,10 @@ const TeacherLeaves = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
     { label: 'My Leaves', icon: CalendarDays, path: '/teacher/leaves' }
   ];
+
 
   // States
   const [leaves, setLeaves] = useState([]);

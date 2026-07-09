@@ -66,9 +66,14 @@ Your friend did an amazing job establishing a clean, modular foundation for all 
 - **Expenses**: Tracks general expenditures (utilities, rent, maintenance, stationery, assets) with filters and aggregate totals.
 - **Faculty Payroll**: Tracks monthly salary payouts (`baseSalary`, `allowances`, `deductions`, `netSalary`) with constraints that prevent double payouts to the same teacher in a single month.
 
-### F. Reports & Dashboard Metrics
+### F. Reports & Dashboard
 - **Data aggregation**: The `/api/dashboard/summary` endpoint computes school statistics, Profit & Loss summaries, outstanding fees, and today's attendance percentages.
 - **Visual Analytics**: The Reports view (`AdminReports.jsx`) renders interactive charts (using Recharts) of fee collection trends and lists fee defaulters.
+
+### G. Student Self-Service Portal
+- **Me Profile / Identity**: The `/api/students/me/profile` endpoint returns the logged-in student's information based on their email.
+- **Academic & Financial Tracking**: The `/api/students/me/attendance`, `/api/students/me/subjects`, and `/api/students/me/fees` endpoints fetch active subjects, teachers, attendance logs, and payment histories.
+- **Dynamic Portal & Routing**: Frontend routes for `/student/fees`, `/student/schedule`, and `/student/grades` are fully registered. The `StudentDashboard` and student sub-pages fetch and render this data live instead of static placeholders.
 
 ---
 
@@ -76,38 +81,77 @@ Your friend did an amazing job establishing a clean, modular foundation for all 
 
 Here is a list of features that are either not yet connected to the backend database or completely unbuilt. You can pick any of these to start coding:
 
-### Option 1: Dynamic Student & Parent Portal (Highest Priority)
-* **Current State**: The `StudentDashboard.jsx` page is a frontend mockup filled with static arrays and names (e.g., "Zainab Fatima", "GPA 3.82"). The routes `/student/schedule`, `/student/grades`, and `/student/fees` do not exist in the routing table.
-* **What to do**:
-  1. Add new backend endpoints to fetch logged-in student profiles based on their User account email/ID.
-  2. Implement backend routes for a student to view their own attendance rate, assigned subjects, and fee history.
-  3. Register the missing pages `/student/fees`, `/student/schedule`, and `/student/grades` in `frontend/src/App.jsx`.
-  4. Replace the static arrays in `StudentDashboard.jsx` with calls to `/api/students/me` or `/api/students/profile`.
-
-### Option 2: Student Gradebook / Marksheet Management
+### Option 1: Student Gradebook / Marksheet Management
 * **Current State**: While the student dashboard references "GPA" and "Assessments", there are **no** backend models, controllers, or routes for exam results or academic grading.
 * **What to do**:
   1. Create a `Grade` or `ExamResult` Mongoose model containing fields like `studentId`, `subjectId`, `examType` (midterm, final, monthly quiz), `marksObtained`, `totalMarks`, and `comments`.
   2. Write a `gradeController.js` and map its routes in `server.js` (e.g., `POST /api/grades` for teachers to upload grades, `GET /api/grades/student/:studentId` for viewing).
   3. Create an academic performance panel on the Admin and Teacher portals to record marks, and display them on the Student dashboard.
 
-### Option 3: Syllabus and Class Resource Uploads
+### Option 2: Syllabus and Class Resource Uploads
 * **Current State**: There is no feature allowing teachers to upload course outlines, study materials, or weekly syllabus items.
 * **What to do**:
   1. Create a `Resource` model referencing `classId`, `subjectId`, `title`, `description`, and a `fileUrl` (or web link).
   2. Build a frontend feature in the Teacher portal to add resources.
   3. Add a "Resources" tab in the Student portal where students can download PDFs or open links uploaded by their teachers.
 
-### Option 4: Student Leave Requests (from Parents/Students)
+### Option 3: Student Leave Requests (from Parents/Students)
 * **Current State**: `LeaveRequest` currently only supports teachers requesting time off from the school Admin. Student leaves must be handled manually or marked directly in attendance.
 * **What to do**:
   1. Extend the `LeaveRequest` schema or create a `StudentLeave` model to record student IDs, leave dates, reasons, and approval status.
   2. Connect the portal so parents/students can apply for leave.
   3. Allow class teachers to approve/reject student leaves, which can automatically mark their status in attendance logs.
 
+### Option 4: Parent-Student Linkage Mapping
+* **Current State**: A `parent` role exists in the `User` schema, but there is no association in the database connecting parent accounts to their respective children.
+* **What to do**:
+  1. Add a `parentEmail` or `parentUserId` reference in the `Student` schema.
+  2. Modify auth flow or student controller to allow users with the `parent` role to query linked students' details.
+
+### Option 5: School Noticeboard / Announcement System
+* **Current State**: School-wide notifications (e.g., holidays, fee alerts, exam schedules) must be shared offline or manually.
+* **What to do**:
+  1. Build an `Announcement` model referencing `title`, `content`, `audience` (all, teachers, students), and `expiryDate`.
+  2. Allow Admins to post notices and render a global banner or alert widget on dashboards.
+
+### Option 6: Class Timetable / Weekly Schedule Scheduler
+* **Current State**: Students can see their subjects, but there is no hourly timetable (e.g., Monday 9:00 AM - 9:45 AM: Mathematics).
+* **What to do**:
+  1. Create a `Timetable` schema mapping `classId`, `sectionId`, `dayOfWeek`, `subjectId`, `startTime`, and `endTime`.
+  2. Expose a calendar/grid layout in the Student portal under "My Schedule" instead of a flat list of subjects.
+
 ---
 
-## 4. How to Start the App Locally
+## 4. Step-by-Step Implementation Roadmap
+
+If you want to continue systematically, here is the recommended plan:
+
+```mermaid
+graph TD
+    A[Step 1: Parent-Student Linkage] --> B[Step 2: Gradebook / Marks Upload]
+    B --> C[Step 3: Timetable Scheduler]
+    C --> D[Step 4: Syllabus & Resources]
+    D --> E[Step 5: Student Leaves & Announcements]
+```
+
+### Phase 1: Parent-Student Association & Portal Integration
+1. **Database Schema Update**: Add `parentEmail` to the `Student` model.
+2. **Controller Update**: Enhance `getMyProfile` to handle queries by parent accounts looking up their children.
+3. **Frontend UI Update**: Display child select dropdown on parent dashboards.
+
+### Phase 2: Gradebook & Marksheet
+1. **Model creation**: Build the `Grade` model linking `Student`, `Subject`, and exam types.
+2. **Teacher Portal**: Add a form under `TeacherDashboard` allowing grades input for class section students.
+3. **Student Portal**: Swap mock list in `StudentGrades.jsx` with real data fetched from `GET /api/grades/me`.
+
+### Phase 3: Weekly Timetable/Schedule
+1. **Model creation**: Implement `Timetable` schema.
+2. **Admin Portal**: Add a scheduler tool in Academic management to configure class timetables.
+3. **Student Portal**: Render weekly timetable calendar view in `StudentSchedule.jsx`.
+
+---
+
+## 5. How to Start the App Locally
 
 To start working, run the backend and frontend in separate terminal windows:
 
@@ -139,4 +183,5 @@ To start working, run the backend and frontend in separate terminal windows:
 
 ---
 
-*Tip: To start coding right away, we suggest opening [App.jsx](file:///e:/projects/iqra-school-management-system/frontend/src/App.jsx) and tracing the student portal routes, then implementing Option 1!*
+*Tip: To start coding right away, we suggest opening [App.jsx](file:///e:/projects/iqra-school-management-system/frontend/src/App.jsx) and tracing the student portal routes, then implementing Option 1 (Gradebook / Marksheet)!*
+

@@ -183,19 +183,19 @@ const AdminDashboard = () => {
                   dashboardData?.attendanceToday?.noDataYet
                     ? null
                     : (dashboardData?.attendanceToday?.presentPercentage || 0) > 90
-                    ? 'High Engagement'
-                    : (dashboardData?.attendanceToday?.presentPercentage || 0) < 75
-                    ? 'Needs Attention'
-                    : null
+                      ? 'High Engagement'
+                      : (dashboardData?.attendanceToday?.presentPercentage || 0) < 75
+                        ? 'Needs Attention'
+                        : null
                 }
                 trendColor={
                   dashboardData?.attendanceToday?.noDataYet
                     ? null
                     : (dashboardData?.attendanceToday?.presentPercentage || 0) > 90
-                    ? 'active'
-                    : (dashboardData?.attendanceToday?.presentPercentage || 0) < 75
-                    ? 'pending'
-                    : null
+                      ? 'active'
+                      : (dashboardData?.attendanceToday?.presentPercentage || 0) < 75
+                        ? 'pending'
+                        : null
                 }
               />
 
@@ -234,7 +234,7 @@ const AdminDashboard = () => {
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

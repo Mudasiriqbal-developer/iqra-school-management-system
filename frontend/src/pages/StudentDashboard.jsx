@@ -11,6 +11,7 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [attendance, setAttendance] = useState(null);
+  const [grades, setGrades] = useState([]);
 
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/student-dashboard' },
@@ -31,10 +32,14 @@ const StudentDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [profileRes, attendanceRes] = await Promise.all([
+        const [profileRes, attendanceRes, gradesRes] = await Promise.all([
           api.get('/students/me/profile'),
           api.get('/students/me/attendance').catch(err => {
             console.error('Attendance error:', err);
+            return { data: { success: false } };
+          }),
+          api.get('/grades/me').catch(err => {
+            console.error('Grades error:', err);
             return { data: { success: false } };
           })
         ]);
@@ -45,6 +50,9 @@ const StudentDashboard = () => {
         if (attendanceRes.data.success) {
           setAttendance(attendanceRes.data.data.summary);
         }
+        if (gradesRes.data.success) {
+          setGrades(gradesRes.data.data || []);
+        }
       } catch (error) {
         console.error('Error fetching student dashboard data:', error);
       } finally {
@@ -54,6 +62,24 @@ const StudentDashboard = () => {
 
     fetchDashboardData();
   }, []);
+
+  const gpa = useMemo(() => {
+    if (grades.length === 0) return 'N/A';
+    let totalPoints = 0;
+    grades.forEach((g) => {
+      const pct = (g.marksObtained / g.totalMarks) * 100;
+      if (pct >= 90) totalPoints += 4.0;
+      else if (pct >= 85) totalPoints += 4.0;
+      else if (pct >= 80) totalPoints += 3.7;
+      else if (pct >= 75) totalPoints += 3.3;
+      else if (pct >= 70) totalPoints += 3.0;
+      else if (pct >= 65) totalPoints += 2.7;
+      else if (pct >= 60) totalPoints += 2.3;
+      else if (pct >= 55) totalPoints += 2.0;
+      else if (pct >= 50) totalPoints += 1.0;
+    });
+    return (totalPoints / grades.length).toFixed(2);
+  }, [grades]);
 
   if (loading) {
     return (
@@ -96,10 +122,11 @@ const StudentDashboard = () => {
           <StatCard
             icon={Award}
             label="GPA"
-            value="3.82"
-            trend="+0.15"
-            trendColor="active"
+            value={gpa}
+            trend="Average Score"
+            trendColor={gpa !== 'N/A' && parseFloat(gpa) >= 3.0 ? 'active' : 'pending'}
           />
+
           <StatCard
             icon={Calendar}
             label="Attendance Rate"
