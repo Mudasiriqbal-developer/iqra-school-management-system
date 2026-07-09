@@ -25,11 +25,11 @@ const createStudent = async (req, res, next) => {
       address,
       classId,
       sectionId,
-      feeInfo,
+      monthlyFeeAmount,
       status,
       photoUrl,
     } = req.body;
-
+ 
     // 1. Check registration number unique
     const registrationExists = await Student.findOne({ registrationNumber });
     if (registrationExists) {
@@ -39,7 +39,7 @@ const createStudent = async (req, res, next) => {
         message: 'A student with this registration number already exists',
       });
     }
-
+ 
     // 2. Check if Class and Section exist
     const classExists = await Class.findById(classId);
     if (!classExists) {
@@ -49,7 +49,7 @@ const createStudent = async (req, res, next) => {
         message: 'Class not found',
       });
     }
-
+ 
     const sectionExists = await Section.findById(sectionId);
     if (!sectionExists) {
       return res.status(404).json({
@@ -58,7 +58,7 @@ const createStudent = async (req, res, next) => {
         message: 'Section not found',
       });
     }
-
+ 
     // 3. Create student
     const student = await Student.create({
       registrationNumber,
@@ -71,7 +71,7 @@ const createStudent = async (req, res, next) => {
       address,
       classId,
       sectionId,
-      feeInfo,
+      monthlyFeeAmount,
       status,
       photoUrl,
     });
@@ -482,12 +482,37 @@ const getMyFeeHistory = async (req, res, next) => {
       });
     }
 
-    const feeInfo = student.feeInfo || {
-      amountDue: 0,
-      amountPaid: 0,
+    const FeeRecord = require('../models/FeeRecord');
+    const records = await FeeRecord.find({ studentId: student._id }).sort({ month: -1 });
+
+    let totalBilled = 0;
+    let totalPaid = 0;
+    records.forEach(r => {
+      totalBilled += r.amountDue;
+      totalPaid += r.amountPaid;
+    });
+
+    const history = [];
+    records.forEach(r => {
+      if (r.payments && r.payments.length > 0) {
+        r.payments.forEach(p => {
+          history.push({
+            amount: p.amount,
+            paidOn: p.paidOn,
+            method: p.method,
+            forMonth: r.month
+          });
+        });
+      }
+    });
+
+    history.sort((a, b) => new Date(b.paidOn) - new Date(a.paidOn));
+
+    const currentMonthStr = new Date().toISOString().slice(0, 7);
+    const currentRecord = records.find(r => r.month === currentMonthStr) || {
       status: 'pending',
-      dueDate: null,
-      history: [],
+      amountDue: student.monthlyFeeAmount || 0,
+      amountPaid: 0,
     };
 
     return res.status(200).json({
@@ -497,12 +522,13 @@ const getMyFeeHistory = async (req, res, next) => {
         registrationNumber: student.registrationNumber,
         class: student.classId,
         section: student.sectionId,
-        feeStatus: feeInfo.status,
-        amountDue: feeInfo.amountDue,
-        amountPaid: feeInfo.amountPaid,
-        balance: (feeInfo.amountDue || 0) - (feeInfo.amountPaid || 0),
-        dueDate: feeInfo.dueDate,
-        history: feeInfo.history || [],
+        feeStatus: currentRecord.status,
+        amountDue: currentRecord.amountDue,
+        amountPaid: currentRecord.amountPaid,
+        balance: currentRecord.amountDue - currentRecord.amountPaid,
+        dueDate: null,
+        history,
+        monthlyRecords: records
       },
       message: 'Fee history fetched successfully',
     });
@@ -538,11 +564,11 @@ const updateStudent = async (req, res, next) => {
       address,
       classId,
       sectionId,
-      feeInfo,
+      monthlyFeeAmount,
       status,
       photoUrl,
     } = req.body;
-
+ 
     // Check unique registration number if changed
     if (registrationNumber && registrationNumber !== student.registrationNumber) {
       const duplicate = await Student.findOne({ registrationNumber });
@@ -555,7 +581,7 @@ const updateStudent = async (req, res, next) => {
       }
       student.registrationNumber = registrationNumber;
     }
-
+ 
     if (classId) {
       const classExists = await Class.findById(classId);
       if (!classExists) {
@@ -567,7 +593,7 @@ const updateStudent = async (req, res, next) => {
       }
       student.classId = classId;
     }
-
+ 
     if (sectionId) {
       const sectionExists = await Section.findById(sectionId);
       if (!sectionExists) {
@@ -579,7 +605,7 @@ const updateStudent = async (req, res, next) => {
       }
       student.sectionId = sectionId;
     }
-
+ 
     if (fullName) student.fullName = fullName;
     if (fatherName) student.fatherName = fatherName;
     if (gender) student.gender = gender;
@@ -587,14 +613,7 @@ const updateStudent = async (req, res, next) => {
     if (fatherContact) student.fatherContact = fatherContact;
     if (email !== undefined) student.email = email;
     if (address !== undefined) student.address = address;
-    if (feeInfo) {
-      // Merge or update fee fields
-      student.feeInfo = {
-        status: feeInfo.status || student.feeInfo.status,
-        dueDate: feeInfo.dueDate || student.feeInfo.dueDate,
-        history: feeInfo.history || student.feeInfo.history,
-      };
-    }
+    if (monthlyFeeAmount !== undefined) student.monthlyFeeAmount = monthlyFeeAmount;
     if (status) student.status = status;
     if (photoUrl !== undefined) student.photoUrl = photoUrl;
 
@@ -642,11 +661,11 @@ const deleteStudent = async (req, res, next) => {
 };
 
 /**
- * @desc    Set fee structure for a student
- * @route   PATCH /api/students/:id/fee-structure
+ * @desc    Set monthly fee amount for a student
+ * @route   PATCH /api/students/:id/monthly-fee
  * @access  Private (Admin Only)
  */
-const setFeeStructure = async (req, res, next) => {
+const setMonthlyFeeAmount = async (req, res, next) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
@@ -657,141 +676,15 @@ const setFeeStructure = async (req, res, next) => {
       });
     }
 
-    const { amountDue, dueDate } = req.body;
+    const { monthlyFeeAmount } = req.body;
+    student.monthlyFeeAmount = monthlyFeeAmount;
 
-    // Initialize feeInfo if not present
-    if (!student.feeInfo) {
-      student.feeInfo = { amountDue: 0, amountPaid: 0, status: 'pending', history: [] };
-    }
-
-    // Updates ONLY these two fields on the student's feeInfo — does not touch history or amountPaid
-    student.feeInfo.amountDue = amountDue;
-    if (dueDate !== undefined) {
-      student.feeInfo.dueDate = dueDate;
-    }
-
-    // Recalculate status after update using the same logic
-    const amountPaid = student.feeInfo.amountPaid || 0;
-    const today = new Date();
-    
-    let status = 'pending';
-    if (amountPaid >= amountDue && amountDue > 0) {
-      status = 'paid';
-    } else if (student.feeInfo.dueDate && today > new Date(student.feeInfo.dueDate) && amountPaid < amountDue) {
-      status = 'overdue';
-    } else {
-      status = 'pending';
-    }
-    student.feeInfo.status = status;
-
-    const updatedStudent = await student.save();
-    const populated = await updatedStudent.populate(['classId', 'sectionId']);
+    await student.save();
 
     return res.status(200).json({
       success: true,
-      data: populated,
-      message: 'Student fee structure updated successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * @desc    Record fee payment for a student
- * @route   POST /api/students/:id/fee-payment
- * @access  Private (Admin Only)
- */
-const recordFeePayment = async (req, res, next) => {
-  try {
-    const student = await Student.findById(req.params.id);
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        data: null,
-        message: 'Student not found',
-      });
-    }
-
-    let { amount, method, paidOn, forMonth } = req.body;
-
-    // Initialize feeInfo if not present
-    if (!student.feeInfo) {
-      student.feeInfo = { amountDue: 0, amountPaid: 0, status: 'pending', history: [] };
-    }
-
-    // Infer forMonth if not provided
-    if (!forMonth) {
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ];
-      const referenceDate = student.feeInfo.dueDate
-        ? new Date(student.feeInfo.dueDate)
-        : (paidOn ? new Date(paidOn) : new Date());
-      forMonth = `${monthNames[referenceDate.getMonth()]} ${referenceDate.getFullYear()}`;
-    }
-
-    // Push a new entry to feeInfo.history
-    const paymentEntry = {
-      amount,
-      method: method || 'cash',
-      paidOn: paidOn ? new Date(paidOn) : new Date(),
-      forMonth,
-    };
-    student.feeInfo.history.push(paymentEntry);
-
-    // Increment feeInfo.amountPaid by the payment amount
-    student.feeInfo.amountPaid = (student.feeInfo.amountPaid || 0) + amount;
-
-    // Recalculate feeInfo.status using this logic
-    const amountPaid = student.feeInfo.amountPaid || 0;
-    const amountDue = student.feeInfo.amountDue || 0;
-    const dueDate = student.feeInfo.dueDate;
-    const today = new Date();
-
-    let status = 'pending';
-    if (amountPaid >= amountDue && amountDue > 0) {
-      status = 'paid';
-    } else if (dueDate && today > new Date(dueDate) && amountPaid < amountDue) {
-      status = 'overdue';
-    } else {
-      status = 'pending';
-    }
-    student.feeInfo.status = status;
-
-    // --- AUTOMATIC NEXT MONTH FEE ROLLOVER ---
-    if (status === 'paid') {
-      const currentDueDate = student.feeInfo.dueDate ? new Date(student.feeInfo.dueDate) : new Date();
-      
-      // Calculate 28th of next month safely to avoid overflow
-      const nextMonthDate = new Date(currentDueDate);
-      nextMonthDate.setDate(28);
-      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
-
-      // Carry over any overpayment
-      const overpayment = Math.max(0, amountPaid - amountDue);
-
-      // Roll over fee structure
-      student.feeInfo.amountDue = amountDue; // same fee structure amount
-      student.feeInfo.amountPaid = overpayment;
-      student.feeInfo.dueDate = nextMonthDate;
-
-      // Calculate status for next cycle
-      if (overpayment >= amountDue && amountDue > 0) {
-        student.feeInfo.status = 'paid';
-      } else {
-        student.feeInfo.status = 'pending';
-      }
-    }
-
-    const updatedStudent = await student.save();
-    const populated = await updatedStudent.populate(['classId', 'sectionId']);
-
-    return res.status(200).json({
-      success: true,
-      data: populated,
-      message: 'Payment recorded successfully',
+      data: student,
+      message: "Monthly fee updated. This will apply starting next month — the current month's bill has already been set.",
     });
   } catch (error) {
     next(error);
@@ -843,21 +736,23 @@ const getFeeSummaryByClass = async (req, res, next) => {
     let totalCollected = 0;
     let totalOutstanding = 0;
 
+    const { getOrCreateCurrentMonthRecord } = require('./feeRecordController');
+
     for (const student of students) {
-      const amountPaid = student.feeInfo?.amountPaid || 0;
-      const amountDue = student.feeInfo?.amountDue || 0;
-      const status = student.feeInfo?.status || 'pending';
+      // Lazy load/create the current month's record for accurate metrics
+      const record = await getOrCreateCurrentMonthRecord(student._id);
+      
+      const amountPaid = record.amountPaid || 0;
+      const amountDue = record.amountDue || 0;
+      const status = record.status || 'pending';
 
       if (status === 'paid') {
         paidCount++;
-      } else if (status === 'overdue') {
-        overdueCount++;
       } else {
         pendingCount++;
       }
 
       totalCollected += amountPaid;
-      // sum of amountDue - amountPaid across matched students
       totalOutstanding += (amountDue - amountPaid);
     }
 
@@ -888,7 +783,6 @@ module.exports = {
   getMyFeeHistory,
   updateStudent,
   deleteStudent,
-  setFeeStructure,
-  recordFeePayment,
+  setMonthlyFeeAmount,
   getFeeSummaryByClass,
 };

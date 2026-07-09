@@ -22,16 +22,56 @@ const getDashboardSummary = async (req, res, next) => {
     const totalTeachers = await User.countDocuments({ role: 'teacher', isActive: true });
 
     // 3. Fees Summary for Active Students
+    const FeeRecord = require('../models/FeeRecord');
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
     const feeData = await Student.aggregate([
       { $match: { status: 'active' } },
       {
+        $lookup: {
+          from: 'feerecords',
+          let: { studentId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$studentId', '$$studentId'] },
+                    { $eq: ['$month', currentMonth] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'currentFee'
+        }
+      },
+      {
         $project: {
-          amountPaid: { $ifNull: ["$feeInfo.amountPaid", 0] },
-          amountDue: { $ifNull: ["$feeInfo.amountDue", 0] },
+          amountPaid: {
+            $cond: {
+              if: { $gt: [{ $size: '$currentFee' }, 0] },
+              then: { $arrayElemAt: ['$currentFee.amountPaid', 0] },
+              else: 0
+            }
+          },
+          amountDue: {
+            $cond: {
+              if: { $gt: [{ $size: '$currentFee' }, 0] },
+              then: { $arrayElemAt: ['$currentFee.amountDue', 0] },
+              else: { $ifNull: ['$monthlyFeeAmount', 0] }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          amountPaid: 1,
+          amountDue: 1,
           outstanding: {
             $cond: {
-              if: { $gt: ["$feeInfo.amountDue", "$feeInfo.amountPaid"] },
-              then: { $subtract: ["$feeInfo.amountDue", "$feeInfo.amountPaid"] },
+              if: { $gt: ['$amountDue', '$amountPaid'] },
+              then: { $subtract: ['$amountDue', '$amountPaid'] },
               else: 0
             }
           }
@@ -40,8 +80,8 @@ const getDashboardSummary = async (req, res, next) => {
       {
         $group: {
           _id: null,
-          totalCollected: { $sum: "$amountPaid" },
-          totalOutstanding: { $sum: "$outstanding" }
+          totalCollected: { $sum: '$amountPaid' },
+          totalOutstanding: { $sum: '$outstanding' }
         }
       }
     ]);

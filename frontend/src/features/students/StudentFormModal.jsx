@@ -20,6 +20,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     classId: '',
     sectionId: '',
     address: '',
+    monthlyFeeAmount: 0,
     status: 'active'
   });
 
@@ -46,6 +47,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           classId: student.classId?._id || student.classId || '',
           sectionId: student.sectionId?._id || student.sectionId || '',
           address: student.address || '',
+          monthlyFeeAmount: student.monthlyFeeAmount || 0,
           status: student.status || 'active'
         });
       } else {
@@ -60,6 +62,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           classId: '',
           sectionId: '',
           address: '',
+          monthlyFeeAmount: 0,
           status: 'active'
         });
       }
@@ -160,6 +163,12 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
         newErrors.email = 'Invalid email format';
       }
     }
+    if (formData.monthlyFeeAmount !== undefined && formData.monthlyFeeAmount !== '') {
+      const feeVal = parseFloat(formData.monthlyFeeAmount);
+      if (isNaN(feeVal) || feeVal < 0) {
+        newErrors.monthlyFeeAmount = 'Monthly fee amount must be a non-negative number';
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -176,7 +185,8 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
       const payload = {
         ...formData,
         email: formData.email.trim() || undefined,
-        address: formData.address.trim() || undefined
+        address: formData.address.trim() || undefined,
+        monthlyFeeAmount: formData.monthlyFeeAmount ? parseFloat(formData.monthlyFeeAmount) : 0
       };
 
       let res;
@@ -432,6 +442,28 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
               </select>
               {errors.sectionId && (
                 <span className="text-red-500 text-xs font-medium mt-1">{errors.sectionId}</span>
+              )}
+            </div>
+
+            {/* Monthly Fee Amount */}
+            <div className="flex flex-col">
+              <label htmlFor="monthlyFeeAmount" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
+                Monthly Fee Amount (Rs.)
+              </label>
+              <input
+                id="monthlyFeeAmount"
+                type="number"
+                name="monthlyFeeAmount"
+                min="0"
+                value={formData.monthlyFeeAmount}
+                onChange={handleChange}
+                placeholder="e.g. 5000"
+                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
+                  errors.monthlyFeeAmount ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
+                }`}
+              />
+              {errors.monthlyFeeAmount && (
+                <span className="text-red-500 text-xs font-medium mt-1">{errors.monthlyFeeAmount}</span>
               )}
             </div>
 

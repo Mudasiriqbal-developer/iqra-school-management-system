@@ -54,38 +54,9 @@ const studentSchema = new mongoose.Schema(
       ref: 'Section',
       required: [true, 'Section ID is required'],
     },
-    feeInfo: {
-      amountDue: {
-        type: Number,
-        default: 0,
-      },
-      amountPaid: {
-        type: Number,
-        default: 0,
-      },
-      status: {
-        type: String,
-        enum: ['paid', 'pending', 'overdue'],
-        default: 'pending',
-      },
-      dueDate: {
-        type: Date,
-      },
-      history: [
-        {
-          amount: { type: Number, required: true },
-          paidOn: { type: Date, default: Date.now },
-          method: {
-            type: String,
-            required: true,
-            enum: ['cash', 'bank_transfer', 'card', 'other'],
-            default: 'cash',
-          },
-          forMonth: {
-            type: String,
-          },
-        },
-      ],
+    monthlyFeeAmount: {
+      type: Number,
+      default: 0,
     },
     status: {
       type: String,

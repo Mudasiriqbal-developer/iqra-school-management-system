@@ -12,47 +12,45 @@ const getFeeDefaulters = async (req, res, next) => {
   try {
     const { classId, sectionId } = req.query;
 
-    const filter = {
-      'feeInfo.status': { $in: ['pending', 'overdue'] },
-      $expr: {
-        $gt: [
-          { $subtract: [{ $ifNull: ['$feeInfo.amountDue', 0] }, { $ifNull: ['$feeInfo.amountPaid', 0] }] },
-          0
-        ]
-      }
-    };
+    const studentFilter = {};
 
     if (classId && classId.trim() !== '') {
-      filter.classId = classId;
+      studentFilter.classId = classId;
     }
     if (sectionId && sectionId.trim() !== '') {
-      filter.sectionId = sectionId;
+      studentFilter.sectionId = sectionId;
     }
 
-    const students = await Student.find(filter)
+    const students = await Student.find(studentFilter)
       .populate('classId', 'name')
       .populate('sectionId', 'name');
 
-    const defaulters = students.map(student => {
-      const amountDue = student.feeInfo?.amountDue || 0;
-      const amountPaid = student.feeInfo?.amountPaid || 0;
-      const outstandingAmount = amountDue - amountPaid;
+    const { getOrCreateCurrentMonthRecord } = require('./feeRecordController');
+    const defaulters = [];
 
-      return {
-        studentId: student._id,
-        registrationNumber: student.registrationNumber,
-        fullName: student.fullName,
-        fatherName: student.fatherName,
-        fatherContact: student.fatherContact,
-        classId: student.classId ? { _id: student.classId._id, name: student.classId.name } : null,
-        sectionId: student.sectionId ? { _id: student.sectionId._id, name: student.sectionId.name } : null,
-        amountDue,
-        amountPaid,
-        outstandingAmount,
-        dueDate: student.feeInfo?.dueDate || null,
-        status: student.feeInfo?.status || null
-      };
-    });
+    for (const student of students) {
+      const record = await getOrCreateCurrentMonthRecord(student._id);
+
+      if (record.status !== 'paid') {
+        const outstandingAmount = record.amountDue - record.amountPaid;
+        if (outstandingAmount > 0) {
+          defaulters.push({
+            studentId: student._id,
+            registrationNumber: student.registrationNumber,
+            fullName: student.fullName,
+            fatherName: student.fatherName,
+            fatherContact: student.fatherContact,
+            classId: student.classId ? { _id: student.classId._id, name: student.classId.name } : null,
+            sectionId: student.sectionId ? { _id: student.sectionId._id, name: student.sectionId.name } : null,
+            amountDue: record.amountDue,
+            amountPaid: record.amountPaid,
+            outstandingAmount,
+            dueDate: null,
+            status: record.status
+          });
+        }
+      }
+    }
 
     // Sort by outstandingAmount descending
     defaulters.sort((a, b) => b.outstandingAmount - a.outstandingAmount);
@@ -87,30 +85,34 @@ const getMonthlyPayments = async (month, year) => {
   const startDate = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0, 0));
   const endDate = new Date(Date.UTC(y, m, 1, 0, 0, 0, 0));
 
-  const students = await Student.find({
-    'feeInfo.history.paidOn': { $gte: startDate, $lt: endDate }
-  })
-    .populate('classId', 'name')
-    .populate('sectionId', 'name');
+  const FeeRecord = require('../models/FeeRecord');
+
+  const records = await FeeRecord.find({
+    'payments.paidOn': { $gte: startDate, $lt: endDate }
+  }).populate({
+    path: 'studentId',
+    populate: ['classId', 'sectionId']
+  });
 
   const payments = [];
-  students.forEach(student => {
-    if (student.feeInfo && student.feeInfo.history) {
-      student.feeInfo.history.forEach(payment => {
-        const paidOnDate = new Date(payment.paidOn);
-        if (paidOnDate >= startDate && paidOnDate < endDate) {
-          payments.push({
-            studentName: student.fullName,
-            registrationNumber: student.registrationNumber,
-            className: student.classId ? student.classId.name : 'N/A',
-            sectionName: student.sectionId ? student.sectionId.name : 'N/A',
-            amount: payment.amount,
-            method: payment.method,
-            paidOn: paidOnDate.toISOString().split('T')[0]
-          });
-        }
-      });
-    }
+  records.forEach(record => {
+    const student = record.studentId;
+    if (!student) return;
+
+    record.payments.forEach(payment => {
+      const paidOnDate = new Date(payment.paidOn);
+      if (paidOnDate >= startDate && paidOnDate < endDate) {
+        payments.push({
+          studentName: student.fullName,
+          registrationNumber: student.registrationNumber,
+          className: student.classId ? student.classId.name : 'N/A',
+          sectionName: student.sectionId ? student.sectionId.name : 'N/A',
+          amount: payment.amount,
+          method: payment.method,
+          paidOn: paidOnDate.toISOString().split('T')[0]
+        });
+      }
+    });
   });
 
   // Sort chronologically by paidOn
