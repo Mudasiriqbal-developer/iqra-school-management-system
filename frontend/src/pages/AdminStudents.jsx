@@ -589,7 +589,12 @@ const AdminStudents = () => {
                   setIsReceiptConfirmOpen(false);
                   setCreatedStudentForReceipt(null);
                   
-                  const toastId = toast.loading('Downloading admission receipt...');
+                  const remaining = (student.admissionTotal || 0) - (student.admissionAmountPaid || 0);
+                  const toastMsg = remaining > 0
+                    ? `Student created — admission receipt downloading. Rs. ${remaining} added as an outstanding due.`
+                    : 'Student created — admission receipt downloading.';
+
+                  const toastId = toast.loading(toastMsg);
                   try {
                     await downloadAdmissionReceipt(student._id, student.registrationNumber);
                     toast.success('Admission receipt downloaded successfully!', { id: toastId });

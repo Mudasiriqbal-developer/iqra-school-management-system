@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const PDFDocument = require('pdfkit');
 const Student = require('../models/Student');
+const FeeRecord = require('../models/FeeRecord');
 const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
 const Attendance = require('../models/Attendance');
@@ -31,6 +32,8 @@ const createStudent = async (req, res, next) => {
       photoUrl,
       admissionFee,
       books,
+      admissionPaymentStatus,
+      admissionAmountPaid,
     } = req.body;
 
     // Validate books if provided
@@ -100,6 +103,57 @@ const createStudent = async (req, res, next) => {
         message: 'Section not found',
       });
     }
+
+    // Compute admission total
+    const computedBooksTotal = books ? books.reduce((sum, b) => sum + (b.price || 0), 0) : 0;
+    const computedAdmissionTotal = (Number(admissionFee) || 0) + computedBooksTotal;
+
+    let finalPaymentStatus = null;
+    let finalAmountPaid = 0;
+
+    if (computedAdmissionTotal > 0) {
+      if (!admissionPaymentStatus) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Payment status is required when an admission fee or books are added',
+        });
+      }
+
+      if (!['fully_paid', 'unpaid', 'custom_paid'].includes(admissionPaymentStatus)) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Invalid payment status',
+        });
+      }
+
+      if (admissionPaymentStatus === 'fully_paid') {
+        finalPaymentStatus = 'fully_paid';
+        finalAmountPaid = computedAdmissionTotal;
+      } else if (admissionPaymentStatus === 'unpaid') {
+        finalPaymentStatus = 'unpaid';
+        finalAmountPaid = 0;
+      } else if (admissionPaymentStatus === 'custom_paid') {
+        if (admissionAmountPaid === undefined || admissionAmountPaid === null) {
+          return res.status(400).json({
+            success: false,
+            data: null,
+            message: 'Admission amount paid is required for custom_paid status',
+          });
+        }
+        const paidNum = Number(admissionAmountPaid);
+        if (isNaN(paidNum) || paidNum < 0 || paidNum > computedAdmissionTotal) {
+          return res.status(400).json({
+            success: false,
+            data: null,
+            message: 'Admission amount paid must be a valid number between 0 and the total amount inclusive',
+          });
+        }
+        finalPaymentStatus = 'custom_paid';
+        finalAmountPaid = paidNum;
+      }
+    }
  
     // 3. Create student
     const student = await Student.create({
@@ -116,9 +170,38 @@ const createStudent = async (req, res, next) => {
       monthlyFeeAmount,
       status,
       photoUrl,
-      admissionFee,
-      books,
+      admissionFee: Number(admissionFee) || 0,
+      books: books || [],
+      admissionTotal: computedAdmissionTotal,
+      admissionPaymentStatus: finalPaymentStatus,
+      admissionAmountPaid: finalAmountPaid,
     });
+
+    // Create FeeRecord if there is a remaining balance
+    if (computedAdmissionTotal > 0 && finalAmountPaid < computedAdmissionTotal) {
+      const now = new Date();
+      const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      const paymentsArray = [];
+      if (finalAmountPaid > 0) {
+        paymentsArray.push({
+          amount: finalAmountPaid,
+          type: 'custom',
+          method: 'cash',
+          paidOn: now,
+        });
+      }
+
+      await FeeRecord.create({
+        studentId: student._id,
+        month: monthStr,
+        amountDue: computedAdmissionTotal,
+        amountPaid: finalAmountPaid,
+        status: finalAmountPaid === 0 ? 'pending' : 'partial',
+        type: 'admission',
+        payments: paymentsArray,
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -930,6 +1013,27 @@ const generateAdmissionReceiptPDF = async (req, res, next) => {
     } else {
       doc.font('Helvetica-Oblique').fontSize(10).text('No admission fee recorded', 50, currentY);
       currentY += 20;
+    }
+
+    // Payment Status Section
+    if (student.admissionTotal > 0) {
+      currentY += 10;
+      doc.font('Helvetica-Bold').fontSize(12).text('Payment Status', 50, currentY);
+      doc.moveTo(50, currentY + 15).lineTo(562, currentY + 15).stroke();
+      currentY += 25;
+
+      doc.font('Helvetica').fontSize(10);
+      if (student.admissionPaymentStatus === 'fully_paid') {
+        doc.text('Payment Status: Fully Paid', 50, currentY);
+        currentY += 15;
+      } else if (student.admissionPaymentStatus === 'unpaid') {
+        doc.text('Payment Status: Unpaid', 50, currentY);
+        currentY += 15;
+      } else if (student.admissionPaymentStatus === 'custom_paid') {
+        const remaining = student.admissionTotal - student.admissionAmountPaid;
+        doc.text(`Payment Status: Custom Paid (Amount Paid: Rs. ${student.admissionAmountPaid.toFixed(2)} / Remaining: Rs. ${remaining.toFixed(2)})`, 50, currentY);
+        currentY += 15;
+      }
     }
 
     // Grand Total Section

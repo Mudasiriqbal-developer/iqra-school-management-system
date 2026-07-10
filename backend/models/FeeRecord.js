@@ -24,6 +24,11 @@ const feeRecordSchema = new mongoose.Schema(
       enum: ['pending', 'partial', 'paid'],
       default: 'pending',
     },
+    type: {
+      type: String,
+      enum: ['monthly', 'admission'],
+      default: 'monthly',
+    },
     payments: [
       {
         amount: {
@@ -52,7 +57,7 @@ const feeRecordSchema = new mongoose.Schema(
   }
 );
 
-// Compound UNIQUE index on { studentId, month }
-feeRecordSchema.index({ studentId: 1, month: 1 }, { unique: true });
+// Compound UNIQUE index on { studentId, month, type }
+feeRecordSchema.index({ studentId: 1, month: 1, type: 1 }, { unique: true });
 
 module.exports = mongoose.model('FeeRecord', feeRecordSchema);

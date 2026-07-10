@@ -272,14 +272,28 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                       const remaining = Math.max(0, record.amountDue - record.amountPaid);
                       
                       return (
-                        <div key={record._id} className="border border-gray-200/80 rounded-xl overflow-hidden shadow-sm">
+                        <div
+                          key={record._id}
+                          className={`border rounded-xl overflow-hidden shadow-sm ${
+                            record.type === 'admission'
+                              ? 'border-l-4 border-l-blue-500 border-gray-200/80'
+                              : 'border-gray-200/80'
+                          }`}
+                        >
                           {/* Month Row */}
                           <div
                             onClick={() => handleToggleMonth(record.month)}
                             className="flex justify-between items-center p-4 bg-white hover:bg-slate-50/50 cursor-pointer select-none transition-colors"
                           >
                             <div className="space-y-1">
-                              <p className="text-xs font-black text-navy-950">{formatMonth(record.month)}</p>
+                              <p className="text-xs font-black text-navy-950 flex items-center">
+                                {record.type === 'admission' ? 'Admission Fee & Books' : formatMonth(record.month)}
+                                {record.type === 'admission' && (
+                                  <span className="ml-2 text-[9px] font-black uppercase px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md">
+                                    One-Time
+                                  </span>
+                                )}
+                              </p>
                               <div className="flex items-center space-x-3 text-[10px] text-gray-500 font-semibold">
                                 <span>Due: <strong className="text-navy-950">Rs. {record.amountDue}</strong></span>
                                 <span>Paid: <strong className="text-emerald-600">Rs. {record.amountPaid}</strong></span>

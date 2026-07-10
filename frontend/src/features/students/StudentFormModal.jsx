@@ -36,6 +36,8 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
   const [admissionFee, setAdmissionFee] = useState('');
   const [books, setBooks] = useState([]);
   const [admissionErrors, setAdmissionErrors] = useState({});
+  const [admissionPaymentStatus, setAdmissionPaymentStatus] = useState('');
+  const [admissionAmountPaid, setAdmissionAmountPaid] = useState('');
 
   // Reset or prefill form data when student or open state changes
   useEffect(() => {
@@ -45,6 +47,8 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
       setIsAdmissionExpanded(false);
       setAdmissionFee('');
       setBooks([]);
+      setAdmissionPaymentStatus('');
+      setAdmissionAmountPaid('');
       if (student) {
         setFormData({
           registrationNumber: student.registrationNumber || '',
@@ -228,6 +232,29 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
       }
     });
 
+    // Validate Payment Status
+    const { subtotal: booksSubtotal } = getBooksSubtotal();
+    const feeValue = admissionFee ? parseFloat(admissionFee) : 0;
+    const totalCollected = feeValue + booksSubtotal;
+
+    if (totalCollected > 0) {
+      if (!admissionPaymentStatus) {
+        newErrors.paymentStatus = 'Please select a payment status for the admission total.';
+        isValid = false;
+      } else if (admissionPaymentStatus === 'custom_paid') {
+        if (admissionAmountPaid === '' || admissionAmountPaid === undefined || admissionAmountPaid === null) {
+          newErrors.amountPaid = 'Amount paid is required';
+          isValid = false;
+        } else {
+          const paidVal = parseFloat(admissionAmountPaid);
+          if (isNaN(paidVal) || paidVal < 0 || paidVal > totalCollected) {
+            newErrors.amountPaid = `Amount paid must be between 0 and ${totalCollected.toFixed(2)}`;
+            isValid = false;
+          }
+        }
+      }
+    }
+
     setAdmissionErrors(newErrors);
     return isValid;
   };
@@ -301,9 +328,15 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           .filter(b => b.title.trim() !== '' && b.price !== '' && b.price !== null)
           .map(b => ({ title: b.title.trim(), price: parseFloat(b.price) }));
 
-        if (feeNum > 0 || validBooks.length > 0) {
+        const totalCalculated = feeNum + validBooks.reduce((sum, b) => sum + b.price, 0);
+
+        if (totalCalculated > 0) {
           payload.admissionFee = feeNum;
           payload.books = validBooks;
+          payload.admissionPaymentStatus = admissionPaymentStatus;
+          if (admissionPaymentStatus === 'custom_paid') {
+            payload.admissionAmountPaid = parseFloat(admissionAmountPaid);
+          }
         }
       }
 
@@ -740,6 +773,94 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
                   {hasCompletedRow && (
                     <div className="text-xs font-semibold text-gray-600 bg-gray-100/50 px-3 py-1.5 rounded-lg inline-block">
                       Books Subtotal: Rs. {booksSubtotal.toFixed(2)}
+                    </div>
+                  )}
+
+                  {/* Payment Status Selector (Only if total Collected > 0) */}
+                  {totalCollected > 0 && (
+                    <div className="flex flex-col space-y-3 border-t border-gray-100 pt-3">
+                      <span className="text-xs font-bold text-navy-950 uppercase">
+                        Payment Status <span className="text-red-500">*</span>
+                      </span>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { value: 'fully_paid', label: 'Fully Paid' },
+                          { value: 'unpaid', label: 'Unpaid' },
+                          { value: 'custom_paid', label: 'Custom Paid' }
+                        ].map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              setAdmissionPaymentStatus(opt.value);
+                              if (opt.value !== 'custom_paid') {
+                                setAdmissionAmountPaid('');
+                              }
+                              setAdmissionErrors(prev => {
+                                const next = { ...prev };
+                                delete next.paymentStatus;
+                                delete next.amountPaid;
+                                return next;
+                              });
+                            }}
+                            className={`py-2 px-3 text-xs font-bold rounded-xl border text-center transition-all focus:outline-none ${
+                              admissionPaymentStatus === opt.value
+                                ? 'bg-navy-900 border-navy-900 text-white shadow-sm'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                      {admissionErrors.paymentStatus && (
+                        <span className="text-red-500 text-xs font-medium">{admissionErrors.paymentStatus}</span>
+                      )}
+
+                      {/* Custom Amount Paid input */}
+                      {admissionPaymentStatus === 'custom_paid' && (
+                        <div className="flex flex-col space-y-1.5 max-w-xs pt-1">
+                          <label htmlFor="admissionAmountPaid" className="text-xs font-bold text-navy-950 uppercase">
+                            Amount Paid (Rs.) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            id="admissionAmountPaid"
+                            type="number"
+                            min="0"
+                            max={totalCollected}
+                            value={admissionAmountPaid}
+                            onChange={(e) => {
+                              setAdmissionAmountPaid(e.target.value);
+                              setAdmissionErrors(prev => {
+                                const next = { ...prev };
+                                delete next.amountPaid;
+                                return next;
+                              });
+                            }}
+                            placeholder="e.g. 2000"
+                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm bg-white ${
+                              admissionErrors.amountPaid ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-navy-700'
+                            }`}
+                          />
+                          <span className="text-[10px] text-gray-400 font-semibold">Maximum: Rs. {totalCollected.toFixed(2)}</span>
+                          {admissionErrors.amountPaid && (
+                            <span className="text-red-500 text-xs font-medium">{admissionErrors.amountPaid}</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Live Summary Line */}
+                      {admissionPaymentStatus && (
+                        <div className="text-xs font-semibold text-navy-800 bg-navy-50/50 border border-navy-100 p-2.5 rounded-xl leading-normal mt-1">
+                          {admissionPaymentStatus === 'fully_paid' && "No remaining balance — fully settled at registration."}
+                          {admissionPaymentStatus === 'unpaid' && `${totalCollected.toFixed(2)} will be added to this student's fee account as an outstanding due.`}
+                          {admissionPaymentStatus === 'custom_paid' && (
+                            <>
+                              Rs. {parseFloat(admissionAmountPaid || 0).toFixed(2)} paid now — Rs. {Math.max(0, totalCollected - parseFloat(admissionAmountPaid || 0)).toFixed(2)} will be added as an outstanding due.
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 

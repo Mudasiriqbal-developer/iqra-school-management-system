@@ -104,6 +104,8 @@ router.post(
     body('books').optional().isArray(),
     body('books.*.title').optional().trim().notEmpty(),
     body('books.*.price').optional().isFloat({ min: 0 }),
+    body('admissionPaymentStatus').optional().isIn(['fully_paid', 'unpaid', 'custom_paid']),
+    body('admissionAmountPaid').optional().isFloat({ min: 0 }),
   ],
   validateRequest,
   createStudent

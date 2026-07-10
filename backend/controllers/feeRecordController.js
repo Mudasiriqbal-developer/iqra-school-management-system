@@ -262,7 +262,9 @@ const generateReceiptPDF = async (req, res, next) => {
       totalPaid += r.amountPaid;
 
       const numPayments = r.payments.length;
-      const rowHeight = Math.max(1, numPayments) * 15 + 5;
+      const isAdmission = r.type === 'admission';
+      const labelLines = isAdmission ? 3 : 1;
+      const rowHeight = Math.max(labelLines, numPayments) * 15 + 5;
 
       if (yPosition + rowHeight > 700) {
         doc.addPage();
@@ -279,7 +281,8 @@ const generateReceiptPDF = async (req, res, next) => {
         yPosition += 25;
       }
 
-      doc.text(r.month, monthColX, yPosition, { width: colWidths.month });
+      const monthLabel = isAdmission ? 'Admission Fee & Books (Registration)' : r.month;
+      doc.text(monthLabel, monthColX, yPosition, { width: colWidths.month });
       doc.text(r.amountDue.toFixed(2), dueColX, yPosition, { width: colWidths.due, align: 'right' });
       doc.text(r.amountPaid.toFixed(2), paidColX, yPosition, { width: colWidths.paid, align: 'right' });
       doc.text(r.status.toUpperCase(), statusColX, yPosition, { width: colWidths.status, align: 'center' });
