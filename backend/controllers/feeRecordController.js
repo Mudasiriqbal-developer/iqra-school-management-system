@@ -10,7 +10,7 @@ const getOrCreateCurrentMonthRecord = async (studentId) => {
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  let record = await FeeRecord.findOne({ studentId, month });
+  let record = await FeeRecord.findOne({ studentId, month, type: 'monthly' });
   if (!record) {
     const student = await Student.findById(studentId);
     if (!student) {
@@ -22,7 +22,8 @@ const getOrCreateCurrentMonthRecord = async (studentId) => {
       amountDue: student.monthlyFeeAmount || 0,
       amountPaid: 0,
       status: 'pending',
-      payments: []
+      payments: [],
+      type: 'monthly'
     });
   }
   return record;

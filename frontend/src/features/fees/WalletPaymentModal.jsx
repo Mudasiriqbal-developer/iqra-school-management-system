@@ -94,7 +94,9 @@ const WalletPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
             <CreditCard className="h-5 w-5 text-white animate-pulse" />
             <div>
               <h2 className="text-md font-bold tracking-tight">{studentName}</h2>
-              <p className="text-xxs text-slate-200 font-bold uppercase tracking-wider mt-0.5">{month} Fee Payment</p>
+              <p className="text-xxs text-slate-200 font-bold uppercase tracking-wider mt-0.5">
+                {feeRecord.type === 'admission' ? 'Admission Fee & Books Payment' : `${month} Fee Payment`}
+              </p>
             </div>
           </div>
           <button
@@ -123,7 +125,7 @@ const WalletPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
           {/* Payment Option Cards */}
           <div className="space-y-3">
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Payment Amount</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className={`grid grid-cols-1 ${feeRecord.type === 'admission' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-3`}>
               
               {/* Pay in Full */}
               <button
@@ -139,22 +141,24 @@ const WalletPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
                 <span className="text-sm font-black text-navy-primary mt-2">Rs. {remainingBalance.toLocaleString()}</span>
               </button>
 
-              {/* Pay Half */}
-              <button
-                type="button"
-                onClick={() => setSelectedOption('half')}
-                className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 ${
-                  selectedOption === 'half'
-                    ? 'border-navy-primary bg-navy-50/40 ring-2 ring-navy-primary/20'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
-                }`}
-              >
-                <div>
-                  <span className="text-xs font-bold text-navy-950">Pay Half</span>
-                  <p className="text-[9px] text-gray-400 font-semibold mt-0.5">(50% of original bill)</p>
-                </div>
-                <span className="text-sm font-black text-navy-primary mt-2">Rs. {halfAmount.toLocaleString()}</span>
-              </button>
+              {/* Pay Half (only if type is monthly) */}
+              {feeRecord.type !== 'admission' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedOption('half')}
+                  className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 ${
+                    selectedOption === 'half'
+                      ? 'border-navy-primary bg-navy-50/40 ring-2 ring-navy-primary/20'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  <div>
+                    <span className="text-xs font-bold text-navy-950">Pay Half</span>
+                    <p className="text-[9px] text-gray-400 font-semibold mt-0.5">(50% of original bill)</p>
+                  </div>
+                  <span className="text-sm font-black text-navy-primary mt-2">Rs. {halfAmount.toLocaleString()}</span>
+                </button>
+              )}
 
               {/* Custom */}
               <button

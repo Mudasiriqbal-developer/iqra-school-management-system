@@ -163,9 +163,12 @@ const AdminStudents = () => {
   const handleFormSuccess = async (createdStudent) => {
     fetchStudentsList();
     if (!selectedStudent && createdStudent) {
-      const hasFee = createdStudent.admissionFee > 0;
-      const hasBooks = createdStudent.books && createdStudent.books.length > 0;
-      if (hasFee || hasBooks) {
+      const hasAdmission = 
+        (createdStudent.admissionTotal || 0) > 0 ||
+        (createdStudent.admissionFee || 0) > 0 ||
+        (createdStudent.books && createdStudent.books.length > 0) ||
+        !!createdStudent.admissionPaymentStatus;
+      if (hasAdmission) {
         setCreatedStudentForReceipt(createdStudent);
         setIsReceiptConfirmOpen(true);
       }

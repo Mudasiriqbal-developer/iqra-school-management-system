@@ -287,7 +287,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                           >
                             <div className="space-y-1">
                               <p className="text-xs font-black text-navy-950 flex items-center">
-                                {record.type === 'admission' ? 'Admission Fee & Books' : formatMonth(record.month)}
+                                {record.type === 'admission' ? 'Admission & Books Due' : formatMonth(record.month)}
                                 {record.type === 'admission' && (
                                   <span className="ml-2 text-[9px] font-black uppercase px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md">
                                     One-Time
