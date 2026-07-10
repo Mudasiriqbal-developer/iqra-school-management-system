@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 import {
   createStudent,
   updateStudent,
@@ -31,10 +31,20 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // States for optional admission details (Create mode only)
+  const [isAdmissionExpanded, setIsAdmissionExpanded] = useState(false);
+  const [admissionFee, setAdmissionFee] = useState('');
+  const [books, setBooks] = useState([]);
+  const [admissionErrors, setAdmissionErrors] = useState({});
+
   // Reset or prefill form data when student or open state changes
   useEffect(() => {
     if (isOpen) {
       setErrors({});
+      setAdmissionErrors({});
+      setIsAdmissionExpanded(false);
+      setAdmissionFee('');
+      setBooks([]);
       if (student) {
         setFormData({
           registrationNumber: student.registrationNumber || '',
@@ -127,6 +137,101 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     }
   };
 
+  const handleAddBook = () => {
+    setBooks(prev => [...prev, { title: '', price: '' }]);
+  };
+
+  const handleRemoveBook = (index) => {
+    setBooks(prev => prev.filter((_, idx) => idx !== index));
+    setAdmissionErrors(prev => {
+      const next = { ...prev };
+      delete next[`book_title_${index}`];
+      delete next[`book_price_${index}`];
+      const shifted = {};
+      Object.keys(next).forEach(key => {
+        if (key.startsWith('book_title_') || key.startsWith('book_price_')) {
+          const parts = key.split('_');
+          const field = parts[1];
+          const idx = parseInt(parts[parts.length - 1], 10);
+          if (idx > index) {
+            shifted[`book_${field}_${idx - 1}`] = next[key];
+          } else {
+            shifted[key] = next[key];
+          }
+        } else {
+          shifted[key] = next[key];
+        }
+      });
+      return shifted;
+    });
+  };
+
+  const handleBookChange = (index, field, value) => {
+    setBooks(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+    setAdmissionErrors(prev => ({
+      ...prev,
+      [`book_${field}_${index}`]: ''
+    }));
+  };
+
+  const getBooksSubtotal = () => {
+    let subtotal = 0;
+    let hasCompletedRow = false;
+    books.forEach(book => {
+      const hasTitle = book.title && book.title.trim() !== '';
+      const hasPrice = book.price !== '' && book.price !== undefined && book.price !== null;
+      if (hasTitle && hasPrice) {
+        const priceVal = parseFloat(book.price);
+        if (!isNaN(priceVal)) {
+          subtotal += priceVal;
+          hasCompletedRow = true;
+        }
+      }
+    });
+    return { subtotal, hasCompletedRow };
+  };
+
+  const validateAdmission = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    // Validate Admission Fee
+    if (admissionFee !== '' && admissionFee !== undefined && admissionFee !== null) {
+      const feeVal = parseFloat(admissionFee);
+      if (isNaN(feeVal) || feeVal < 0) {
+        newErrors.fee = 'Admission fee must be a non-negative number';
+        isValid = false;
+      }
+    }
+
+    // Validate Books
+    books.forEach((book, index) => {
+      const hasTitle = book.title && book.title.trim() !== '';
+      const hasPrice = book.price !== '' && book.price !== undefined && book.price !== null && book.price !== '';
+
+      if (hasTitle && !hasPrice) {
+        newErrors[`book_price_${index}`] = 'Price is required';
+        isValid = false;
+      } else if (!hasTitle && hasPrice) {
+        newErrors[`book_title_${index}`] = 'Title is required';
+        isValid = false;
+      } else if (hasTitle && hasPrice) {
+        const priceVal = parseFloat(book.price);
+        if (isNaN(priceVal) || priceVal < 0) {
+          newErrors[`book_price_${index}`] = 'Must be non-negative';
+          isValid = false;
+        }
+      }
+    });
+
+    setAdmissionErrors(newErrors);
+    return isValid;
+  };
+
   // Perform basic validations
   const validateForm = () => {
     const newErrors = {};
@@ -176,7 +281,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm() || !validateAdmission()) return;
 
     try {
       setSubmitting(true);
@@ -189,6 +294,19 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
         monthlyFeeAmount: formData.monthlyFeeAmount ? parseFloat(formData.monthlyFeeAmount) : 0
       };
 
+      // Add admission fields only if section was expanded and contains data
+      if (!student && isAdmissionExpanded) {
+        const feeNum = admissionFee !== '' ? parseFloat(admissionFee) : 0;
+        const validBooks = books
+          .filter(b => b.title.trim() !== '' && b.price !== '' && b.price !== null)
+          .map(b => ({ title: b.title.trim(), price: parseFloat(b.price) }));
+
+        if (feeNum > 0 || validBooks.length > 0) {
+          payload.admissionFee = feeNum;
+          payload.books = validBooks;
+        }
+      }
+
       let res;
       if (student) {
         res = await updateStudent(student._id, payload);
@@ -198,7 +316,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
 
       if (res.success) {
         toast.success(student ? 'Student updated successfully' : 'Student created successfully');
-        onSuccess();
+        onSuccess(res.data);
         onClose();
       } else {
         toast.error(res.message || 'Something went wrong');
@@ -211,6 +329,11 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
       setSubmitting(false);
     }
   };
+
+  const { subtotal: booksSubtotal, hasCompletedRow } = getBooksSubtotal();
+  const feeValue = admissionFee ? parseFloat(admissionFee) : 0;
+  const showTotalLine = isAdmissionExpanded && (books.length > 0 || feeValue > 0);
+  const totalCollected = feeValue + booksSubtotal;
 
   if (!isOpen) return null;
 
@@ -504,6 +627,133 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
             </div>
 
           </div>
+
+          {/* Admission Details Section (CREATE Mode Only) */}
+          {!student && (
+            <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 space-y-4">
+              <button
+                type="button"
+                onClick={() => setIsAdmissionExpanded(!isAdmissionExpanded)}
+                className="flex items-center justify-between w-full text-left font-bold text-navy-950 text-sm focus:outline-none"
+              >
+                <span>Admission Details (Optional)</span>
+                {isAdmissionExpanded ? (
+                  <ChevronUp className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-gray-500" />
+                )}
+              </button>
+
+              {isAdmissionExpanded && (
+                <div className="space-y-4 pt-2 border-t border-gray-100">
+                  {/* Admission Fee Input */}
+                  <div className="flex flex-col max-w-xs">
+                    <label htmlFor="admissionFee" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
+                      Admission Fee (Rs.)
+                    </label>
+                    <input
+                      id="admissionFee"
+                      type="number"
+                      name="admissionFee"
+                      min="0"
+                      value={admissionFee}
+                      onChange={(e) => {
+                        setAdmissionFee(e.target.value);
+                        if (admissionErrors.fee) {
+                          setAdmissionErrors(prev => ({ ...prev, fee: '' }));
+                        }
+                      }}
+                      placeholder="e.g. 1500"
+                      className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm bg-white ${
+                        admissionErrors.fee ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-navy-700'
+                      }`}
+                    />
+                    {admissionErrors.fee && (
+                      <span className="text-red-500 text-xs font-medium mt-1">{admissionErrors.fee}</span>
+                    )}
+                  </div>
+
+                  {/* Book Details dynamic list */}
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-navy-950 uppercase block">
+                      Book Details
+                    </span>
+
+                    {books.length > 0 && (
+                      <div className="space-y-2">
+                        {books.map((book, idx) => (
+                          <div key={idx} className="flex items-start space-x-3">
+                            <div className="flex-1 flex flex-col">
+                              <input
+                                type="text"
+                                value={book.title}
+                                onChange={(e) => handleBookChange(idx, 'title', e.target.value)}
+                                placeholder="Book Title"
+                                className={`w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 ${
+                                  admissionErrors[`book_title_${idx}`] ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
+                                }`}
+                              />
+                              {admissionErrors[`book_title_${idx}`] && (
+                                <span className="text-red-500 text-xs font-medium mt-1">{admissionErrors[`book_title_${idx}`]}</span>
+                              )}
+                            </div>
+
+                            <div className="w-32 flex flex-col">
+                              <input
+                                type="number"
+                                min="0"
+                                value={book.price}
+                                onChange={(e) => handleBookChange(idx, 'price', e.target.value)}
+                                placeholder="Price"
+                                className={`w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 ${
+                                  admissionErrors[`book_price_${idx}`] ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
+                                }`}
+                              />
+                              {admissionErrors[`book_price_${idx}`] && (
+                                <span className="text-red-500 text-xs font-medium mt-1">{admissionErrors[`book_price_${idx}`]}</span>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveBook(idx)}
+                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors focus:outline-none mt-0.5"
+                            >
+                              <Trash2 className="h-4.5 w-4.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleAddBook}
+                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-navy-700/30 text-navy-900 rounded-xl text-xs font-bold hover:bg-navy-50 transition-colors focus:outline-none"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Add Book</span>
+                    </button>
+                  </div>
+
+                  {/* Books Subtotal */}
+                  {hasCompletedRow && (
+                    <div className="text-xs font-semibold text-gray-600 bg-gray-100/50 px-3 py-1.5 rounded-lg inline-block">
+                      Books Subtotal: Rs. {booksSubtotal.toFixed(2)}
+                    </div>
+                  )}
+
+                  {/* Total line */}
+                  {showTotalLine && (
+                    <div className="text-sm font-bold text-navy-950 border-t border-gray-100 pt-2.5 flex items-center justify-between">
+                      <span>Total Collected at Admission:</span>
+                      <span className="text-emerald-700 font-extrabold text-base">Rs. {totalCollected.toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Form Actions */}
           <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">

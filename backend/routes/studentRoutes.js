@@ -1,5 +1,5 @@
 const express = require('express');
-const { check } = require('express-validator');
+const { check, body } = require('express-validator');
 const {
   createStudent,
   getAllStudents,
@@ -12,6 +12,7 @@ const {
   deleteStudent,
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
+  generateAdmissionReceiptPDF,
 } = require('../controllers/studentController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -65,6 +66,13 @@ router.get('/me/subjects', authorize('student'), getMySubjects);
 router.get('/me/fees', authorize('student'), getMyFeeHistory);
 
 /**
+ * @route   GET /api/students/:id/admission-receipt-pdf
+ * @desc    Generate student admission receipt PDF
+ * @access  Private (Admin Only)
+ */
+router.get('/:id/admission-receipt-pdf', authorize('admin'), generateAdmissionReceiptPDF);
+
+/**
  * @route   GET /api/students/:id
  * @desc    Get student by ID
  * @access  Private (Admin, Teacher)
@@ -92,6 +100,10 @@ router.post(
     check('feeInfo.status', 'Fee status must be paid, pending, or overdue').optional().isIn(['paid', 'pending', 'overdue']),
     check('feeInfo.dueDate', 'Fee due date must be a valid date').optional().isISO8601(),
     check('status', 'Status must be active, on_leave, or suspended').optional().isIn(['active', 'on_leave', 'suspended']),
+    body('admissionFee').optional().isFloat({ min: 0 }),
+    body('books').optional().isArray(),
+    body('books.*.title').optional().trim().notEmpty(),
+    body('books.*.price').optional().isFloat({ min: 0 }),
   ],
   validateRequest,
   createStudent

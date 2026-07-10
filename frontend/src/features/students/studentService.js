@@ -62,3 +62,24 @@ export const getSectionsByClass = async (classId) => {
   const response = await api.get('/sections', { params: { classId } });
   return response.data;
 };
+
+/**
+ * Download a PDF admission receipt for a student.
+ * @param {string} studentId - Student MongoDB ID
+ * @param {string} registrationNumber - Student's Registration Number (for the downloaded filename)
+ */
+export const downloadAdmissionReceipt = async (studentId, registrationNumber) => {
+  const response = await api.get(`/students/${studentId}/admission-receipt-pdf`, {
+    responseType: 'blob'
+  });
+
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `${registrationNumber}-admission-receipt.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};

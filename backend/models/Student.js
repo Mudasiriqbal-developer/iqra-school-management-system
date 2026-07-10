@@ -67,6 +67,40 @@ const studentSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    admissionFee: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    books: [
+      {
+        title: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+      },
+    ],
+    admissionPaymentStatus: {
+      type: String,
+      enum: ['fully_paid', 'unpaid', 'custom_paid'],
+      default: null,
+    },
+    admissionAmountPaid: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    admissionTotal: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,

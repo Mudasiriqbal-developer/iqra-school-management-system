@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const PDFDocument = require('pdfkit');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
@@ -28,7 +29,48 @@ const createStudent = async (req, res, next) => {
       monthlyFeeAmount,
       status,
       photoUrl,
+      admissionFee,
+      books,
     } = req.body;
+
+    // Validate books if provided
+    if (books !== undefined && books !== null) {
+      if (!Array.isArray(books)) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Books must be an array',
+        });
+      }
+      for (const book of books) {
+        if (!book || typeof book.title !== 'string' || book.title.trim() === '') {
+          return res.status(400).json({
+            success: false,
+            data: null,
+            message: 'Each book must have a non-empty title',
+          });
+        }
+        if (book.price === undefined || book.price === null || typeof book.price !== 'number' || book.price < 0) {
+          return res.status(400).json({
+            success: false,
+            data: null,
+            message: 'Each book must have a valid price greater than or equal to 0',
+          });
+        }
+      }
+    }
+
+    // Validate admissionFee if provided
+    if (admissionFee !== undefined && admissionFee !== null) {
+      const feeNum = Number(admissionFee);
+      if (isNaN(feeNum) || feeNum < 0) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Admission fee must be a valid non-negative number',
+        });
+      }
+    }
  
     // 1. Check registration number unique
     const registrationExists = await Student.findOne({ registrationNumber });
@@ -74,6 +116,8 @@ const createStudent = async (req, res, next) => {
       monthlyFeeAmount,
       status,
       photoUrl,
+      admissionFee,
+      books,
     });
 
     return res.status(201).json({
@@ -773,6 +817,144 @@ const getFeeSummaryByClass = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Generate student admission receipt PDF
+ * @route   GET /api/students/:id/admission-receipt-pdf
+ * @access  Private (Admin Only)
+ */
+const generateAdmissionReceiptPDF = async (req, res, next) => {
+  try {
+    const student = await Student.findById(req.params.id)
+      .populate('classId', 'name')
+      .populate('sectionId', 'name');
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Student not found',
+      });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${student.registrationNumber}-admission-receipt.pdf"`
+    );
+
+    const doc = new PDFDocument({ margin: 50 });
+    doc.pipe(res);
+
+    // Header
+    doc.font('Helvetica-Bold').fontSize(20).text('IHASS - Iqra Hadiqa Tul Atfal School', { align: 'center' });
+    doc.fontSize(14).text('Student Admission Receipt', { align: 'center' });
+    doc.moveDown(1.5);
+
+    // Student Details section
+    const startY = doc.y;
+    doc.font('Helvetica-Bold').fontSize(12).text('Student Details', 50, startY);
+    doc.moveTo(50, startY + 15).lineTo(562, startY + 15).stroke();
+    doc.moveDown(0.8);
+
+    let infoY = doc.y;
+    doc.font('Helvetica-Bold').fontSize(10).text('Full Name:', 50, infoY);
+    doc.font('Helvetica').text(student.fullName || 'N/A', 130, infoY);
+
+    doc.font('Helvetica-Bold').text('Reg Number:', 290, infoY);
+    doc.font('Helvetica').text(student.registrationNumber || 'N/A', 370, infoY);
+
+    infoY += 18;
+    doc.font('Helvetica-Bold').text("Father's Name:", 50, infoY);
+    doc.font('Helvetica').text(student.fatherName || 'N/A', 130, infoY);
+
+    doc.font('Helvetica-Bold').text('Class/Section:', 290, infoY);
+    const classSection = `${student.classId?.name || 'N/A'} / ${student.sectionId?.name || 'N/A'}`;
+    doc.font('Helvetica').text(classSection, 370, infoY);
+
+    infoY += 18;
+    doc.font('Helvetica-Bold').text('Date of Birth:', 50, infoY);
+    const dob = student.dateOfBirth ? new Date(student.dateOfBirth).toISOString().split('T')[0] : 'N/A';
+    doc.font('Helvetica').text(dob, 130, infoY);
+
+    doc.font('Helvetica-Bold').text('Admission Date:', 290, infoY);
+    const admissionDate = student.createdAt ? new Date(student.createdAt).toISOString().split('T')[0] : 'N/A';
+    doc.font('Helvetica').text(admissionDate, 370, infoY);
+
+    // Books section
+    let currentY = infoY + 25;
+    doc.font('Helvetica-Bold').fontSize(12).text('Books Purchased at Admission', 50, currentY);
+    doc.moveTo(50, currentY + 15).lineTo(562, currentY + 15).stroke();
+    currentY += 25;
+
+    const hasBooks = student.books && student.books.length > 0;
+    let booksSubtotal = 0;
+
+    if (hasBooks) {
+      doc.font('Helvetica-Bold').fontSize(10);
+      doc.text('Book Title', 50, currentY, { width: 350 });
+      doc.text('Price', 400, currentY, { width: 162, align: 'right' });
+      doc.moveTo(50, currentY + 15).lineTo(562, currentY + 15).strokeColor('#cccccc').lineWidth(0.5).stroke().strokeColor('#000000').lineWidth(1);
+      currentY += 20;
+
+      doc.font('Helvetica');
+      student.books.forEach(book => {
+        booksSubtotal += book.price;
+        doc.text(book.title, 50, currentY, { width: 350 });
+        doc.text(`Rs. ${book.price.toFixed(2)}`, 400, currentY, { width: 162, align: 'right' });
+        currentY += 18;
+      });
+
+      // Subtotal row
+      doc.moveTo(50, currentY).lineTo(562, currentY).strokeColor('#cccccc').lineWidth(0.5).stroke().strokeColor('#000000').lineWidth(1);
+      currentY += 5;
+      doc.font('Helvetica-Bold');
+      doc.text('Books Subtotal', 50, currentY, { width: 350 });
+      doc.text(`Rs. ${booksSubtotal.toFixed(2)}`, 400, currentY, { width: 162, align: 'right' });
+      currentY += 20;
+    } else {
+      doc.font('Helvetica-Oblique').fontSize(10);
+      doc.text('No books purchased at admission.', 50, currentY);
+      currentY += 25;
+    }
+
+    // Admission Fee section
+    doc.font('Helvetica-Bold').fontSize(12).text('Admission Fee', 50, currentY);
+    doc.moveTo(50, currentY + 15).lineTo(562, currentY + 15).stroke();
+    currentY += 25;
+
+    const admissionFeeAmount = student.admissionFee || 0;
+    if (admissionFeeAmount > 0) {
+      doc.font('Helvetica').fontSize(10).text('Admission Fee Amount:', 50, currentY);
+      doc.text(`Rs. ${admissionFeeAmount.toFixed(2)}`, 400, currentY, { width: 162, align: 'right' });
+      currentY += 20;
+    } else {
+      doc.font('Helvetica-Oblique').fontSize(10).text('No admission fee recorded', 50, currentY);
+      currentY += 20;
+    }
+
+    // Grand Total Section
+    const grandTotal = admissionFeeAmount + booksSubtotal;
+    currentY += 10;
+    doc.moveTo(50, currentY).lineTo(562, currentY).lineWidth(1.5).stroke().lineWidth(1);
+    currentY += 10;
+
+    doc.font('Helvetica-Bold').fontSize(14).text('GRAND TOTAL:', 50, currentY);
+    doc.fontSize(14).text(`Rs. ${grandTotal.toFixed(2)}`, 400, currentY, { width: 162, align: 'right' });
+
+    currentY += 25;
+    doc.moveTo(50, currentY).lineTo(562, currentY).lineWidth(1.5).stroke().lineWidth(1);
+
+    // Footer section
+    const nowStr = new Date().toLocaleString();
+    doc.fontSize(8).font('Helvetica-Oblique').text(`Generated on ${nowStr}`, 50, 715, { align: 'center' });
+    doc.text('Note: This is an admission-time receipt, distinct from monthly fee receipts.', 50, 725, { align: 'center' });
+
+    doc.end();
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createStudent,
   getAllStudents,
@@ -785,4 +967,5 @@ module.exports = {
   deleteStudent,
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
+  generateAdmissionReceiptPDF,
 };

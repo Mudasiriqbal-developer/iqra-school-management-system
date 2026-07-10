@@ -1,6 +1,8 @@
 import React from 'react';
 import { X, User, MapPin, Phone, Mail, BookOpen, Shield, DollarSign, CalendarCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 import StatusBadge from '../../components/shared/StatusBadge';
+import { downloadAdmissionReceipt } from './studentService';
 
 const StudentViewDrawer = ({ isOpen, onClose, student }) => {
   if (!isOpen || !student) return null;
@@ -250,6 +252,67 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
               )}
             </div>
           </div>
+
+          {/* Admission Details (Optional / If exists) */}
+          {((student.admissionFee && student.admissionFee > 0) || (student.books && student.books.length > 0)) && (
+            <div className="border border-gray-100 p-4 rounded-xl space-y-4">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                <h3 className="text-xs font-bold text-navy-950 uppercase tracking-wider flex items-center">
+                  <BookOpen className="h-4 w-4 mr-2 text-navy-800" />
+                  Admission Details
+                </h3>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const toastId = toast.loading('Downloading admission receipt...');
+                    try {
+                      await downloadAdmissionReceipt(student._id, student.registrationNumber);
+                      toast.success('Admission receipt downloaded successfully!', { id: toastId });
+                    } catch (err) {
+                      console.error(err);
+                      toast.error('Failed to download admission receipt.', { id: toastId });
+                    }
+                  }}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1 bg-navy-900 hover:bg-navy-800 text-white rounded-lg text-xs font-bold transition-colors focus:outline-none"
+                >
+                  <span>Download Admission Receipt</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-xs font-semibold text-gray-400 block uppercase">Admission Fee</span>
+                  <span className="font-bold text-navy-900">
+                    {student.admissionFee && student.admissionFee > 0 ? `Rs. ${student.admissionFee}` : 'No admission fee recorded'}
+                  </span>
+                </div>
+              </div>
+
+              {student.books && student.books.length > 0 && (
+                <div>
+                  <span className="text-xs font-bold text-navy-950 uppercase tracking-wider block mb-2">Books Purchased</span>
+                  <div className="overflow-hidden border border-gray-100 rounded-lg">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100">
+                          <th className="py-2 px-3 font-semibold text-gray-500 uppercase">Book Title</th>
+                          <th className="py-2 px-3 font-semibold text-gray-500 uppercase">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {student.books.map((book, index) => (
+                          <tr key={index} className="hover:bg-slate-50/50">
+                            <td className="py-2 px-3 text-gray-600">{book.title}</td>
+                            <td className="py-2 px-3 font-bold text-navy-950">Rs. {book.price}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
         </div>
 

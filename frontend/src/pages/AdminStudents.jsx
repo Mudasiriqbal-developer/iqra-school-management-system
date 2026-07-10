@@ -10,7 +10,7 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getStudents, deleteStudent, getClasses, getSectionsByClass } from '../features/students/studentService';
+import { getStudents, deleteStudent, getClasses, getSectionsByClass, downloadAdmissionReceipt } from '../features/students/studentService';
 import StudentFormModal from '../features/students/StudentFormModal';
 import StudentViewDrawer from '../features/students/StudentViewDrawer';
 
@@ -56,6 +56,10 @@ const AdminStudents = () => {
   // Deactivation confirmation modal states
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
+
+  // Receipt download confirmation modal states
+  const [isReceiptConfirmOpen, setIsReceiptConfirmOpen] = useState(false);
+  const [createdStudentForReceipt, setCreatedStudentForReceipt] = useState(null);
 
   // Debounce search input
   useEffect(() => {
@@ -154,6 +158,18 @@ const AdminStudents = () => {
   const handleOpenDeleteConfirm = (student) => {
     setStudentToDelete(student);
     setIsDeleteConfirmOpen(true);
+  };
+
+  const handleFormSuccess = async (createdStudent) => {
+    fetchStudentsList();
+    if (!selectedStudent && createdStudent) {
+      const hasFee = createdStudent.admissionFee > 0;
+      const hasBooks = createdStudent.books && createdStudent.books.length > 0;
+      if (hasFee || hasBooks) {
+        setCreatedStudentForReceipt(createdStudent);
+        setIsReceiptConfirmOpen(true);
+      }
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -500,7 +516,7 @@ const AdminStudents = () => {
           setSelectedStudent(null);
         }}
         student={selectedStudent}
-        onSuccess={fetchStudentsList}
+        onSuccess={handleFormSuccess}
       />
 
       {/* Student Detail Viewer Modal */}
@@ -539,6 +555,52 @@ const AdminStudents = () => {
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-colors"
               >
                 Deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Download Confirmation Modal */}
+      {isReceiptConfirmOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
+            <div className="flex items-center space-x-3 text-navy-900 mb-4">
+              <BookOpen className="h-6 w-6" />
+              <h3 className="text-lg font-bold text-navy-950">Download Receipt?</h3>
+            </div>
+            <p className="text-sm text-gray-500 mb-6">
+              Do you want to download the admission receipt for <span className="font-bold text-navy-900">{createdStudentForReceipt?.fullName}</span>?
+            </p>
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setIsReceiptConfirmOpen(false);
+                  setCreatedStudentForReceipt(null);
+                }}
+                className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors"
+              >
+                No
+              </button>
+              <button
+                onClick={async () => {
+                  if (!createdStudentForReceipt) return;
+                  const student = createdStudentForReceipt;
+                  setIsReceiptConfirmOpen(false);
+                  setCreatedStudentForReceipt(null);
+                  
+                  const toastId = toast.loading('Downloading admission receipt...');
+                  try {
+                    await downloadAdmissionReceipt(student._id, student.registrationNumber);
+                    toast.success('Admission receipt downloaded successfully!', { id: toastId });
+                  } catch (err) {
+                    console.error(err);
+                    toast.error('Failed to download admission receipt.', { id: toastId });
+                  }
+                }}
+                className="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-bold transition-colors"
+              >
+                Yes
               </button>
             </div>
           </div>
