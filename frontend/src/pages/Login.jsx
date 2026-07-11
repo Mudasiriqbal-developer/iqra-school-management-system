@@ -124,7 +124,7 @@ const Login = () => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                {activeTab === 'student' ? 'Student ID / Email' : activeTab === 'teacher' ? 'Teacher ID / Email' : 'Admin ID / Email'}
+                {activeTab === 'student' ? 'Registration Number' : 'Email Address'}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -136,7 +136,7 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={activeTab === 'student' ? 'e.g. STD12345' : 'e.g. name@ihass.edu'}
+                  placeholder={activeTab === 'student' ? 'e.g. BSCS-231184' : 'e.g. name@ihass.edu'}
                   className="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all bg-gray-50 focus:bg-white"
                 />
               </div>
@@ -202,9 +202,9 @@ const Login = () => {
 
           <p className="text-center text-sm text-gray-500 mt-6">
             New to the institution?{' '}
-            <Link to="/register" className="font-semibold text-navy-800 hover:text-navy-700 transition-colors">
-              Create an Account
-            </Link>
+            <span className="font-semibold text-navy-800">
+              Contact Registration
+            </span>
           </p>
         </div>
 

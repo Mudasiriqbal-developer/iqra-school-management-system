@@ -35,11 +35,6 @@ const studentSchema = new mongoose.Schema(
       required: [true, "Father's contact is required"],
       trim: true,
     },
-    email: {
-      type: String,
-      lowercase: true,
-      trim: true,
-    },
     address: {
       type: String,
       trim: true,

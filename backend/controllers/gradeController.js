@@ -152,7 +152,7 @@ const getMyGrades = async (req, res, next) => {
     let student;
 
     if (req.user.role === 'student') {
-      student = await Student.findOne({ email: req.user.email });
+      student = await Student.findOne({ registrationNumber: req.user.registrationNumber });
     } else if (req.user.role === 'parent') {
       // Find any student linked to this parent email
       student = await Student.findOne({ parentEmail: req.user.email });

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Users, Award, BookOpen, Calendar, CalendarCheck, DollarSign, BarChart3, Plus, ArrowRight, Wallet, GraduationCap, AlertCircle, RefreshCw, TrendingUp, CalendarClock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 import { getDashboardSummary } from '../features/dashboard/dashboardService';
 import AttendanceTrendChart from '../features/dashboard/AttendanceTrendChart';
+import AdminFormModal from '../features/dashboard/AdminFormModal';
 
 // Skeletons for smooth loading visual state
 const StatCardSkeleton = () => (
@@ -33,9 +35,11 @@ const ChartSkeleton = () => (
 );
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -81,16 +85,27 @@ const AdminDashboard = () => {
       subtitle="Administrative Suite"
     >
       <div className="space-y-8">
-        {/* Top Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
             <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">System Overview</h1>
             <p className="text-sm text-gray-500 mt-1">Manage school admissions, payroll, schedule, and reporting.</p>
           </div>
-          <button className="bg-navy-900 text-white font-bold py-2.5 px-4 rounded-xl flex items-center space-x-2 hover:bg-navy-800 transition-colors shadow-sm text-sm">
-            <Plus className="h-4 w-4" />
-            <span>Add Student / Staff</span>
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setIsAdminModalOpen(true)}
+              className="bg-white border border-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-xl flex items-center space-x-2 hover:bg-gray-50 transition-colors shadow-sm text-sm"
+            >
+              <Plus className="h-4 w-4 text-gray-500" />
+              <span>Create Admin</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/students')}
+              className="bg-navy-900 text-white font-bold py-2.5 px-4 rounded-xl flex items-center space-x-2 hover:bg-navy-800 transition-colors shadow-sm text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Student</span>
+            </button>
+          </div>
         </div>
 
         {/* Error Notification Banner */}
@@ -276,6 +291,10 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+      <AdminFormModal 
+        isOpen={isAdminModalOpen} 
+        onClose={() => setIsAdminModalOpen(false)} 
+      />
     </DashboardLayout>
   );
 };

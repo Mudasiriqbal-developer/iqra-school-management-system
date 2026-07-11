@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { hashToken } = require('../utils/tokenUtils');
-const { sendActivationConfirmationEmail } = require('../utils/emailService');
+const { hashToken, generateActivationToken } = require('../utils/tokenUtils');
+const { sendActivationConfirmationEmail, sendInvitationEmail } = require('../utils/emailService');
+const crypto = require('crypto');
 
 /**
  * Generate a JWT token containing user ID and role.
@@ -19,7 +20,7 @@ const generateToken = (id, role) => {
  */
 const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password, role, phone } = req.body;
+    const { name, email, role, phone } = req.body;
 
     // Check if email already exists
     const userExists = await User.findOne({ email });
@@ -31,16 +32,31 @@ const registerUser = async (req, res, next) => {
       });
     }
 
+    // Generate activation token & placeholder password
+    const tokenData = generateActivationToken();
+    const placeholderPassword = crypto.randomBytes(24).toString('hex');
+
     // Create user (password is hashed in pre-save hook)
     const user = await User.create({
       name,
       email,
-      password,
+      password: placeholderPassword,
       role,
       phone,
+      isActivated: false,
+      activationTokenHash: tokenData.tokenHash,
+      activationTokenExpires: tokenData.expiresAt,
     });
 
-    const token = generateToken(user._id, user.role);
+    // Send activation link email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
+    
+    try {
+      await sendInvitationEmail(email, name, role.charAt(0).toUpperCase() + role.slice(1), activationLink);
+    } catch (mailErr) {
+      console.error('Failed to send invitation email:', mailErr);
+    }
 
     return res.status(201).json({
       success: true,
@@ -51,9 +67,8 @@ const registerUser = async (req, res, next) => {
           email: user.email,
           role: user.role,
         },
-        token,
       },
-      message: 'User registered successfully',
+      message: 'User registered successfully and activation email sent',
     });
   } catch (error) {
     next(error);
@@ -69,8 +84,14 @@ const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Determine query based on whether input is email or registration number
+    let user;
+    if (email && email.includes('@')) {
+      user = await User.findOne({ email: email.toLowerCase() });
+    } else if (email) {
+      user = await User.findOne({ registrationNumber: email.toLowerCase() });
+    }
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -253,10 +274,62 @@ const activateAccount = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Change password of currently logged in user
+ * @route   PUT /api/auth/change-password
+ * @access  Private
+ */
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide current and new password',
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long',
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Incorrect current password',
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getCurrentUser,
   validateActivationToken,
   activateAccount,
+  changePassword,
 };

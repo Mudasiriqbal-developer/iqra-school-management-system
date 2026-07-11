@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import ActivateAccount from './pages/ActivateAccount';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminStudents from './pages/AdminStudents';
@@ -20,6 +19,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import StudentFees from './pages/StudentFees';
 import StudentSchedule from './pages/StudentSchedule';
 import StudentGrades from './pages/StudentGrades';
+import StudentSettings from './pages/StudentSettings';
 import AdminReports from './pages/AdminReports';
 import AdminAttendance from './pages/AdminAttendance';
 import ProtectedRoute from './components/shared/ProtectedRoute';
@@ -43,7 +43,6 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/activate/:token" element={<ActivateAccount />} />
 
         {/* Protected Dashboard Routes */}
@@ -192,7 +191,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/student/settings"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'parent']}>
+              <StudentSettings />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Fallback Catch-all Route */}
         <Route path="*" element={<Login />} />

@@ -16,7 +16,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     gender: '',
     dateOfBirth: '',
     fatherContact: '',
-    email: '',
     classId: '',
     sectionId: '',
     address: '',
@@ -57,7 +56,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           gender: student.gender || '',
           dateOfBirth: student.dateOfBirth ? student.dateOfBirth.substring(0, 10) : '',
           fatherContact: student.fatherContact || '',
-          email: student.email || '',
           classId: student.classId?._id || student.classId || '',
           sectionId: student.sectionId?._id || student.sectionId || '',
           address: student.address || '',
@@ -72,7 +70,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           gender: '',
           dateOfBirth: '',
           fatherContact: '',
-          email: '',
           classId: '',
           sectionId: '',
           address: '',
@@ -289,12 +286,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     if (!formData.sectionId) {
       newErrors.sectionId = 'Section is required';
     }
-    if (formData.email.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email.trim())) {
-        newErrors.email = 'Invalid email format';
-      }
-    }
+    // No email validation needed
     if (formData.monthlyFeeAmount !== undefined && formData.monthlyFeeAmount !== '') {
       const feeVal = parseFloat(formData.monthlyFeeAmount);
       if (isNaN(feeVal) || feeVal < 0) {
@@ -316,7 +308,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
       // Clean email payload if empty
       const payload = {
         ...formData,
-        email: formData.email.trim() || undefined,
         address: formData.address.trim() || undefined,
         monthlyFeeAmount: formData.monthlyFeeAmount ? parseFloat(formData.monthlyFeeAmount) : 0
       };
@@ -520,26 +511,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
               )}
             </div>
 
-            {/* Email */}
-            <div className="flex flex-col">
-              <label htmlFor="email" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
-                Email Address <span className="text-gray-400 font-normal">(Optional)</span>
-              </label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="e.g. student@gmail.com"
-                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
-                  errors.email ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
-                }`}
-              />
-              {errors.email && (
-                <span className="text-red-500 text-xs font-medium mt-1">{errors.email}</span>
-              )}
-            </div>
+            {/* Email field removed */}
 
             {/* Class */}
             <div className="flex flex-col">

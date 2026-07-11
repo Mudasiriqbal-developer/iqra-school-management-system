@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, MapPin, Phone, Mail, BookOpen, Shield, DollarSign, CalendarCheck } from 'lucide-react';
+import { X, User, MapPin, Phone, Mail, BookOpen, Shield, DollarSign, CalendarCheck, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StatusBadge from '../../components/shared/StatusBadge';
 import { downloadAdmissionReceipt } from './studentService';
@@ -182,10 +182,10 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
               </div>
               <div className="space-y-3">
                 <div>
-                  <span className="text-xs font-semibold text-gray-400 block uppercase">Email Address</span>
+                  <span className="text-xs font-semibold text-gray-400 block uppercase">Default Login Password</span>
                   <span className="font-bold text-navy-900 flex items-center mt-0.5 break-all">
-                    <Mail className="h-3.5 w-3.5 text-gray-400 mr-1.5" />
-                    {student.email || 'No email provided'}
+                    <Lock className="h-3.5 w-3.5 text-gray-400 mr-1.5" />
+                    student123
                   </span>
                 </div>
               </div>

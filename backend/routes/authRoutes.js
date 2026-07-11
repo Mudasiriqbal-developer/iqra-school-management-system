@@ -6,8 +6,9 @@ const {
   getCurrentUser,
   validateActivationToken,
   activateAccount,
+  changePassword,
 } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -29,11 +30,13 @@ const validateRequest = (req, res, next) => {
 
 /**
  * @route   POST /api/auth/register
- * @desc    Register a new user
- * @access  Public
+ * @desc    Register a new user (Admin Only)
+ * @access  Private (Admin Only)
  */
 router.post(
   '/register',
+  protect,
+  authorize('admin'),
   [
     check('name', 'Name is required and must be at least 2 characters')
       .trim()
@@ -42,8 +45,6 @@ router.post(
       .trim()
       .isEmail()
       .normalizeEmail(),
-    check('password', 'Password must be at least 6 characters')
-      .isLength({ min: 6 }),
     check('role', 'Role must be admin, teacher, student, or parent')
       .trim()
       .isIn(['admin', 'teacher', 'student', 'parent']),
@@ -60,10 +61,9 @@ router.post(
 router.post(
   '/login',
   [
-    check('email', 'Please include a valid email address')
+    check('email', 'Email or Registration Number is required')
       .trim()
-      .isEmail()
-      .normalizeEmail(),
+      .notEmpty(),
     check('password', 'Password is required')
       .notEmpty(),
   ],
@@ -105,6 +105,22 @@ router.post(
   ],
   validateRequest,
   activateAccount
+);
+
+/**
+ * @route   PUT /api/auth/change-password
+ * @desc    Change password of logged-in user
+ * @access  Private
+ */
+router.put(
+  '/change-password',
+  protect,
+  [
+    check('currentPassword', 'Current password is required').notEmpty(),
+    check('newPassword', 'New password must be at least 6 characters').isLength({ min: 6 }),
+  ],
+  validateRequest,
+  changePassword
 );
 
 module.exports = router;

@@ -8,6 +8,10 @@ const Attendance = require('../models/Attendance');
 const Class = require('../models/Class');
 const Section = require('../models/Section');
 const Subject = require('../models/Subject');
+const User = require('../models/User');
+const crypto = require('crypto');
+const { generateActivationToken } = require('../utils/tokenUtils');
+const { sendInvitationEmail } = require('../utils/emailService');
 
 /**
  * @desc    Create a new student
@@ -23,7 +27,6 @@ const createStudent = async (req, res, next) => {
       gender,
       dateOfBirth,
       fatherContact,
-      email,
       address,
       classId,
       sectionId,
@@ -75,6 +78,16 @@ const createStudent = async (req, res, next) => {
       }
     }
  
+    // 0. Check if User with registrationNumber already exists
+    const userExists = await User.findOne({ registrationNumber: registrationNumber.trim() });
+    if (userExists) {
+      return res.status(400).json({
+        success: false,
+        data: null,
+        message: 'A user with this registration number already exists',
+      });
+    }
+
     // 1. Check registration number unique
     const registrationExists = await Student.findOne({ registrationNumber });
     if (registrationExists) {
@@ -155,6 +168,18 @@ const createStudent = async (req, res, next) => {
       }
     }
  
+    // Create student User account immediately active
+    const defaultPassword = 'student123';
+    await User.create({
+      name: fullName,
+      registrationNumber: registrationNumber.trim(),
+      password: defaultPassword,
+      role: 'student',
+      phone: fatherContact,
+      isActivated: true,
+      isActive: true,
+    });
+
     // 3. Create student
     const student = await Student.create({
       registrationNumber,
@@ -163,7 +188,6 @@ const createStudent = async (req, res, next) => {
       gender,
       dateOfBirth,
       fatherContact,
-      email,
       address,
       classId,
       sectionId,
@@ -176,6 +200,8 @@ const createStudent = async (req, res, next) => {
       admissionPaymentStatus: finalPaymentStatus,
       admissionAmountPaid: finalAmountPaid,
     });
+
+
 
     // Create FeeRecord if there is a remaining balance
     if (computedAdmissionTotal > 0 && finalAmountPaid < computedAdmissionTotal) {
@@ -416,10 +442,10 @@ const getStudentById = async (req, res, next) => {
 const getMyProfile = async (req, res, next) => {
   try {
     // req.user is the authenticated User document (set by protect middleware)
-    const userEmail = req.user.email;
+    const regNo = req.user.registrationNumber;
 
-    // Find Student record whose email matches the logged-in User's email
-    const student = await Student.findOne({ email: userEmail })
+    // Find Student record whose registration number matches the logged-in User's registration number
+    const student = await Student.findOne({ registrationNumber: regNo })
       .populate('classId', 'name')
       .populate('sectionId', 'name');
 
@@ -438,7 +464,7 @@ const getMyProfile = async (req, res, next) => {
         user: {
           id: req.user._id,
           name: req.user.name,
-          email: req.user.email,
+          registrationNumber: req.user.registrationNumber,
           role: req.user.role,
           phone: req.user.phone,
         },
@@ -457,9 +483,9 @@ const getMyProfile = async (req, res, next) => {
  */
 const getMyAttendance = async (req, res, next) => {
   try {
-    const userEmail = req.user.email;
+    const regNo = req.user.registrationNumber;
 
-    const student = await Student.findOne({ email: userEmail });
+    const student = await Student.findOne({ registrationNumber: regNo });
     if (!student) {
       return res.status(404).json({
         success: false,
@@ -536,9 +562,9 @@ const getMyAttendance = async (req, res, next) => {
  */
 const getMySubjects = async (req, res, next) => {
   try {
-    const userEmail = req.user.email;
+    const regNo = req.user.registrationNumber;
 
-    const student = await Student.findOne({ email: userEmail })
+    const student = await Student.findOne({ registrationNumber: regNo })
       .populate('classId', 'name')
       .populate('sectionId', 'name');
 
@@ -595,9 +621,9 @@ const getMySubjects = async (req, res, next) => {
  */
 const getMyFeeHistory = async (req, res, next) => {
   try {
-    const userEmail = req.user.email;
+    const regNo = req.user.registrationNumber;
 
-    const student = await Student.findOne({ email: userEmail })
+    const student = await Student.findOne({ registrationNumber: regNo })
       .populate('classId', 'name')
       .populate('sectionId', 'name');
 
@@ -687,7 +713,6 @@ const updateStudent = async (req, res, next) => {
       gender,
       dateOfBirth,
       fatherContact,
-      email,
       address,
       classId,
       sectionId,
@@ -738,11 +763,21 @@ const updateStudent = async (req, res, next) => {
     if (gender) student.gender = gender;
     if (dateOfBirth) student.dateOfBirth = dateOfBirth;
     if (fatherContact) student.fatherContact = fatherContact;
-    if (email !== undefined) student.email = email;
     if (address !== undefined) student.address = address;
     if (monthlyFeeAmount !== undefined) student.monthlyFeeAmount = monthlyFeeAmount;
     if (status) student.status = status;
     if (photoUrl !== undefined) student.photoUrl = photoUrl;
+
+    // Update matching User account if exists
+    const matchingUser = await User.findOne({ registrationNumber: student.registrationNumber });
+    if (matchingUser) {
+      if (fullName) matchingUser.name = fullName;
+      if (fatherContact) matchingUser.phone = fatherContact;
+      if (registrationNumber && registrationNumber !== student.registrationNumber) {
+        matchingUser.registrationNumber = registrationNumber.trim();
+      }
+      await matchingUser.save();
+    }
 
     const updatedStudent = await student.save();
     const populated = await updatedStudent.populate(['classId', 'sectionId']);

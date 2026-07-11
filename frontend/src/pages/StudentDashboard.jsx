@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LayoutDashboard, Calendar, Award, BookOpen, Clock, CreditCard, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Calendar, Award, BookOpen, Clock, CreditCard, ArrowRight, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import DashboardLayout from '../components/shared/DashboardLayout';
@@ -18,6 +18,7 @@ const StudentDashboard = () => {
     { label: 'My Schedule', icon: Calendar, path: '/student/schedule' },
     { label: 'Grades', icon: Award, path: '/student/grades' },
     { label: 'Fees', icon: CreditCard, path: '/student/fees' },
+    { label: 'Settings', icon: Settings, path: '/student/settings' },
   ];
 
   const upcomingAssessments = [

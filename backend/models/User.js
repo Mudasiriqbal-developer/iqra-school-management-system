@@ -10,10 +10,15 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'Please add an email'],
-      unique: true,
       lowercase: true,
       trim: true,
+      index: { unique: true, sparse: true },
+    },
+    registrationNumber: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      index: { unique: true, sparse: true },
     },
     password: {
       type: String,
