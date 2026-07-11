@@ -7,6 +7,7 @@ const studentSchema = new mongoose.Schema(
       required: [true, 'Registration number is required'],
       unique: true,
       trim: true,
+      lowercase: true,
     },
     fullName: {
       type: String,
