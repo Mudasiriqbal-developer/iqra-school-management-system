@@ -26,6 +26,7 @@ import { toast } from 'react-hot-toast';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
+import ConfirmModal from '../components/shared/ConfirmModal';
 
 import {
   getExpenses,
@@ -77,6 +78,17 @@ const AdminExpenses = () => {
   // Modals visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null); // for editing
+
+  // Confirm Modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    type: 'danger',
+  });
 
   // Form State
   const [formState, setFormState] = useState({
@@ -192,18 +204,26 @@ const AdminExpenses = () => {
 
   // Handle Delete
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this expense record?')) return;
-
-    try {
-      const res = await deleteExpense(id);
-      if (res.success) {
-        toast.success('Expense record deleted successfully');
-        fetchExpensesData();
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Expense Record',
+      message: 'Are you sure you want to delete this expense record? This action cannot be undone.',
+      confirmText: 'Delete',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await deleteExpense(id);
+          if (res.success) {
+            toast.success('Expense record deleted successfully');
+            fetchExpensesData();
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error('Failed to delete expense record');
+        }
       }
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to delete expense record');
-    }
+    });
   };
 
   // Format Helper
@@ -621,6 +641,16 @@ const AdminExpenses = () => {
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+        type={confirmModal.type}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </DashboardLayout>
   );
 };

@@ -45,6 +45,7 @@ import {
   reorderSubjects
 } from '../features/academics/academicService';
 import { getTeachers } from '../features/teachers/teacherService';
+import ConfirmModal from '../components/shared/ConfirmModal';
 
 const AdminAcademics = () => {
   // Sidebar items
@@ -96,6 +97,16 @@ const AdminAcademics = () => {
   const dragSourceIndexRef = useRef(null);
   const dragTypeRef = useRef(null);
   const [dragOverInfo, setDragOverInfo] = useState(null); // { type: 'class'|'section'|'subject', index: number }
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    type: 'danger',
+  });
 
   const handleDragOver = (e, index, type) => {
     if (dragTypeRef.current !== type) return;
@@ -293,20 +304,28 @@ const AdminAcademics = () => {
   };
 
   const handleUnassignTeacher = async (sectionId) => {
-    const confirm = window.confirm("Are you sure you want to remove the Class Teacher from this section?");
-    if (!confirm) return;
-    try {
-      const res = await unassignClassTeacher(sectionId);
-      if (res.success) {
-        toast.success('Class teacher removed successfully');
-        setSections(prev => prev.map(s => s._id === sectionId ? res.data : s));
-      } else {
-        toast.error(res.message || 'Failed to remove teacher');
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Class Teacher',
+      message: 'Are you sure you want to remove the Class Teacher from this section?',
+      confirmText: 'Remove',
+      type: 'warning',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await unassignClassTeacher(sectionId);
+          if (res.success) {
+            toast.success('Class teacher removed successfully');
+            setSections(prev => prev.map(s => s._id === sectionId ? res.data : s));
+          } else {
+            toast.error(res.message || 'Failed to remove teacher');
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error(err.response?.data?.message || 'Error removing teacher');
+        }
       }
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || 'Error removing teacher');
-    }
+    });
   };
 
   const getTeacherName = (classTeacherId) => {
@@ -356,27 +375,32 @@ const AdminAcademics = () => {
   };
 
   const handleDeleteClass = async (id) => {
-    const confirm = window.confirm(
-      "Delete this class? This cannot be undone if no data depends on it."
-    );
-    if (!confirm) return;
-
-    try {
-      const res = await deleteClass(id);
-      if (res.success) {
-        toast.success('Class deleted successfully');
-        const remaining = classes.filter(c => c._id !== id);
-        setClasses(remaining);
-        if (selectedClass && selectedClass._id === id) {
-          setSelectedClass(remaining.length > 0 ? remaining[0] : null);
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Class',
+      message: 'Are you sure you want to delete this class? This cannot be undone if no data depends on it.',
+      confirmText: 'Delete',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await deleteClass(id);
+          if (res.success) {
+            toast.success('Class deleted successfully');
+            const remaining = classes.filter(c => c._id !== id);
+            setClasses(remaining);
+            if (selectedClass && selectedClass._id === id) {
+              setSelectedClass(remaining.length > 0 ? remaining[0] : null);
+            }
+          } else {
+            toast.error(res.message || 'Failed to delete class');
+          }
+        } catch (err) {
+          // Backend blocks deletion (returns 400) if sections exist
+          toast.error(err.response?.data?.message || 'Error deleting class');
         }
-      } else {
-        toast.error(res.message || 'Failed to delete class');
       }
-    } catch (err) {
-      // Backend blocks deletion (returns 400) if sections exist
-      toast.error(err.response?.data?.message || 'Error deleting class');
-    }
+    });
   };
 
   // Section Handlers
@@ -419,23 +443,28 @@ const AdminAcademics = () => {
   };
 
   const handleDeleteSection = async (id) => {
-    const confirm = window.confirm(
-      "Delete this section? This cannot be undone if no data depends on it."
-    );
-    if (!confirm) return;
-
-    try {
-      const res = await deleteSection(id);
-      if (res.success) {
-        toast.success('Section deleted successfully');
-        setSections(prev => prev.filter(s => s._id !== id));
-      } else {
-        toast.error(res.message || 'Failed to delete section');
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Section',
+      message: 'Are you sure you want to delete this section? This cannot be undone if no data depends on it.',
+      confirmText: 'Delete',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await deleteSection(id);
+          if (res.success) {
+            toast.success('Section deleted successfully');
+            setSections(prev => prev.filter(s => s._id !== id));
+          } else {
+            toast.error(res.message || 'Failed to delete section');
+          }
+        } catch (err) {
+          // Backend blocks deletion (returns 400) if students are assigned to the section
+          toast.error(err.response?.data?.message || 'Error deleting section');
+        }
       }
-    } catch (err) {
-      // Backend blocks deletion (returns 400) if students are assigned to the section
-      toast.error(err.response?.data?.message || 'Error deleting section');
-    }
+    });
   };
 
   // Subject Handlers
@@ -478,22 +507,27 @@ const AdminAcademics = () => {
   };
 
   const handleDeleteSubject = async (id) => {
-    const confirm = window.confirm(
-      "Delete this subject? This cannot be undone if no data depends on it."
-    );
-    if (!confirm) return;
-
-    try {
-      const res = await deleteSubject(id);
-      if (res.success) {
-        toast.success('Subject deleted successfully');
-        setSubjects(prev => prev.filter(s => s._id !== id));
-      } else {
-        toast.error(res.message || 'Failed to delete subject');
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Subject',
+      message: 'Are you sure you want to delete this subject? This cannot be undone if no data depends on it.',
+      confirmText: 'Delete',
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await deleteSubject(id);
+          if (res.success) {
+            toast.success('Subject deleted successfully');
+            setSubjects(prev => prev.filter(s => s._id !== id));
+          } else {
+            toast.error(res.message || 'Failed to delete subject');
+          }
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Error deleting subject');
+        }
       }
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Error deleting subject');
-    }
+    });
   };
 
   return (
@@ -943,6 +977,16 @@ const AdminAcademics = () => {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+        type={confirmModal.type}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </DashboardLayout>
   );
 };
