@@ -84,6 +84,7 @@ const AdminAcademics = () => {
 
   const [isAddingSection, setIsAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
+  const [newSectionGender, setNewSectionGender] = useState('mixed');
 
   const [isAddingSubject, setIsAddingSubject] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState('');
@@ -91,6 +92,7 @@ const AdminAcademics = () => {
   // Section specific editing & teacher assignment states
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editSectionValue, setEditSectionValue] = useState('');
+  const [editSectionGender, setEditSectionGender] = useState('mixed');
   const [assigningSectionId, setAssigningSectionId] = useState(null);
 
   // Drag and drop states & refs
@@ -410,10 +412,11 @@ const AdminAcademics = () => {
     if (!name || !selectedClass) return;
     const classId = selectedClass._id;
     try {
-      const res = await createSection({ name, classId });
+      const res = await createSection({ name, classId, gender: newSectionGender });
       if (res.success) {
         toast.success('Section created successfully');
         setNewSectionName('');
+        setNewSectionGender('mixed');
         setIsAddingSection(false);
         // Refresh sections
         const sectionsRes = await getSectionsByClass(classId);
@@ -428,12 +431,12 @@ const AdminAcademics = () => {
     }
   };
 
-  const handleUpdateSection = async (id, newName) => {
+  const handleUpdateSection = async (id, newName, newGender) => {
     try {
-      const res = await updateSection(id, { name: newName });
+      const res = await updateSection(id, { name: newName, gender: newGender });
       if (res.success) {
         toast.success('Section updated successfully');
-        setSections(prev => prev.map(s => s._id === id ? { ...s, name: newName } : s));
+        setSections(prev => prev.map(s => s._id === id ? { ...s, name: newName, gender: newGender } : s));
       } else {
         toast.error(res.message || 'Failed to update section');
       }
@@ -680,12 +683,22 @@ const AdminAcademics = () => {
                       className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white"
                       autoFocus
                     />
+                    <select
+                      value={newSectionGender}
+                      onChange={(e) => setNewSectionGender(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white font-semibold text-gray-600"
+                    >
+                      <option value="mixed">Mixed Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
                     <div className="flex justify-end space-x-1.5">
                       <button
                         type="button"
                         onClick={() => {
                           setIsAddingSection(false);
                           setNewSectionName('');
+                          setNewSectionGender('mixed');
                         }}
                         className="px-2.5 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
                       >
@@ -738,7 +751,7 @@ const AdminAcademics = () => {
                         {/* Top Row: Name and Edit/Delete Actions */}
                         <div className="flex items-center justify-between">
                           {editingSectionId === sec._id ? (
-                            <div className="flex items-center space-x-2 w-full" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full" onClick={(e) => e.stopPropagation()}>
                               <input
                                 type="text"
                                 value={editSectionValue}
@@ -746,7 +759,7 @@ const AdminAcademics = () => {
                                 className="flex-grow px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white"
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
-                                    handleUpdateSection(sec._id, editSectionValue);
+                                    handleUpdateSection(sec._id, editSectionValue, editSectionGender);
                                     setEditingSectionId(null);
                                   } else if (e.key === 'Escape') {
                                     setEditingSectionId(null);
@@ -754,33 +767,54 @@ const AdminAcademics = () => {
                                 }}
                                 autoFocus
                               />
-                              <button
-                                onClick={() => {
-                                  handleUpdateSection(sec._id, editSectionValue);
-                                  setEditingSectionId(null);
-                                }}
-                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                              <select
+                                value={editSectionGender}
+                                onChange={(e) => setEditSectionGender(e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-medium text-gray-600 sm:w-28"
                               >
-                                <Check className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                onClick={() => setEditingSectionId(null)}
-                                className="p-1 text-gray-500 hover:bg-gray-100 rounded"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </button>
+                                <option value="mixed">Mixed</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                              </select>
+                              <div className="flex items-center space-x-1 justify-end">
+                                <button
+                                  onClick={() => {
+                                    handleUpdateSection(sec._id, editSectionValue, editSectionGender);
+                                    setEditingSectionId(null);
+                                  }}
+                                  className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => setEditingSectionId(null)}
+                                  className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <>
                               <div className="flex items-center flex-grow truncate pr-2">
                                 <GripVertical className="h-4 w-4 text-gray-400 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
-                                <span className="text-sm font-semibold text-gray-700">{sec.name}</span>
+                                <span className="text-sm font-semibold text-gray-700">Section {sec.name}</span>
+                                <span className={`ml-2.5 text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
+                                  sec.gender === 'male'
+                                    ? 'bg-sky-50 text-sky-600 border-sky-100/50'
+                                    : sec.gender === 'female'
+                                    ? 'bg-rose-50 text-rose-600 border-rose-100/50'
+                                    : 'bg-slate-50 text-gray-500 border-gray-100'
+                                }`}>
+                                  {sec.gender || 'mixed'}
+                                </span>
                               </div>
                               <div className="flex items-center space-x-1">
                                 <button
                                   onClick={() => {
                                     setEditingSectionId(sec._id);
                                     setEditSectionValue(sec.name);
+                                    setEditSectionGender(sec.gender || 'mixed');
                                   }}
                                   className="p-1 text-gray-400 hover:text-navy-950 hover:bg-gray-100 rounded"
                                   title="Edit Section Name"
