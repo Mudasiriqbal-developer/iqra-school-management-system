@@ -10,16 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@hookform/resolvers": "^5.4.0",
     "axios": "^1.18.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.24.0",
-=======
-    "axios": "^1.7.2",
-    "lucide-react": "^0.469.0",
->>>>>>> fd5827e8626976e79798f41cc64359d842874d0f
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.81.0",
