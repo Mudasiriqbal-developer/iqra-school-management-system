@@ -47,6 +47,7 @@ router.post(
   authorize('admin'),
   [
     check('name', 'Class name is required').trim().notEmpty(),
+    check('gender', 'Gender must be male, female, or mixed').optional().isIn(['male', 'female', 'mixed']),
   ],
   validateRequest,
   createClass
@@ -62,6 +63,7 @@ router.put(
   authorize('admin'),
   [
     check('name', 'Class name is required').trim().notEmpty(),
+    check('gender', 'Gender must be male, female, or mixed').optional().isIn(['male', 'female', 'mixed']),
   ],
   validateRequest,
   updateClass

@@ -11,18 +11,19 @@ const Assignment = require('../models/Assignment');
  */
 const createClass = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, gender } = req.body;
+    const classGender = gender || 'mixed';
 
-    const existingClass = await Class.findOne({ name });
+    const existingClass = await Class.findOne({ name, gender: classGender });
     if (existingClass) {
       return res.status(400).json({
         success: false,
         data: null,
-        message: 'Class with this name already exists',
+        message: 'Class with this name and gender already exists',
       });
     }
 
-    const newClass = await Class.create({ name });
+    const newClass = await Class.create({ name, gender: classGender });
 
     return res.status(201).json({
       success: true,
@@ -86,7 +87,7 @@ const getClassById = async (req, res, next) => {
  */
 const updateClass = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, gender } = req.body;
 
     const singleClass = await Class.findById(req.params.id);
     if (!singleClass) {
@@ -97,18 +98,22 @@ const updateClass = async (req, res, next) => {
       });
     }
 
-    if (name && name !== singleClass.name) {
-      const duplicateClass = await Class.findOne({ name });
-      if (duplicateClass) {
+    const targetName = name || singleClass.name;
+    const targetGender = gender || singleClass.gender;
+
+    if (name || gender) {
+      const duplicateClass = await Class.findOne({ name: targetName, gender: targetGender });
+      if (duplicateClass && duplicateClass._id.toString() !== req.params.id) {
         return res.status(400).json({
           success: false,
           data: null,
-          message: 'Class with this name already exists',
+          message: 'Class with this name and gender already exists',
         });
       }
     }
 
-    singleClass.name = name || singleClass.name;
+    singleClass.name = targetName;
+    singleClass.gender = targetGender;
     const updatedClass = await singleClass.save();
 
     return res.status(200).json({

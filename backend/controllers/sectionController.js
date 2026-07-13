@@ -10,7 +10,7 @@ const Class = require('../models/Class');
  */
 const createSection = async (req, res, next) => {
   try {
-    const { name, classId, gender } = req.body;
+    const { name, classId } = req.body;
 
     // Check if class exists
     const classExists = await Class.findById(classId);
@@ -32,7 +32,7 @@ const createSection = async (req, res, next) => {
       });
     }
 
-    const section = await Section.create({ name, classId, gender });
+    const section = await Section.create({ name, classId });
 
     return res.status(201).json({
       success: true,
@@ -103,7 +103,7 @@ const getSectionById = async (req, res, next) => {
  */
 const updateSection = async (req, res, next) => {
   try {
-    const { name, classId, gender } = req.body;
+    const { name, classId } = req.body;
 
     const section = await Section.findById(req.params.id);
     if (!section) {
@@ -143,7 +143,6 @@ const updateSection = async (req, res, next) => {
 
     section.name = targetName;
     section.classId = targetClassId;
-    if (gender) section.gender = gender;
 
     const updatedSection = await section.save();
     const populated = await updatedSection.populate('classId', 'name');
