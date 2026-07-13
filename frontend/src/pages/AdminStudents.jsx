@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, CalendarClock
+  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, CalendarClock, Key
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -10,7 +10,7 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getStudents, deleteStudent, getClasses, getSectionsByClass, downloadAdmissionReceipt } from '../features/students/studentService';
+import { getStudents, deleteStudent, getClasses, getSectionsByClass, downloadAdmissionReceipt, resetStudentPassword } from '../features/students/studentService';
 import StudentFormModal from '../features/students/StudentFormModal';
 import StudentViewDrawer from '../features/students/StudentViewDrawer';
 
@@ -56,6 +56,12 @@ const AdminStudents = () => {
   // Deactivation confirmation modal states
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
+
+  // Reset password modal states
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [studentToResetPassword, setStudentToResetPassword] = useState(null);
+  const [newPassword, setNewPassword] = useState('student123');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Receipt download confirmation modal states
   const [isReceiptConfirmOpen, setIsReceiptConfirmOpen] = useState(false);
@@ -191,6 +197,38 @@ const AdminStudents = () => {
     } finally {
       setIsDeleteConfirmOpen(false);
       setStudentToDelete(null);
+    }
+  };
+
+  const handleOpenResetModal = (student) => {
+    setStudentToResetPassword(student);
+    setNewPassword('student123'); // Default to student123
+    setIsResetModalOpen(true);
+  };
+
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!studentToResetPassword) return;
+
+    if (!newPassword || newPassword.trim().length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const res = await resetStudentPassword(studentToResetPassword._id, newPassword);
+      if (res.success) {
+        toast.success(res.message || `Password reset successfully for ${studentToResetPassword.fullName}`);
+        setIsResetModalOpen(false);
+      } else {
+        toast.error(res.message || 'Failed to reset password');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Server error occurred during password reset');
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -418,6 +456,13 @@ const AdminStudents = () => {
                               <Pencil className="h-4.5 w-4.5" />
                             </button>
                             <button
+                              onClick={() => handleOpenResetModal(student)}
+                              title="Reset Student Password"
+                              className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                              <Key className="h-4.5 w-4.5" />
+                            </button>
+                            <button
                               onClick={() => handleOpenDeleteConfirm(student)}
                               title="Deactivate Student"
                               disabled={student.status === 'suspended'}
@@ -560,6 +605,69 @@ const AdminStudents = () => {
                 Deactivate
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Student Password Modal */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
+            <div className="flex items-center space-x-3 text-navy-900 mb-4">
+              <Key className="h-6 w-6" />
+              <h3 className="text-lg font-bold text-navy-950">Reset Student Password</h3>
+            </div>
+            
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Set a new password for <span className="font-bold text-navy-900">{studentToResetPassword?.fullName}</span> (Roll No: {studentToResetPassword?.registrationNumber}).
+              </p>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                  New Password
+                </label>
+                <input
+                  type="text"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                  className="block w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 bg-gray-50 focus:bg-white transition-all font-medium"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={() => setNewPassword('student123')}
+                  className="text-xs font-semibold text-navy-800 hover:text-navy-700 transition-colors"
+                >
+                  Reset to Default (student123)
+                </button>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsResetModalOpen(false);
+                    setStudentToResetPassword(null);
+                  }}
+                  className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  disabled={isResettingPassword}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResettingPassword}
+                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center"
+                >
+                  {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -154,8 +154,56 @@ const sendInvitationEmail = async (toEmail, userName, roleName, activationLink) 
   }
 };
 
+const sendResetPasswordEmail = async (toEmail, userName, resetLink) => {
+  try {
+    const fromName = process.env.EMAIL_FROM_NAME || 'IHASS - Iqra Hadiqa Tul Atfal School';
+    const fromEmail = process.env.EMAIL_USER;
+
+    const mailOptions = {
+      from: `"${fromName}" <${fromEmail}>`,
+      to: toEmail,
+      subject: 'Reset Password - IHASS',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <h2 style="color: #333333;">Reset your IHASS password</h2>
+          <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+            Hello ${userName},
+          </p>
+          <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+            You requested to reset your password for the <strong>IHASS School Management System</strong>.
+            Click the button below to set a new password:
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" style="background-color: #4A90E2; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block;">
+              Reset Password
+            </a>
+          </div>
+          <p style="color: #999999; font-size: 14px; line-height: 1.5;">
+            If you did not request this reset, please ignore this email. Your password will remain unchanged.
+          </p>
+          <p style="color: #ff3b30; font-size: 14px; font-weight: bold; margin-top: 20px;">
+            Note: This reset link will expire in 1 hour.
+          </p>
+          <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;" />
+          <p style="color: #999999; font-size: 12px; text-align: center;">
+            IHASS - Iqra Hadiqa Tul Atfal School Management System
+          </p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Reset password email sent successfully:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending reset password email:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendTeacherInvitationEmail,
   sendActivationConfirmationEmail,
   sendInvitationEmail,
+  sendResetPasswordEmail,
 };

@@ -13,6 +13,7 @@ const {
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
   generateAdmissionReceiptPDF,
+  resetStudentPassword,
 } = require('../controllers/studentController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -158,5 +159,12 @@ router.patch(
   validateRequest,
   setMonthlyFeeAmount
 );
+
+/**
+ * @route   PUT /api/students/:id/reset-password
+ * @desc    Reset student password
+ * @access  Private (Admin Only)
+ */
+router.put('/:id/reset-password', authorize('admin'), resetStudentPassword);
 
 module.exports = router;
