@@ -33,9 +33,9 @@ const seedDummyStudents = async () => {
 
     // 1. Create a Class
     console.log('Creating Class 1...');
-    let classObj = await Class.findOne({ name: 'Class 1' });
+    let classObj = await Class.findOne({ name: '1' });
     if (!classObj) {
-      classObj = await Class.create({ name: 'Class 1' });
+      classObj = await Class.create({ name: '1' });
     }
     console.log(`Class created/found: ${classObj.name} (ID: ${classObj._id})`);
 

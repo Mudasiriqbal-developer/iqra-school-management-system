@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 const Class = require('./models/Class');
+const Section = require('./models/Section');
+const Subject = require('./models/Subject');
 
 // Load environment variables from backend/.env
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -9,16 +11,16 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const defaultClasses = [
   'Nursery',
   'Prep',
-  'Class 1',
-  'Class 2',
-  'Class 3',
-  'Class 4',
-  'Class 5',
-  'Class 6',
-  'Class 7',
-  'Class 8',
-  'Class 9',
-  'Class 10'
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10'
 ];
 
 const seedClasses = async () => {
@@ -34,22 +36,31 @@ const seedClasses = async () => {
     await mongoose.connect(mongoURI);
     console.log('Database connected successfully.');
 
+    // Drop old single field unique index on name if it exists
+    try {
+      await mongoose.connection.collection('classes').dropIndex('name_1');
+      console.log('Successfully dropped old single-field "name" unique index.');
+    } catch (err) {
+      // Index name_1 might not exist or already dropped
+      console.log('Old unique index "name_1" not found or already dropped. Proceeding...');
+    }
+
+    // Clear existing classes, sections, and subjects to prevent duplicate/corrupt data
+    console.log('Cleaning up existing classes, sections, and subjects...');
+    await Class.deleteMany({});
+    await Section.deleteMany({});
+    await Subject.deleteMany({});
+    console.log('Cleanup completed.');
+
     let createdCount = 0;
-    let skippedCount = 0;
 
     for (let i = 0; i < defaultClasses.length; i++) {
       const className = defaultClasses[i];
-      
-      // Check if class already exists
-      const existingClass = await Class.findOne({ name: className });
-      if (existingClass) {
-        skippedCount++;
-        continue;
-      }
 
-      // Create new class
+      // Create mixed-gender class
       await Class.create({
         name: className,
+        gender: 'mixed',
         orderIndex: i
       });
       createdCount++;
@@ -57,8 +68,8 @@ const seedClasses = async () => {
 
     console.log('----------------------------------------------------');
     console.log('Class seeding completed!');
-    console.log(`Seeded: ${createdCount} classes`);
-    console.log(`Skipped (already existed): ${skippedCount} classes`);
+    console.log(`Seeded: ${createdCount} mixed-gender classes`);
+    console.log('All previous classes, sections, and subjects have been cleaned.');
     console.log('----------------------------------------------------');
 
     process.exit(0);

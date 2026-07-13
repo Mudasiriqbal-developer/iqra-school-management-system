@@ -16,14 +16,6 @@ const sectionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Teacher',
     },
-    gender: {
-      type: String,
-      enum: {
-        values: ['male', 'female', 'mixed'],
-        message: 'Gender must be male, female, or mixed',
-      },
-      default: 'mixed',
-    },
     orderIndex: {
       type: Number,
       default: 0,

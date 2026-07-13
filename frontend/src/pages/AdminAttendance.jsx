@@ -272,7 +272,9 @@ const AdminAttendance = () => {
             >
               <option value="">Select Class</option>
               {classesList.map(cls => (
-                <option key={cls._id} value={cls._id}>{cls.name}</option>
+                <option key={cls._id} value={cls._id}>
+                  {cls.name} — {cls.gender ? cls.gender.charAt(0).toUpperCase() + cls.gender.slice(1) : 'Mixed'}
+                </option>
               ))}
             </select>
           </div>

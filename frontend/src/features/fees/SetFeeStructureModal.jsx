@@ -222,7 +222,9 @@ const SetFeeStructureModal = ({ isOpen, onClose, onSuccess }) => {
                     >
                       <option value="">Select Class</option>
                       {classesList.map(c => (
-                        <option key={c._id} value={c._id}>{c.name}</option>
+                        <option key={c._id} value={c._id}>
+                          {c.name} — {c.gender ? c.gender.charAt(0).toUpperCase() + c.gender.slice(1) : 'Mixed'}
+                        </option>
                       ))}
                     </select>
                   </div>
