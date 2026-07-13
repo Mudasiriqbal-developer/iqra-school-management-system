@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ActivateAccount from './pages/ActivateAccount';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminStudents from './pages/AdminStudents';
@@ -199,6 +201,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Fallback Catch-all Route */}
         <Route path="*" element={<Login />} />

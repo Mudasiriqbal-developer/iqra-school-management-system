@@ -49,6 +49,7 @@ router.post(
   [
     check('name', 'Section name is required').trim().notEmpty(),
     check('classId', 'Valid Class ID is required').isMongoId(),
+    check('gender', 'Gender must be male, female, or mixed').optional().isIn(['male', 'female', 'mixed']),
   ],
   validateRequest,
   createSection
@@ -65,6 +66,7 @@ router.put(
   [
     check('name', 'Section name must be a string').optional().trim().notEmpty(),
     check('classId', 'Valid Class ID must be a Mongo ID').optional().isMongoId(),
+    check('gender', 'Gender must be male, female, or mixed').optional().isIn(['male', 'female', 'mixed']),
   ],
   validateRequest,
   updateSection

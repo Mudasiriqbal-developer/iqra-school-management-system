@@ -7,6 +7,8 @@ const {
   validateActivationToken,
   activateAccount,
   changePassword,
+  forgotPassword,
+  resetPassword,
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -121,6 +123,35 @@ router.put(
   ],
   validateRequest,
   changePassword
+);
+
+/**
+ * @route   POST /api/auth/forgot-password
+ * @desc    Request password reset token
+ * @access  Public
+ */
+router.post(
+  '/forgot-password',
+  [
+    check('email', 'Please include a valid email address').isEmail().normalizeEmail(),
+  ],
+  validateRequest,
+  forgotPassword
+);
+
+/**
+ * @route   POST /api/auth/reset-password/:token
+ * @desc    Reset password using token
+ * @access  Public
+ */
+router.post(
+  '/reset-password/:token',
+  [
+    param('token', 'Token is required').notEmpty(),
+    check('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
+  ],
+  validateRequest,
+  resetPassword
 );
 
 module.exports = router;

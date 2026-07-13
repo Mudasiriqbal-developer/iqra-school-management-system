@@ -83,3 +83,13 @@ export const downloadAdmissionReceipt = async (studentId, registrationNumber) =>
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
 };
+
+/**
+ * Reset a student's password by Admin.
+ * @param {string} id - Student ID
+ * @param {string} password - New password
+ */
+export const resetStudentPassword = async (id, password) => {
+  const response = await api.put(`/students/${id}/reset-password`, { password });
+  return response.data;
+};

@@ -1094,6 +1094,51 @@ const generateAdmissionReceiptPDF = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Reset student password (Admin only)
+ * @route   PUT /api/students/:id/reset-password
+ * @access  Private (Admin)
+ */
+const resetStudentPassword = async (req, res, next) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found',
+      });
+    }
+
+    const { password } = req.body;
+    const finalPassword = (password && password.trim() !== '') ? password : 'student123';
+
+    if (finalPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long',
+      });
+    }
+
+    const user = await User.findOne({ registrationNumber: student.registrationNumber });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student user account not found',
+      });
+    }
+
+    user.password = finalPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Password reset successfully for ${student.fullName} (Roll No: ${student.registrationNumber})`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createStudent,
   getAllStudents,
@@ -1107,4 +1152,5 @@ module.exports = {
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
   generateAdmissionReceiptPDF,
+  resetStudentPassword,
 };

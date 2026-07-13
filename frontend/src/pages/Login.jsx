@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Login = () => {
-  const [activeTab, setActiveTab] = useState('student'); // 'student' | 'teacher' | 'admin'
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -98,33 +97,15 @@ const Login = () => {
             </div>
             <h1 className="text-2xl font-extrabold text-navy-950 mt-6 tracking-tight">Portal Login</h1>
             <p className="text-gray-500 text-sm mt-1.5 text-center">
-              Welcome back. Please select your role to continue.
+              Welcome back. Please sign in to access your portal.
             </p>
-          </div>
-
-          {/* Role Tabs */}
-          <div className="bg-gray-100 p-1 rounded-xl flex space-x-1 mb-6">
-            {['student', 'teacher', 'admin'].map((role) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => setActiveTab(role)}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold capitalize transition-all duration-200 ${
-                  activeTab === role
-                    ? 'bg-white text-navy-900 shadow-sm font-bold'
-                    : 'text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                {role}
-              </button>
-            ))}
           </div>
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                {activeTab === 'student' ? 'Registration Number' : 'Email Address'}
+                Email or Registration Number
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -136,7 +117,7 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={activeTab === 'student' ? 'e.g. BSCS-231184' : 'e.g. name@ihass.edu'}
+                  placeholder="e.g. name@ihass.edu or stud101"
                   className="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all bg-gray-50 focus:bg-white"
                 />
               </div>
@@ -182,9 +163,9 @@ const Login = () => {
                   Remember me
                 </label>
               </div>
-              <a href="#" className="text-sm font-semibold text-navy-800 hover:text-navy-700 transition-colors">
+              <Link to="/forgot-password" className="text-sm font-semibold text-navy-800 hover:text-navy-700 transition-colors">
                 Forgot Password?
-              </a>
+              </Link>
             </div>
 
             <button

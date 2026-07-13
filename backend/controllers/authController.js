@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { hashToken, generateActivationToken } = require('../utils/tokenUtils');
-const { sendActivationConfirmationEmail, sendInvitationEmail } = require('../utils/emailService');
+const { sendActivationConfirmationEmail, sendInvitationEmail, sendResetPasswordEmail } = require('../utils/emailService');
 const crypto = require('crypto');
 
 /**
@@ -325,6 +325,119 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Send password reset token to email
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an email address',
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No user found with that email address',
+      });
+    }
+
+    // Only allow admin and teacher to use self-service forgot password
+    if (user.role !== 'admin' && user.role !== 'teacher') {
+      return res.status(403).json({
+        success: false,
+        message: 'Password recovery is not available for this role. Please contact an administrator.',
+      });
+    }
+
+    // Generate reset token
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashToken(rawToken);
+
+    user.resetPasswordToken = tokenHash;
+    user.resetPasswordExpires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour expiration
+
+    await user.save();
+
+    // Send email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetLink = `${frontendUrl}/reset-password/${rawToken}`;
+
+    try {
+      await sendResetPasswordEmail(user.email, user.name, resetLink);
+    } catch (mailErr) {
+      console.error('Failed to send reset password email:', mailErr);
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      await user.save();
+      return res.status(500).json({
+        success: false,
+        message: 'Email could not be sent. Please try again later.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset link sent to your email.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Reset password using reset token
+ * @route   POST /api/auth/reset-password/:token
+ * @access  Public
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    const rawToken = req.params.token;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long',
+      });
+    }
+
+    const tokenHash = hashToken(rawToken);
+
+    const user = await User.findOne({
+      resetPasswordToken: tokenHash,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'This reset link is invalid or has expired',
+      });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully. You can now log in.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -332,4 +445,6 @@ module.exports = {
   validateActivationToken,
   activateAccount,
   changePassword,
+  forgotPassword,
+  resetPassword,
 };
