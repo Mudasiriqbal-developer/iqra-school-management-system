@@ -46,6 +46,7 @@ import {
 } from '../features/academics/academicService';
 import { getTeachers } from '../features/teachers/teacherService';
 import ConfirmModal from '../components/shared/ConfirmModal';
+import { formatClassName, formatClassNameWithGender } from '../utils/format';
 
 const AdminAcademics = () => {
   // Sidebar items
@@ -65,6 +66,7 @@ const AdminAcademics = () => {
   // Core academic state
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [genderFilter, setGenderFilter] = useState('all');
   const [sections, setSections] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -612,6 +614,24 @@ const AdminAcademics = () => {
               </form>
             )}
 
+            {/* Gender Filter Tabs */}
+            <div className="flex border border-gray-200/50 bg-slate-50 p-0.5 rounded-lg mb-3">
+              {['all', 'mixed', 'male', 'female'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setGenderFilter(tab)}
+                  className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all capitalize ${
+                    genderFilter === tab
+                      ? 'bg-white text-navy-950 shadow-sm font-extrabold'
+                      : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
             {/* List */}
             <div className="space-y-2 flex-grow overflow-y-auto max-h-[350px] pr-1">
               {loadingClasses ? (
@@ -627,121 +647,129 @@ const AdminAcademics = () => {
                     Create your first class to get started.
                   </p>
                 </div>
+              ) : classes.filter(cls => genderFilter === 'all' || cls.gender === genderFilter).length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-gray-200 rounded-2xl p-4 bg-slate-50/50">
+                  <BookOpen className="h-6 w-6 text-gray-300 mb-1" />
+                  <p className="text-[11px] font-bold text-gray-600">No classes match filter</p>
+                </div>
               ) : (
-                classes.map((cls, index) => {
-                  const isSelected = selectedClass?._id === cls._id;
-                  const dragOver = dragOverInfo?.type === 'class' && dragOverInfo?.index === index;
-                  
-                  return (
-                    <div
-                      key={cls._id}
-                      draggable={true}
-                      onDragStart={(e) => {
-                        dragSourceIndexRef.current = index;
-                        dragTypeRef.current = 'class';
-                      }}
-                      onDragOver={(e) => handleDragOver(e, index, 'class')}
-                      onDragEnd={handleDragEnd}
-                      onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, index, 'class')}
-                      onClick={() => setSelectedClass(cls)}
-                      className={`group flex flex-col p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
-                        isSelected
-                          ? 'border-navy-900/20 bg-navy-900/5 border-l-4 border-l-navy-900 shadow-sm font-semibold text-navy-900'
-                          : 'border-gray-200/50 hover:bg-slate-50 text-gray-700'
-                      } ${
-                        dragOver ? 'border-t-2 border-t-navy-900 border-dashed pt-2.5' : ''
-                      }`}
-                    >
-                      {editingClassId === cls._id ? (
-                        <div className="flex flex-col space-y-2 w-full" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="text"
-                            value={editClassNameValue}
-                            onChange={(e) => setEditClassNameValue(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue);
-                                setEditingClassId(null);
-                              } else if (e.key === 'Escape') {
-                                setEditingClassId(null);
-                              }
-                            }}
-                            className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white"
-                            placeholder="Class Name"
-                            autoFocus
-                          />
-                          <select
-                            value={editClassGenderValue}
-                            onChange={(e) => setEditClassGenderValue(e.target.value)}
-                            className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-medium text-gray-600"
-                          >
-                            <option value="mixed">Mixed</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                          </select>
-                          <div className="flex items-center space-x-1.5 justify-end">
-                            <button
-                              onClick={() => setEditingClassId(null)}
-                              className="px-2 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() => {
-                                handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue);
-                                setEditingClassId(null);
+                classes
+                  .map((cls, index) => ({ cls, originalIndex: index }))
+                  .filter(({ cls }) => genderFilter === 'all' || cls.gender === genderFilter)
+                  .map(({ cls, originalIndex }) => {
+                    const isSelected = selectedClass?._id === cls._id;
+                    const dragOver = dragOverInfo?.type === 'class' && dragOverInfo?.index === originalIndex;
+                    
+                    return (
+                      <div
+                        key={cls._id}
+                        draggable={true}
+                        onDragStart={(e) => {
+                          dragSourceIndexRef.current = originalIndex;
+                          dragTypeRef.current = 'class';
+                        }}
+                        onDragOver={(e) => handleDragOver(e, originalIndex, 'class')}
+                        onDragEnd={handleDragEnd}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, originalIndex, 'class')}
+                        onClick={() => setSelectedClass(cls)}
+                        className={`group flex flex-col p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? 'border-navy-900/20 bg-navy-900/5 border-l-4 border-l-navy-900 shadow-sm font-semibold text-navy-900'
+                            : 'border-gray-200/50 hover:bg-slate-50 text-gray-700'
+                        } ${
+                          dragOver ? 'border-t-2 border-t-navy-900 border-dashed pt-2.5' : ''
+                        }`}
+                      >
+                        {editingClassId === cls._id ? (
+                          <div className="flex flex-col space-y-2 w-full" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="text"
+                              value={editClassNameValue}
+                              onChange={(e) => setEditClassNameValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue);
+                                  setEditingClassId(null);
+                                } else if (e.key === 'Escape') {
+                                  setEditingClassId(null);
+                                }
                               }}
-                              className="px-2.5 py-1 text-[10px] font-extrabold text-white bg-navy-900 hover:bg-navy-800 rounded-md transition-colors shadow-sm"
+                              className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white"
+                              placeholder="Class Name"
+                              autoFocus
+                            />
+                            <select
+                              value={editClassGenderValue}
+                              onChange={(e) => setEditClassGenderValue(e.target.value)}
+                              className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-medium text-gray-600"
                             >
-                              Save
-                            </button>
+                              <option value="mixed">Mixed</option>
+                              <option value="male">Male</option>
+                              <option value="female">Female</option>
+                            </select>
+                            <div className="flex items-center space-x-1.5 justify-end">
+                              <button
+                                onClick={() => setEditingClassId(null)}
+                                className="px-2 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue);
+                                  setEditingClassId(null);
+                                }}
+                                className="px-2.5 py-1 text-[10px] font-extrabold text-white bg-navy-900 hover:bg-navy-800 rounded-md transition-colors shadow-sm"
+                              >
+                                Save
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center flex-grow truncate pr-2">
-                            <GripVertical className="h-4 w-4 text-gray-400 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
-                            <span className="text-sm font-semibold text-gray-800 mr-2">{cls.name}</span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
-                              cls.gender === 'male'
-                                ? 'bg-sky-50 text-sky-600 border-sky-100/50'
-                                : cls.gender === 'female'
-                                ? 'bg-rose-50 text-rose-600 border-rose-100/50'
-                                : 'bg-slate-50 text-gray-500 border-gray-100'
-                            }`}>
-                              {cls.gender || 'mixed'}
-                            </span>
+                        ) : (
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center flex-grow truncate pr-2">
+                              <GripVertical className="h-4 w-4 text-gray-400 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
+                              <span className="text-sm font-semibold text-gray-800 mr-2">{formatClassName(cls.name)}</span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
+                                cls.gender === 'male'
+                                  ? 'bg-sky-50 text-sky-600 border-sky-100/50'
+                                  : cls.gender === 'female'
+                                  ? 'bg-rose-50 text-rose-600 border-rose-100/50'
+                                  : 'bg-slate-50 text-gray-500 border-gray-100'
+                              }`}>
+                                {cls.gender || 'mixed'}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingClassId(cls._id);
+                                  setEditClassNameValue(cls.name);
+                                  setEditClassGenderValue(cls.gender || 'mixed');
+                                }}
+                                className="p-1 text-gray-400 hover:text-navy-950 hover:bg-gray-100 rounded"
+                                title="Edit Class"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClass(cls._id);
+                                }}
+                                className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                title="Delete Class"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingClassId(cls._id);
-                                setEditClassNameValue(cls.name);
-                                setEditClassGenderValue(cls.gender || 'mixed');
-                              }}
-                              className="p-1 text-gray-400 hover:text-navy-950 hover:bg-gray-100 rounded"
-                              title="Edit Class"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClass(cls._id);
-                              }}
-                              className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-                              title="Delete Class"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
+                        )}
+                      </div>
+                    );
+                  })
               )}
             </div>
           </div>
@@ -762,7 +790,7 @@ const AdminAcademics = () => {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <h3 className="font-bold text-gray-800 text-base capitalize">
-                      Sections in {selectedClass.name} — {selectedClass.gender || 'mixed'}
+                      Sections in {formatClassNameWithGender(selectedClass.name, selectedClass.gender)}
                     </h3>
                     <p className="text-xs text-gray-400 mt-0.5">Manage subdivisions of this class</p>
                   </div>
@@ -997,7 +1025,7 @@ const AdminAcademics = () => {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <h3 className="font-bold text-gray-800 text-base capitalize">
-                      Subjects in {selectedClass.name} — {selectedClass.gender || 'mixed'}
+                      Subjects in {formatClassNameWithGender(selectedClass.name, selectedClass.gender)}
                     </h3>
                     <p className="text-xs text-gray-400 mt-0.5">Manage curriculum subjects</p>
                   </div>

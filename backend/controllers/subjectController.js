@@ -21,12 +21,30 @@ const createSubject = async (req, res, next) => {
       });
     }
 
-    const subject = await Subject.create({ name, classId });
+    // Find all classes with the same name (all gender variants of this grade)
+    const siblingClasses = await Class.find({ name: classExists.name });
+
+    let targetSubject = null;
+
+    for (const siblingClass of siblingClasses) {
+      // check if subject already exists for this siblingClass
+      let siblingSubject = await Subject.findOne({ name, classId: siblingClass._id });
+      if (!siblingSubject) {
+        siblingSubject = await Subject.create({ name, classId: siblingClass._id });
+      }
+      if (siblingClass._id.toString() === classId.toString()) {
+        targetSubject = siblingSubject;
+      }
+    }
+
+    if (!targetSubject) {
+      targetSubject = await Subject.findOne({ name, classId });
+    }
 
     return res.status(201).json({
       success: true,
-      data: subject,
-      message: 'Subject created successfully',
+      data: targetSubject,
+      message: 'Subject created successfully across all gender variants of this grade',
     });
   } catch (error) {
     next(error);
@@ -92,7 +110,7 @@ const getSubjectById = async (req, res, next) => {
  */
 const updateSubject = async (req, res, next) => {
   try {
-    const { name, classId } = req.body;
+    const { name } = req.body;
 
     const subject = await Subject.findById(req.params.id);
     if (!subject) {
@@ -103,29 +121,34 @@ const updateSubject = async (req, res, next) => {
       });
     }
 
-    if (classId) {
-      const classExists = await Class.findById(classId);
-      if (!classExists) {
-        return res.status(404).json({
-          success: false,
-          data: null,
-          message: 'Associated Class not found',
-        });
-      }
-      subject.classId = classId;
+    const parentClass = await Class.findById(subject.classId);
+    if (!parentClass) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Parent class not found',
+      });
     }
 
-    if (name) {
-      subject.name = name;
-    }
+    const originalName = subject.name;
 
-    const updatedSubject = await subject.save();
-    const populated = await updatedSubject.populate('classId', 'name');
+    // Find all sibling classes of this grade
+    const siblingClasses = await Class.find({ name: parentClass.name });
+    const siblingClassIds = siblingClasses.map(c => c._id);
+
+    // Update all subjects with name = originalName in those sibling classes
+    await Subject.updateMany(
+      { name: originalName, classId: { $in: siblingClassIds } },
+      { $set: { name } }
+    );
+
+    // Fetch updated subject to return
+    const updatedSubject = await Subject.findById(req.params.id).populate('classId', 'name');
 
     return res.status(200).json({
       success: true,
-      data: populated,
-      message: 'Subject updated successfully',
+      data: populated = updatedSubject,
+      message: 'Subject updated successfully across all gender variants of this grade',
     });
   } catch (error) {
     next(error);
@@ -148,22 +171,42 @@ const deleteSubject = async (req, res, next) => {
       });
     }
 
-    // Check if Assignments reference this Subject
-    const assignmentsCount = await Assignment.countDocuments({ subjectId: req.params.id });
+    const parentClass = await Class.findById(subject.classId);
+    if (!parentClass) {
+      return res.status(404).json({
+        success: false,
+        data: null,
+        message: 'Parent class not found',
+      });
+    }
+
+    const originalName = subject.name;
+
+    // Find all sibling classes of this grade
+    const siblingClasses = await Class.find({ name: parentClass.name });
+    const siblingClassIds = siblingClasses.map(c => c._id);
+
+    // Find all subjects sharing this name in those classes
+    const subjectsToDelete = await Subject.find({ name: originalName, classId: { $in: siblingClassIds } });
+    const subjectIdsToDelete = subjectsToDelete.map(s => s._id);
+
+    // Check if any Assignments reference any of these subjects
+    const assignmentsCount = await Assignment.countDocuments({ subjectId: { $in: subjectIdsToDelete } });
     if (assignmentsCount > 0) {
       return res.status(400).json({
         success: false,
         data: null,
-        message: 'Cannot delete Subject because it is referenced by an Assignment.',
+        message: 'Cannot delete Subject because it is referenced by an Assignment in one or more gender variants.',
       });
     }
 
-    await Subject.findByIdAndDelete(req.params.id);
+    // Delete all of them
+    await Subject.deleteMany({ _id: { $in: subjectIdsToDelete } });
 
     return res.status(200).json({
       success: true,
       data: null,
-      message: 'Subject deleted successfully',
+      message: 'Subject deleted successfully across all gender variants of this grade',
     });
   } catch (error) {
     next(error);

@@ -321,7 +321,7 @@ const AdminStudents = () => {
               <option value="">All Classes</option>
               {classesList.map((c) => (
                 <option key={c._id} value={c._id}>
-                  {c.name} — {c.gender ? c.gender.charAt(0).toUpperCase() + c.gender.slice(1) : 'Mixed'}
+                  {/^\d+$/.test(c.name) ? 'Class ' : ''}{c.name} — {c.gender ? c.gender.charAt(0).toUpperCase() + c.gender.slice(1) : 'Mixed'}
                 </option>
               ))}
             </select>
@@ -424,7 +424,15 @@ const AdminStudents = () => {
 
                         {/* Class / Section */}
                         <td className="py-4 px-6 text-sm">
-                          <div className="font-bold text-gray-700">{student.classId?.name || 'N/A'}</div>
+                          <div className="font-bold text-gray-700">
+                            {student.classId
+                              ? (/^\d+$/.test(student.classId.name) ? 'Class ' : '') + 
+                                student.classId.name + 
+                                (student.classId.gender && student.classId.gender !== 'mixed' 
+                                  ? ` — ${student.classId.gender.charAt(0).toUpperCase() + student.classId.gender.slice(1)}` 
+                                  : '')
+                              : 'N/A'}
+                          </div>
                           <div className="text-xs text-gray-400 font-medium mt-0.5">{student.sectionId?.name || 'N/A'}</div>
                         </td>
 

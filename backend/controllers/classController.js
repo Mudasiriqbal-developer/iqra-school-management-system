@@ -25,6 +25,24 @@ const createClass = async (req, res, next) => {
 
     const newClass = await Class.create({ name, gender: classGender });
 
+    // Copy over existing subjects for this grade if any sibling class exists
+    try {
+      const siblingClass = await Class.findOne({ name, _id: { $ne: newClass._id } });
+      if (siblingClass) {
+        const siblingSubjects = await Subject.find({ classId: siblingClass._id });
+        if (siblingSubjects && siblingSubjects.length > 0) {
+          const subjectsToCreate = siblingSubjects.map(sub => ({
+            name: sub.name,
+            classId: newClass._id,
+            orderIndex: sub.orderIndex || 0
+          }));
+          await Subject.insertMany(subjectsToCreate);
+        }
+      }
+    } catch (subjectCopyError) {
+      console.error('Failed to copy subjects for newly created class variant:', subjectCopyError);
+    }
+
     return res.status(201).json({
       success: true,
       data: newClass,

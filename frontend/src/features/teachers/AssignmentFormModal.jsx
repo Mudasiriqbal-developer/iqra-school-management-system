@@ -210,7 +210,7 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
               <option value="">-- Select Class --</option>
               {classes.map((c) => (
                 <option key={c._id} value={c._id}>
-                  {c.name} — {c.gender ? c.gender.charAt(0).toUpperCase() + c.gender.slice(1) : 'Mixed'}
+                  {/^\d+$/.test(c.name) ? 'Class ' : ''}{c.name} — {c.gender ? c.gender.charAt(0).toUpperCase() + c.gender.slice(1) : 'Mixed'}
                 </option>
               ))}
             </select>

@@ -359,7 +359,7 @@ const AdminReports = () => {
                       <option value="">All Classes</option>
                       {classesList.map((cls) => (
                         <option key={cls._id} value={cls._id}>
-                          {cls.name} — {cls.gender ? cls.gender.charAt(0).toUpperCase() + cls.gender.slice(1) : 'Mixed'}
+                          {/^\d+$/.test(cls.name) ? 'Class ' : ''}{cls.name} — {cls.gender ? cls.gender.charAt(0).toUpperCase() + cls.gender.slice(1) : 'Mixed'}
                         </option>
                       ))}
                     </select>

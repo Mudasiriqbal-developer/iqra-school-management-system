@@ -131,7 +131,15 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
               <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-medium">Class:</span>
-                  <span className="font-bold text-navy-900">{student.classId?.name || 'N/A'}</span>
+                  <span className="font-bold text-navy-900">
+                    {student.classId
+                      ? (/^\d+$/.test(student.classId.name) ? 'Class ' : '') + 
+                        student.classId.name + 
+                        (student.classId.gender && student.classId.gender !== 'mixed' 
+                          ? ` — ${student.classId.gender.charAt(0).toUpperCase() + student.classId.gender.slice(1)}` 
+                          : '')
+                      : 'N/A'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-medium">Section:</span>

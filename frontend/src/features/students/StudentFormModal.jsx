@@ -531,7 +531,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
                 <option value="">{loadingClasses ? 'Loading classes...' : 'Select Class'}</option>
                 {classes.map((c) => (
                   <option key={c._id} value={c._id}>
-                    {c.name} — {c.gender ? c.gender.charAt(0).toUpperCase() + c.gender.slice(1) : 'Mixed'}
+                    {/^\d+$/.test(c.name) ? 'Class ' : ''}{c.name} — {c.gender ? c.gender.charAt(0).toUpperCase() + c.gender.slice(1) : 'Mixed'}
                   </option>
                 ))}
               </select>
