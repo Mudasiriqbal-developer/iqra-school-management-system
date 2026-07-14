@@ -34,7 +34,7 @@ const TeacherGrades = () => {
   // Core States
   const [assignments, setAssignments] = useState([]);
   const [selectedAssignmentIndex, setSelectedAssignmentIndex] = useState('');
-  const [examType, setExamType] = useState('quiz');
+  const [examType, setExamType] = useState('first_term');
   
   const [students, setStudents] = useState([]);
   const [marksData, setMarksData] = useState({}); // { studentId: { marksObtained, totalMarks, comments } }
@@ -312,10 +312,9 @@ const TeacherGrades = () => {
                 onChange={(e) => setExamType(e.target.value)}
                 className="w-full bg-gray-50 rounded-xl border border-gray-200 p-3 text-sm text-navy-950 focus:ring-2 focus:ring-navy-900/10 focus:border-navy-900 outline-none transition-all"
               >
-                <option value="quiz">Quiz</option>
-                <option value="assignment">Assignment</option>
-                <option value="midterm">Midterm Exam</option>
-                <option value="final">Final Exam</option>
+                <option value="first_term">First Term</option>
+                <option value="second_term">Second Term</option>
+                <option value="final_term">Final Term</option>
               </select>
             </div>
           </div>

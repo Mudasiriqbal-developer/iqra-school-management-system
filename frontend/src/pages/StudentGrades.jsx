@@ -106,6 +106,9 @@ const StudentGrades = () => {
 
   const formatExamType = (type) => {
     switch (type) {
+      case 'first_term': return 'First Term';
+      case 'second_term': return 'Second Term';
+      case 'final_term': return 'Final Term';
       case 'quiz': return 'Quiz';
       case 'assignment': return 'Assignment';
       case 'midterm': return 'Midterm Exam';

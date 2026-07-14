@@ -25,11 +25,14 @@ router.post(
     check('classId', 'Valid Class ID is required').isMongoId(),
     check('sectionId', 'Valid Section ID is required').isMongoId(),
     check('subjectId', 'Valid Subject ID is required').isMongoId(),
-    check('examType', 'Exam type must be quiz, assignment, midterm, or final').isIn([
+    check('examType', 'Exam type must be first_term, second_term, final_term, quiz, assignment, midterm, or final').isIn([
       'quiz',
       'assignment',
       'midterm',
       'final',
+      'first_term',
+      'second_term',
+      'final_term',
     ]),
     check('grades', 'Grades must be an array').isArray(),
   ],

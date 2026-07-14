@@ -25,8 +25,8 @@ const gradeSchema = new mongoose.Schema(
     examType: {
       type: String,
       enum: {
-        values: ['quiz', 'assignment', 'midterm', 'final'],
-        message: 'Exam type must be quiz, assignment, midterm, or final',
+        values: ['quiz', 'assignment', 'midterm', 'final', 'first_term', 'second_term', 'final_term'],
+        message: 'Exam type must be first_term, second_term, final_term, quiz, assignment, midterm, or final',
       },
       required: [true, 'Exam type is required'],
     },
