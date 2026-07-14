@@ -95,7 +95,17 @@ router.post(
     check('gender', 'Gender must be male, female, or other').isIn(['male', 'female', 'other']),
     check('dateOfBirth', 'Valid date of birth is required').isISO8601(),
     check('fatherContact', 'Father contact number is required').trim().notEmpty(),
-    check('email', 'Invalid email format').optional({ nullable: true, checkFalsy: true }).trim().isEmail().normalizeEmail(),
+    check('email', 'Invalid email format')
+      .optional({ nullable: true, checkFalsy: true })
+      .trim()
+      .isEmail()
+      .normalizeEmail({
+        gmail_remove_subaddress: false,
+        gmail_remove_dots: false,
+        outlookdotcom_remove_subaddress: false,
+        yahoo_remove_subaddress: false,
+        icloud_remove_subaddress: false
+      }),
     check('classId', 'Valid Class ID is required').isMongoId(),
     check('sectionId', 'Valid Section ID is required').isMongoId(),
     check('feeInfo.status', 'Fee status must be paid, pending, or overdue').optional().isIn(['paid', 'pending', 'overdue']),
@@ -127,7 +137,17 @@ router.put(
     check('gender', 'Gender must be male, female, or other').optional().isIn(['male', 'female', 'other']),
     check('dateOfBirth', 'Valid date of birth is required').optional().isISO8601(),
     check('fatherContact', 'Father contact number cannot be empty').optional().trim().notEmpty(),
-    check('email', 'Invalid email format').optional({ nullable: true, checkFalsy: true }).trim().isEmail().normalizeEmail(),
+    check('email', 'Invalid email format')
+      .optional({ nullable: true, checkFalsy: true })
+      .trim()
+      .isEmail()
+      .normalizeEmail({
+        gmail_remove_subaddress: false,
+        gmail_remove_dots: false,
+        outlookdotcom_remove_subaddress: false,
+        yahoo_remove_subaddress: false,
+        icloud_remove_subaddress: false
+      }),
     check('classId', 'Valid Class ID must be a Mongo ID').optional().isMongoId(),
     check('sectionId', 'Valid Section ID must be a Mongo ID').optional().isMongoId(),
     check('feeInfo.status', 'Fee status must be paid, pending, or overdue').optional().isIn(['paid', 'pending', 'overdue']),

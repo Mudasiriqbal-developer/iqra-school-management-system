@@ -48,7 +48,16 @@ router.post(
   authorize('admin'),
   [
     check('name', 'Name is required').trim().notEmpty(),
-    check('email', 'Please include a valid email address').trim().isEmail().normalizeEmail(),
+    check('email', 'Please include a valid email address')
+      .trim()
+      .isEmail()
+      .normalizeEmail({
+        gmail_remove_subaddress: false,
+        gmail_remove_dots: false,
+        outlookdotcom_remove_subaddress: false,
+        yahoo_remove_subaddress: false,
+        icloud_remove_subaddress: false
+      }),
     check('employeeId', 'Employee ID is required').trim().notEmpty(),
     check('qualification', 'Qualification must be a string').optional().trim(),
     check('phone', 'Phone must be a string').optional().trim(),
@@ -69,7 +78,17 @@ router.put(
   authorize('admin'),
   [
     check('name', 'Name cannot be empty').optional().trim().notEmpty(),
-    check('email', 'Please include a valid email address').optional().trim().isEmail().normalizeEmail(),
+    check('email', 'Please include a valid email address')
+      .optional()
+      .trim()
+      .isEmail()
+      .normalizeEmail({
+        gmail_remove_subaddress: false,
+        gmail_remove_dots: false,
+        outlookdotcom_remove_subaddress: false,
+        yahoo_remove_subaddress: false,
+        icloud_remove_subaddress: false
+      }),
     check('employeeId', 'Employee ID cannot be empty').optional().trim().notEmpty(),
     check('qualification', 'Qualification must be a string').optional().trim(),
     check('phone', 'Phone must be a string').optional().trim(),

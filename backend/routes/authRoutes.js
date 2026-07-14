@@ -46,7 +46,13 @@ router.post(
     check('email', 'Please include a valid email address')
       .trim()
       .isEmail()
-      .normalizeEmail(),
+      .normalizeEmail({
+        gmail_remove_subaddress: false,
+        gmail_remove_dots: false,
+        outlookdotcom_remove_subaddress: false,
+        yahoo_remove_subaddress: false,
+        icloud_remove_subaddress: false
+      }),
     check('role', 'Role must be admin, teacher, student, or parent')
       .trim()
       .isIn(['admin', 'teacher', 'student', 'parent']),
@@ -133,7 +139,15 @@ router.put(
 router.post(
   '/forgot-password',
   [
-    check('email', 'Please include a valid email address').isEmail().normalizeEmail(),
+    check('email', 'Please include a valid email address')
+      .isEmail()
+      .normalizeEmail({
+        gmail_remove_subaddress: false,
+        gmail_remove_dots: false,
+        outlookdotcom_remove_subaddress: false,
+        yahoo_remove_subaddress: false,
+        icloud_remove_subaddress: false
+      }),
   ],
   validateRequest,
   forgotPassword
