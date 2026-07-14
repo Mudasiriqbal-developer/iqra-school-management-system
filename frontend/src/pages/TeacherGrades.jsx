@@ -19,6 +19,7 @@ import StatCard from '../components/shared/StatCard';
 import { useAuth } from '../context/AuthContext';
 import { getMyAssignments, getStudentsByClassSection } from '../features/attendance/attendanceService';
 import api from '../services/api';
+import { formatClassName } from '../utils/format';
 
 const TeacherGrades = () => {
   const { user } = useAuth();
@@ -27,8 +28,7 @@ const TeacherGrades = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
-    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
-    { label: 'My Leaves', icon: CalendarDays, path: '/teacher/leaves' }
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' }
   ];
 
   // Core States
@@ -299,7 +299,7 @@ const TeacherGrades = () => {
               >
                 {assignments.map((asg, idx) => (
                   <option key={asg._id} value={idx}>
-                    {asg.classId?.name} - {asg.sectionId?.name} | {asg.subjectId?.name}
+                    {formatClassName(asg.classId?.name)} - {asg.sectionId?.name} | {asg.subjectId?.name}
                   </option>
                 ))}
               </select>

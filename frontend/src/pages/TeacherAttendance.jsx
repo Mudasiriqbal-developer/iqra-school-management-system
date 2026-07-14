@@ -25,6 +25,7 @@ import {
   getExistingAttendance,
   submitAttendance,
 } from '../features/attendance/attendanceService';
+import { formatClassName } from '../utils/format';
 
 const TeacherAttendance = () => {
   const { user } = useAuth();
@@ -35,8 +36,7 @@ const TeacherAttendance = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
-    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
-    { label: 'My Leaves', icon: CalendarDays, path: '/teacher/leaves' }
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' }
   ];
 
 
@@ -340,7 +340,7 @@ const TeacherAttendance = () => {
               <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
                 <div>
                   <h2 className="text-lg font-bold text-navy-950">
-                    Student Roster - {myClassSection.classId?.name} (Section {myClassSection.name})
+                    Student Roster - {formatClassName(myClassSection.classId?.name)} (Section {myClassSection.name})
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">
                     Date: {activeDate}

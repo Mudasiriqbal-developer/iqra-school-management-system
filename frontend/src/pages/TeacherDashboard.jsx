@@ -17,6 +17,7 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import { useAuth } from '../context/AuthContext';
 import { getMyAssignments, getMyClassSection } from '../features/attendance/attendanceService';
+import { formatClassName } from '../utils/format';
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
@@ -26,8 +27,7 @@ const TeacherDashboard = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
-    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
-    { label: 'My Leaves', icon: CalendarDays, path: '/teacher/leaves' }
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' }
   ];
 
 
@@ -168,7 +168,7 @@ const TeacherDashboard = () => {
               ) : (
                 <div className="mt-4 space-y-2">
                   <h3 className="text-xl font-black text-navy-950">
-                    {myClassSection.classId?.name} - {myClassSection.name}
+                    {formatClassName(myClassSection.classId?.name)} - {myClassSection.name}
                   </h3>
                   <p className="text-xs text-gray-500">
                     You are the designated Class Teacher for this homeroom section.
@@ -233,7 +233,7 @@ const TeacherDashboard = () => {
                       {assignments.map((asg) => (
                         <tr key={asg._id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="py-3.5 px-6 text-sm font-bold text-navy-950">
-                            {asg.classId?.name}
+                            {formatClassName(asg.classId?.name)}
                           </td>
                           <td className="py-3.5 px-6 text-sm font-semibold text-gray-600">
                             {asg.sectionId?.name}
