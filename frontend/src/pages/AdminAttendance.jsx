@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   LayoutDashboard, Users, Award, BookOpen, Wallet, CalendarCheck, BarChart3,
-  Calendar, CheckCircle, XCircle, Clock, Info, RefreshCw, AlertCircle, Eye,
-  TrendingUp, DollarSign, CalendarClock
+  Calendar, CheckCircle, XCircle, RefreshCw, AlertCircle, Eye,
+  TrendingUp, DollarSign
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -353,7 +353,7 @@ const AdminAttendance = () => {
           <div className="space-y-6">
             
             {/* Roster Attendance Summary Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <StatCard icon={Users} label="Total Students" value={stats.total} />
               <StatCard 
                 icon={CheckCircle} 
@@ -368,20 +368,6 @@ const AdminAttendance = () => {
                 value={stats.absent} 
                 trend={stats.total > 0 ? `${Math.round(stats.absent / stats.total * 100)}%` : null}
                 trendColor="danger"
-              />
-              <StatCard 
-                icon={Clock} 
-                label="Late" 
-                value={stats.late} 
-                trend={stats.total > 0 ? `${Math.round(stats.late / stats.total * 100)}%` : null}
-                trendColor="pending"
-              />
-              <StatCard 
-                icon={Info} 
-                label="Leave" 
-                value={stats.leave} 
-                trend={stats.total > 0 ? `${Math.round(stats.leave / stats.total * 100)}%` : null}
-                trendColor="info"
               />
             </div>
 

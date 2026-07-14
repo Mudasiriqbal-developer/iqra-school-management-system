@@ -200,7 +200,7 @@ const StudentAttendanceHistoryModal = ({ isOpen, onClose, student }) => {
               </div>
 
               {/* Status breakdown grid */}
-              <div className="grid grid-cols-4 gap-3 w-full">
+              <div className="grid grid-cols-2 gap-3 w-full">
                 {/* Present */}
                 <div className="bg-green-50/50 border border-green-100/60 rounded-xl p-2.5 text-center">
                   <span className="block text-lg font-black text-green-700">{summary.presentCount}</span>
@@ -210,16 +210,6 @@ const StudentAttendanceHistoryModal = ({ isOpen, onClose, student }) => {
                 <div className="bg-red-50/50 border border-red-100/60 rounded-xl p-2.5 text-center">
                   <span className="block text-lg font-black text-red-700">{summary.absentCount}</span>
                   <span className="block text-[9px] font-bold text-red-600 uppercase tracking-wide">Absent</span>
-                </div>
-                {/* Late */}
-                <div className="bg-amber-50/50 border border-amber-100/60 rounded-xl p-2.5 text-center">
-                  <span className="block text-lg font-black text-amber-700">{summary.lateCount}</span>
-                  <span className="block text-[9px] font-bold text-amber-600 uppercase tracking-wide">Late</span>
-                </div>
-                {/* Leave */}
-                <div className="bg-blue-50/50 border border-blue-100/60 rounded-xl p-2.5 text-center">
-                  <span className="block text-lg font-black text-blue-700">{summary.leaveCount}</span>
-                  <span className="block text-[9px] font-bold text-blue-600 uppercase tracking-wide">Leave</span>
                 </div>
               </div>
             </div>

@@ -6,13 +6,11 @@ import {
   Users,
   CheckCircle,
   XCircle,
-  Clock,
   AlertCircle,
   ArrowLeft,
   Save,
   UserCheck,
   RefreshCw,
-  CalendarDays,
   Award
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -310,7 +308,7 @@ const TeacherAttendance = () => {
         ) : (
           <>
             {/* Live Statistics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <StatCard icon={Users} label="Total Students" value={stats.total} />
               <StatCard
                 icon={CheckCircle}
@@ -325,13 +323,6 @@ const TeacherAttendance = () => {
                 value={stats.absent}
                 trend={stats.total > 0 ? `${Math.round((stats.absent / stats.total) * 100)}%` : null}
                 trendColor="danger"
-              />
-              <StatCard
-                icon={Clock}
-                label="Late Arrivals"
-                value={stats.late}
-                trend={stats.total > 0 ? `${Math.round((stats.late / stats.total) * 100)}%` : null}
-                trendColor="pending"
               />
             </div>
 
@@ -431,7 +422,7 @@ const TeacherAttendance = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleStatusChange(student._id, 'present')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                                       currentStatus === 'present'
                                         ? 'bg-green-600 text-white shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
@@ -444,39 +435,13 @@ const TeacherAttendance = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleStatusChange(student._id, 'absent')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                                       currentStatus === 'absent'
                                         ? 'bg-red-600 text-white shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
                                     }`}
                                   >
                                     Absent
-                                  </button>
-
-                                  {/* Leave (Excused) Button */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleStatusChange(student._id, 'excused')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                      currentStatus === 'excused'
-                                        ? 'bg-amber-500 text-white shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                    }`}
-                                  >
-                                    Leave
-                                  </button>
-
-                                  {/* Late Button */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleStatusChange(student._id, 'late')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                      currentStatus === 'late'
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                    }`}
-                                  >
-                                    Late
                                   </button>
                                 </div>
                               </div>
