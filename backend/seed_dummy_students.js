@@ -31,6 +31,13 @@ const seedDummyStudents = async () => {
       console.log('email_1 index did not exist or could not be dropped.');
     }
 
+    // Clear existing student users and profiles completely
+    console.log('Clearing existing student records...');
+    await User.deleteMany({ role: 'student' });
+    await Student.deleteMany({});
+    await FeeRecord.deleteMany({});
+    console.log('Cleared all legacy student users, student profiles, and fee records.');
+
     // 1. Create a Class
     console.log('Creating Class 1...');
     let classObj = await Class.findOne({ name: '1' });
@@ -51,7 +58,7 @@ const seedDummyStudents = async () => {
     }
     console.log(`Section created/found: ${sectionObj.name} (ID: ${sectionObj._id})`);
 
-    // 3. Define dummy students list
+    // 3. Define dummy students list (at least 6 students)
     const dummyStudents = [
       {
         registrationNumber: 'stud101',
@@ -92,16 +99,51 @@ const seedDummyStudents = async () => {
         monthlyFeeAmount: 3800,
         status: 'active',
       },
+      {
+        registrationNumber: 'stud104',
+        fullName: 'Bilal Hassan',
+        fatherName: 'Sajid Hassan',
+        gender: 'male',
+        dateOfBirth: new Date('2016-01-10'),
+        fatherContact: '03001234564',
+        address: 'House 12, I-9, Islamabad',
+        classId: classObj._id,
+        sectionId: sectionObj._id,
+        monthlyFeeAmount: 3500,
+        status: 'active',
+      },
+      {
+        registrationNumber: 'stud105',
+        fullName: 'Fatima Zahra',
+        fatherName: 'Kamran Ali',
+        gender: 'female',
+        dateOfBirth: new Date('2015-08-18'),
+        fatherContact: '03001234565',
+        address: 'Sector G-10, Islamabad',
+        classId: classObj._id,
+        sectionId: sectionObj._id,
+        monthlyFeeAmount: 3900,
+        status: 'active',
+      },
+      {
+        registrationNumber: 'stud106',
+        fullName: 'Hamza Yusuf',
+        fatherName: 'Yusuf Ahmed',
+        gender: 'male',
+        dateOfBirth: new Date('2015-06-30'),
+        fatherContact: '03001234566',
+        address: 'House 88, F-11, Islamabad',
+        classId: classObj._id,
+        sectionId: sectionObj._id,
+        monthlyFeeAmount: 3600,
+        status: 'active',
+      },
     ];
 
     const currentMonth = '2026-07';
     const defaultPassword = 'student123';
 
     for (const data of dummyStudents) {
-      // Clean up existing User & Student if they exist with this reg number
-      await User.deleteOne({ registrationNumber: data.registrationNumber.trim() });
-      await Student.deleteOne({ registrationNumber: data.registrationNumber.trim() });
-
       // Create matching User account
       console.log(`Creating User account for Student ${data.fullName} (Reg: ${data.registrationNumber})...`);
       await User.create({

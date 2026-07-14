@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, CalendarClock, Key
+  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, CalendarClock, Key, MoreVertical
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -30,6 +30,7 @@ const AdminStudents = () => {
 
   // States
   const [students, setStudents] = useState([]);
+  const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [totalStudents, setTotalStudents] = useState(0);
   const [classesList, setClassesList] = useState([]);
@@ -374,11 +375,11 @@ const AdminStudents = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50/70 border-b border-gray-100">
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Photo</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Name / Reg</th>
+                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Photo</th>
+                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Student</th>
                     <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Class / Section</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Father's Contact</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Father's Contact</th>
+                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
@@ -400,8 +401,8 @@ const AdminStudents = () => {
 
                     return (
                       <tr key={student._id} className="hover:bg-gray-50/40 transition-colors">
-                        {/* Student Photo */}
-                        <td className="py-4 px-6 text-sm">
+                        {/* Student Photo (Tablet & Desktop only) */}
+                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
                           {student.photoUrl ? (
                             <img
                               src={student.photoUrl}
@@ -415,10 +416,30 @@ const AdminStudents = () => {
                           )}
                         </td>
 
-                        {/* Name + Registration Number */}
+                        {/* Name + Registration Number (Responsive with inline avatar for mobile) */}
                         <td className="py-4 px-6 text-sm">
-                          <div className="font-bold text-navy-950">{student.fullName}</div>
-                          <div className="text-xs text-gray-400 font-semibold mt-0.5">{student.registrationNumber}</div>
+                          <div className="flex items-center space-x-3.5">
+                            <div className="sm:hidden flex-shrink-0">
+                              {student.photoUrl ? (
+                                <img
+                                  src={student.photoUrl}
+                                  alt={student.fullName}
+                                  className="h-9 w-9 rounded-full object-cover border border-gray-100 shadow-sm"
+                                />
+                              ) : (
+                                <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-sm ${avatarBg}`}>
+                                  {getInitials(student.fullName)}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-navy-950 flex items-center space-x-2">
+                                <span>{student.fullName}</span>
+                                <span className={`inline-block sm:hidden h-2 w-2 rounded-full ${student.status === 'active' ? 'bg-green-500' : student.status === 'on_leave' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                              </div>
+                              <div className="text-xs text-gray-400 font-semibold mt-0.5">{student.registrationNumber}</div>
+                            </div>
+                          </div>
                         </td>
 
                         {/* Class / Section */}
@@ -436,47 +457,87 @@ const AdminStudents = () => {
                         </td>
 
                         {/* Father's Contact */}
-                        <td className="py-4 px-6 text-sm font-semibold text-gray-600">
+                        <td className="hidden md:table-cell py-4 px-6 text-sm font-semibold text-gray-600">
                           {student.fatherContact}
                         </td>
 
                         {/* Status Badge */}
-                        <td className="py-4 px-6 text-sm">
+                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
                           <StatusBadge status={statusProps.status} label={statusProps.label} />
                         </td>
 
-                        {/* Action Buttons */}
+                        {/* Actions (Kebab Dropdown Menu) */}
                         <td className="py-4 px-6 text-sm text-right">
-                          <div className="flex items-center justify-end space-x-2.5">
+                          <div className="relative inline-block text-left">
                             <button
-                              onClick={() => handleOpenView(student)}
-                              title="View Details"
-                              className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveDropdownId(activeDropdownId === student._id ? null : student._id);
+                              }}
+                              className="p-2 text-gray-400 hover:text-navy-950 hover:bg-slate-100 rounded-xl transition-all outline-none"
                             >
-                              <Eye className="h-4.5 w-4.5" />
+                              <MoreVertical className="h-5 w-5" />
                             </button>
-                            <button
-                              onClick={() => handleOpenEdit(student)}
-                              title="Edit Record"
-                              className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
-                            >
-                              <Pencil className="h-4.5 w-4.5" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenResetModal(student)}
-                              title="Reset Student Password"
-                              className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
-                            >
-                              <Key className="h-4.5 w-4.5" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenDeleteConfirm(student)}
-                              title="Deactivate Student"
-                              disabled={student.status === 'suspended'}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            >
-                              <Trash2 className="h-4.5 w-4.5" />
-                            </button>
+                            {activeDropdownId === student._id && (
+                              <>
+                                <div 
+                                  className="fixed inset-0 z-20"
+                                  onClick={() => setActiveDropdownId(null)}
+                                />
+                                <div className="absolute right-0 mt-1.5 w-52 bg-white border border-gray-200 rounded-2xl shadow-xl z-30 py-1.5 divide-y divide-gray-100">
+                                  <div className="py-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleOpenView(student);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
+                                    >
+                                      <Eye className="h-4.5 w-4.5 text-gray-400 mr-3" />
+                                      View Details
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleOpenEdit(student);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
+                                    >
+                                      <Pencil className="h-4.5 w-4.5 text-gray-400 mr-3" />
+                                      Edit Record
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleOpenResetModal(student);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
+                                    >
+                                      <Key className="h-4.5 w-4.5 text-gray-400 mr-3" />
+                                      Reset Password
+                                    </button>
+                                  </div>
+                                  <div className="py-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleOpenDeleteConfirm(student);
+                                      }}
+                                      disabled={student.status === 'suspended'}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50/50 transition-colors text-left disabled:opacity-40"
+                                    >
+                                      <Trash2 className="h-4.5 w-4.5 text-red-500 mr-3" />
+                                      Deactivate
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>

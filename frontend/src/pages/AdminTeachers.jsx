@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, BookOpen, Wallet, TrendingUp, CalendarClock, MailPlus
+  AlertTriangle, BookOpen, Wallet, TrendingUp, CalendarClock, MailPlus, MoreVertical
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -32,6 +32,7 @@ const AdminTeachers = () => {
 
   // States
   const [teachers, setTeachers] = useState([]);
+  const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -267,12 +268,12 @@ const AdminTeachers = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50/70 border-b border-gray-100">
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Photo</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Name / ID</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Qualification</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Assigned Classes</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Photo</th>
+                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Teacher</th>
+                    <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="hidden lg:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Qualification</th>
+                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Assigned Classes</th>
+                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
@@ -299,8 +300,8 @@ const AdminTeachers = () => {
 
                     return (
                       <tr key={teacher._id} className="hover:bg-gray-50/40 transition-colors">
-                        {/* Photo avatar */}
-                        <td className="py-4 px-6 text-sm">
+                        {/* Photo avatar (Tablet & Desktop only) */}
+                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
                           {teacher.photoUrl ? (
                             <img
                               src={teacher.photoUrl}
@@ -314,24 +315,44 @@ const AdminTeachers = () => {
                           )}
                         </td>
 
-                        {/* Name + Employee ID */}
+                        {/* Name + Employee ID (Responsive with inline avatar for mobile) */}
                         <td className="py-4 px-6 text-sm">
-                          <div className="font-bold text-navy-950">{teacher.userId?.name || 'N/A'}</div>
-                          <div className="text-xs text-gray-400 font-semibold mt-0.5">{teacher.employeeId}</div>
+                          <div className="flex items-center space-x-3.5">
+                            <div className="sm:hidden flex-shrink-0">
+                              {teacher.photoUrl ? (
+                                <img
+                                  src={teacher.photoUrl}
+                                  alt={teacher.userId?.name}
+                                  className="h-9 w-9 rounded-full object-cover border border-gray-100 shadow-sm"
+                                />
+                              ) : (
+                                <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-sm ${avatarBg}`}>
+                                  {getInitials(teacher.userId?.name)}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-navy-950 flex items-center space-x-2">
+                                <span>{teacher.userId?.name || 'N/A'}</span>
+                                <span className={`inline-block sm:hidden h-2 w-2 rounded-full ${teacher.userId?.isActive === false ? 'bg-red-500' : teacher.userId?.isActivated ? 'bg-green-500' : 'bg-amber-500'}`} />
+                              </div>
+                              <div className="text-xs text-gray-400 font-semibold mt-0.5">{teacher.employeeId}</div>
+                            </div>
+                          </div>
                         </td>
 
                         {/* Email */}
-                        <td className="py-4 px-6 text-sm font-semibold text-gray-600 break-all">
+                        <td className="hidden md:table-cell py-4 px-6 text-sm font-semibold text-gray-600 break-all">
                           {teacher.userId?.email || 'N/A'}
                         </td>
 
                         {/* Qualification */}
-                        <td className="py-4 px-6 text-sm text-gray-500 font-medium max-w-xs truncate">
+                        <td className="hidden lg:table-cell py-4 px-6 text-sm text-gray-500 font-medium max-w-xs truncate">
                           {teacher.qualification || 'N/A'}
                         </td>
 
                         {/* Assigned Classes */}
-                        <td className="py-4 px-6 text-sm">
+                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
                           {teacherAsgs.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5 max-w-xs">
                               {teacherAsgs.map((asg) => {
@@ -349,44 +370,84 @@ const AdminTeachers = () => {
                         </td>
 
                         {/* Status Badge */}
-                        <td className="py-4 px-6 text-sm">
+                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
                           <StatusBadge status={statusProps.status} label={statusProps.label} />
                         </td>
 
-                        {/* Action Buttons */}
+                        {/* Actions (Kebab Dropdown Menu) */}
                         <td className="py-4 px-6 text-sm text-right">
-                          <div className="flex items-center justify-end space-x-2.5">
-                            {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
-                              <button
-                                onClick={() => handleResendInvitation(teacher._id)}
-                                title="Resend Activation Email"
-                                className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
-                              >
-                                <MailPlus className="h-4.5 w-4.5" />
-                              </button>
+                          <div className="relative inline-block text-left">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveDropdownId(activeDropdownId === teacher._id ? null : teacher._id);
+                              }}
+                              className="p-2 text-gray-400 hover:text-navy-950 hover:bg-slate-100 rounded-xl transition-all outline-none"
+                            >
+                              <MoreVertical className="h-5 w-5" />
+                            </button>
+                            {activeDropdownId === teacher._id && (
+                              <>
+                                <div 
+                                  className="fixed inset-0 z-20"
+                                  onClick={() => setActiveDropdownId(null)}
+                                />
+                                <div className="absolute right-0 mt-1.5 w-52 bg-white border border-gray-200 rounded-2xl shadow-xl z-30 py-1.5 divide-y divide-gray-100">
+                                  <div className="py-1">
+                                    {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          handleResendInvitation(teacher._id);
+                                        }}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
+                                      >
+                                        <MailPlus className="h-4.5 w-4.5 text-gray-400 mr-3" />
+                                        Resend Invite
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleOpenView(teacher);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
+                                    >
+                                      <Eye className="h-4.5 w-4.5 text-gray-400 mr-3" />
+                                      View Profile
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleOpenEdit(teacher);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
+                                    >
+                                      <Pencil className="h-4.5 w-4.5 text-gray-400 mr-3" />
+                                      Edit Profile
+                                    </button>
+                                  </div>
+                                  <div className="py-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleOpenDeleteConfirm(teacher);
+                                      }}
+                                      disabled={teacher.userId?.isActive === false}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50/50 transition-colors text-left disabled:opacity-40"
+                                    >
+                                      <Trash2 className="h-4.5 w-4.5 text-red-500 mr-3" />
+                                      Deactivate
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
                             )}
-                            <button
-                              onClick={() => handleOpenView(teacher)}
-                              title="View Profile Details"
-                              className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
-                            >
-                              <Eye className="h-4.5 w-4.5" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenEdit(teacher)}
-                              title="Edit Profile"
-                              className="p-1.5 text-gray-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
-                            >
-                              <Pencil className="h-4.5 w-4.5" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenDeleteConfirm(teacher)}
-                              title="Deactivate Teacher"
-                              disabled={teacher.userId?.isActive === false}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            >
-                              <Trash2 className="h-4.5 w-4.5" />
-                            </button>
                           </div>
                         </td>
                       </tr>
