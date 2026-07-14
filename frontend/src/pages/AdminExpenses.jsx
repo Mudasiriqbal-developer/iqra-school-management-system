@@ -55,7 +55,6 @@ const AdminExpenses = () => {
     { label: 'Fee Management', icon: Wallet, path: '/admin/fees' },
     { label: 'Expense Tracker', icon: TrendingDown, path: '/admin/expenses' },
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
-    { label: 'Leave Approvals', icon: CalendarClock, path: '/admin/leaves' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
   ];

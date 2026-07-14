@@ -12,7 +12,6 @@ import AdminAcademics from './pages/AdminAcademics';
 import AdminFees from './pages/AdminFees';
 import AdminExpenses from './pages/AdminExpenses';
 import AdminPayroll from './pages/AdminPayroll';
-import AdminLeaves from './pages/AdminLeaves';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherAttendance from './pages/TeacherAttendance';
 import TeacherGrades from './pages/TeacherGrades';
@@ -119,14 +118,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/admin/leaves"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLeaves />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/teacher-dashboard"
           element={
