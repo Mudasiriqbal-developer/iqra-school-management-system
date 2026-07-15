@@ -106,9 +106,23 @@ const TeacherAttendance = () => {
           statusMap[student._id] = null; // default to unmarked
         });
 
-        if (attendanceRes.success && attendanceRes.data && attendanceRes.data.records) {
-          attendanceRes.data.records.forEach((record) => {
-            statusMap[record.studentId] = record.status;
+        let existingRecord = null;
+        if (attendanceRes.success && attendanceRes.data) {
+          if (Array.isArray(attendanceRes.data)) {
+            if (attendanceRes.data.length > 0) {
+              existingRecord = attendanceRes.data[0];
+            }
+          } else {
+            existingRecord = attendanceRes.data;
+          }
+        }
+
+        if (existingRecord && existingRecord.records) {
+          existingRecord.records.forEach((record) => {
+            const studentId = record.studentId?._id || record.studentId;
+            if (studentId) {
+              statusMap[studentId] = record.status;
+            }
           });
         }
 
