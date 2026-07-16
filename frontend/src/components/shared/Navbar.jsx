@@ -1,8 +1,8 @@
 import React from 'react';
-import { Search, Bell, HelpCircle, LogOut } from 'lucide-react';
+import { Search, Bell, HelpCircle, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvatar = "", onLogoutClick }) => {
+const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvatar = "", onToggleSidebar, onLogoutClick }) => {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -42,25 +42,35 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
   const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <header className="bg-white border-b border-gray-200 h-16 px-6 flex items-center justify-between sticky top-0 right-0 z-10 w-full">
-      {/* Left: Global Search */}
-      <div className="w-96 max-w-xs sm:max-w-md">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-            <Search className="h-4 w-4" />
+    <header className="bg-white border-b border-gray-200 h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 right-0 z-10 w-full">
+      {/* Left: Menu toggle & Search */}
+      <div className="flex items-center space-x-3 flex-1 min-w-0 mr-4">
+        <button
+          onClick={onToggleSidebar}
+          className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none flex-shrink-0"
+          title="Open Menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        <div className="w-full max-w-[150px] xs:max-w-[200px] sm:max-w-xs">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <Search className="h-4 w-4" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="block w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 text-xs bg-gray-50 focus:bg-white transition-all"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Search anything..."
-            className="block w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 text-xs bg-gray-50 focus:bg-white transition-all"
-          />
         </div>
       </div>
 
       {/* Right Tools and Profile */}
-      <div className="flex items-center space-x-4">
-        {/* Help Icon */}
-        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none">
+      <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+        {/* Help Icon - hidden on mobile */}
+        <button className="hidden sm:block p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none">
           <HelpCircle className="h-5 w-5" />
         </button>
 
@@ -83,8 +93,8 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
         <div className="h-6 w-px bg-gray-200"></div>
 
         {/* Profile Info */}
-        <div className="flex items-center space-x-3">
-          <div className="flex flex-col text-right hidden sm:flex">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex flex-col text-right hidden md:flex">
             <span className="text-xs font-bold text-gray-900 leading-tight">{name}</span>
             <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{formattedRole}</span>
           </div>
@@ -95,7 +105,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
               className="h-9 w-9 rounded-full object-cover border border-gray-100"
             />
           ) : (
-            <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold ${avatarBg} border border-white shadow-sm`}>
+            <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold ${avatarBg} border border-white shadow-sm flex-shrink-0`}>
               {initials}
             </div>
           )}

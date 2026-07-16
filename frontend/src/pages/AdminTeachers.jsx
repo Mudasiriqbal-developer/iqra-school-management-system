@@ -264,197 +264,339 @@ const AdminTeachers = () => {
               <p className="text-xs text-gray-400 mt-1">Try adjusting your search queries.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50/70 border-b border-gray-100">
-                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Photo</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Teacher</th>
-                    <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="hidden lg:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Qualification</th>
-                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Assigned Classes</th>
-                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {paginatedTeachers.map((teacher) => {
-                    const statusProps = getStatusBadgeProps(teacher.userId);
-                    
-                    // Filter assignments for this teacher
-                    const teacherAsgs = assignments.filter(
-                      (a) => (a.teacherId?._id || a.teacherId) === teacher._id
-                    );
+            <div>
+              {/* Stacked Cards for Mobile */}
+              <div className="block sm:hidden divide-y divide-border">
+                {paginatedTeachers.map((teacher) => {
+                  const statusProps = getStatusBadgeProps(teacher.userId);
+                  const teacherAsgs = assignments.filter(
+                    (a) => (a.teacherId?._id || a.teacherId) === teacher._id
+                  );
+                  const colors = [
+                    'bg-blue-600 text-blue-100',
+                    'bg-purple-600 text-purple-100',
+                    'bg-emerald-600 text-emerald-100',
+                    'bg-amber-600 text-amber-100',
+                    'bg-pink-600 text-pink-100',
+                    'bg-indigo-600 text-indigo-100'
+                  ];
+                  const colorIndex = (teacher.userId?.name || '').length % colors.length;
+                  const avatarBg = colors[colorIndex];
 
-                    // Generate color palette index based on teacher name length
-                    const colors = [
-                      'bg-blue-600 text-blue-100',
-                      'bg-purple-600 text-purple-100',
-                      'bg-emerald-600 text-emerald-100',
-                      'bg-amber-600 text-amber-100',
-                      'bg-pink-600 text-pink-100',
-                      'bg-indigo-600 text-indigo-100'
-                    ];
-                    const colorIndex = (teacher.userId?.name || '').length % colors.length;
-                    const avatarBg = colors[colorIndex];
-
-                    return (
-                      <tr key={teacher._id} className="hover:bg-gray-50/40 transition-colors">
-                        {/* Photo avatar (Tablet & Desktop only) */}
-                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
+                  return (
+                    <div key={teacher._id} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
                           {teacher.photoUrl ? (
                             <img
                               src={teacher.photoUrl}
                               alt={teacher.userId?.name}
-                              className="h-10 w-10 rounded-full object-cover border border-gray-100 shadow-sm"
+                              className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
                             />
                           ) : (
-                            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-sm ${avatarBg}`}>
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
                               {getInitials(teacher.userId?.name)}
                             </div>
                           )}
-                        </td>
-
-                        {/* Name + Employee ID (Responsive with inline avatar for mobile) */}
-                        <td className="py-4 px-6 text-sm">
-                          <div className="flex items-center space-x-3.5">
-                            <div className="sm:hidden flex-shrink-0">
-                              {teacher.photoUrl ? (
-                                <img
-                                  src={teacher.photoUrl}
-                                  alt={teacher.userId?.name}
-                                  className="h-9 w-9 rounded-full object-cover border border-gray-100 shadow-sm"
-                                />
-                              ) : (
-                                <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-sm ${avatarBg}`}>
-                                  {getInitials(teacher.userId?.name)}
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-bold text-navy-950 flex items-center space-x-2">
-                                <span>{teacher.userId?.name || 'N/A'}</span>
-                                <span className={`inline-block sm:hidden h-2 w-2 rounded-full ${teacher.userId?.isActive === false ? 'bg-red-500' : teacher.userId?.isActivated ? 'bg-green-500' : 'bg-amber-500'}`} />
-                              </div>
-                              <div className="text-xs text-gray-400 font-semibold mt-0.5">{teacher.employeeId}</div>
-                            </div>
+                          <div>
+                            <div className="font-bold text-text-primary text-sm">{teacher.userId?.name || 'N/A'}</div>
+                            <div className="text-xs text-text-secondary font-semibold mt-0.5">{teacher.employeeId}</div>
                           </div>
-                        </td>
+                        </div>
 
-                        {/* Email */}
-                        <td className="hidden md:table-cell py-4 px-6 text-sm font-semibold text-gray-600 break-all">
-                          {teacher.userId?.email || 'N/A'}
-                        </td>
-
-                        {/* Qualification */}
-                        <td className="hidden lg:table-cell py-4 px-6 text-sm text-gray-500 font-medium max-w-xs truncate">
-                          {teacher.qualification || 'N/A'}
-                        </td>
-
-                        {/* Assigned Classes */}
-                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
-                          {teacherAsgs.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5 max-w-xs">
-                              {teacherAsgs.map((asg) => {
-                                const combo = `${asg.classId?.name || 'Class'} - ${asg.sectionId?.name || 'Sec'} - ${asg.subjectId?.name || 'Sub'}`;
-                                return (
-                                  <span key={asg._id} className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-navy-50 text-navy-800 border border-navy-100">
-                                    {combo}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-gray-400 font-medium">Not Assigned</span>
+                        <div className="relative inline-block text-left">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdownId(activeDropdownId === teacher._id ? null : teacher._id);
+                            }}
+                            className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
+                          >
+                            <MoreVertical className="h-5 w-5" />
+                          </button>
+                          {activeDropdownId === teacher._id && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-20"
+                                onClick={() => setActiveDropdownId(null)}
+                              />
+                              <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
+                                <div className="py-1">
+                                  {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        handleResendInvitation(teacher._id);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                    >
+                                      <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                      Resend Invite
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      handleOpenView(teacher);
+                                    }}
+                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                  >
+                                    <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                    View Profile
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      handleOpenEdit(teacher);
+                                    }}
+                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                  >
+                                    <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                    Edit Profile
+                                  </button>
+                                </div>
+                                <div className="py-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      handleOpenDeleteConfirm(teacher);
+                                    }}
+                                    disabled={teacher.userId?.isActive === false}
+                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                  >
+                                    <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                    Deactivate
+                                  </button>
+                                </div>
+                              </div>
+                            </>
                           )}
-                        </td>
+                        </div>
+                      </div>
 
-                        {/* Status Badge */}
-                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
-                          <StatusBadge status={statusProps.status} label={statusProps.label} />
-                        </td>
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div className="col-span-2">
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Email</span>
+                          <span className="font-semibold text-text-primary break-all">{teacher.userId?.email || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Qualification</span>
+                          <span className="font-semibold text-text-primary truncate block max-w-xs">{teacher.qualification || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Assigned Classes</span>
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {teacherAsgs.length > 0 ? (
+                              teacherAsgs.map((asg) => (
+                                <span key={asg._id} className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-primary/10 text-primary border border-primary/20">
+                                  {asg.classId?.name || 'Class'}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-text-secondary/70 italic">None</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
 
-                        {/* Actions (Kebab Dropdown Menu) */}
-                        <td className="py-4 px-6 text-sm text-right">
-                          <div className="relative inline-block text-left">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveDropdownId(activeDropdownId === teacher._id ? null : teacher._id);
-                              }}
-                              className="p-2 text-gray-400 hover:text-navy-950 hover:bg-slate-100 rounded-xl transition-all outline-none"
-                            >
-                              <MoreVertical className="h-5 w-5" />
-                            </button>
-                            {activeDropdownId === teacher._id && (
-                              <>
-                                <div 
-                                  className="fixed inset-0 z-20"
-                                  onClick={() => setActiveDropdownId(null)}
-                                />
-                                <div className="absolute right-0 mt-1.5 w-52 bg-white border border-gray-200 rounded-2xl shadow-xl z-30 py-1.5 divide-y divide-gray-100">
-                                  <div className="py-1">
-                                    {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                        <span className="text-[10px] uppercase font-bold text-text-secondary">Status</span>
+                        <StatusBadge status={statusProps.status} label={statusProps.label} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Table for Desktop */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background border-b border-border">
+                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Photo</th>
+                      <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Teacher</th>
+                      <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Email</th>
+                      <th className="hidden lg:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Qualification</th>
+                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Assigned Classes</th>
+                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Status</th>
+                      <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {paginatedTeachers.map((teacher) => {
+                      const statusProps = getStatusBadgeProps(teacher.userId);
+                      
+                      const teacherAsgs = assignments.filter(
+                        (a) => (a.teacherId?._id || a.teacherId) === teacher._id
+                      );
+
+                      const colors = [
+                        'bg-blue-600 text-blue-100',
+                        'bg-purple-600 text-purple-100',
+                        'bg-emerald-600 text-emerald-100',
+                        'bg-amber-600 text-amber-100',
+                        'bg-pink-600 text-pink-100',
+                        'bg-indigo-600 text-indigo-100'
+                      ];
+                      const colorIndex = (teacher.userId?.name || '').length % colors.length;
+                      const avatarBg = colors[colorIndex];
+
+                      return (
+                        <tr key={teacher._id} className="hover:bg-background/40 transition-colors">
+                          <td className="hidden sm:table-cell py-4 px-6 text-sm">
+                            {teacher.photoUrl ? (
+                              <img
+                                src={teacher.photoUrl}
+                                alt={teacher.userId?.name}
+                                className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
+                              />
+                            ) : (
+                              <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
+                                {getInitials(teacher.userId?.name)}
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="py-4 px-6 text-sm">
+                            <div className="flex items-center space-x-3.5">
+                              <div className="sm:hidden flex-shrink-0">
+                                {teacher.photoUrl ? (
+                                  <img
+                                    src={teacher.photoUrl}
+                                    alt={teacher.userId?.name}
+                                    className="h-9 w-9 rounded-full object-cover border border-border shadow-subtle"
+                                  />
+                                ) : (
+                                  <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-subtle ${avatarBg}`}>
+                                    {getInitials(teacher.userId?.name)}
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <div className="font-bold text-text-primary flex items-center space-x-2">
+                                  <span>{teacher.userId?.name || 'N/A'}</span>
+                                  <span className={`inline-block sm:hidden h-2 w-2 rounded-full ${teacher.userId?.isActive === false ? 'bg-red-500' : teacher.userId?.isActivated ? 'bg-green-500' : 'bg-amber-500'}`} />
+                                </div>
+                                <div className="text-xs text-text-secondary font-semibold mt-0.5">{teacher.employeeId}</div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="hidden md:table-cell py-4 px-6 text-sm font-semibold text-text-secondary break-all">
+                            {teacher.userId?.email || 'N/A'}
+                          </td>
+
+                          <td className="hidden lg:table-cell py-4 px-6 text-sm text-text-secondary font-medium max-w-xs truncate">
+                            {teacher.qualification || 'N/A'}
+                          </td>
+
+                          <td className="hidden sm:table-cell py-4 px-6 text-sm">
+                            {teacherAsgs.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5 max-w-xs">
+                                {teacherAsgs.map((asg) => {
+                                  const combo = `${asg.classId?.name || 'Class'} - ${asg.sectionId?.name || 'Sec'} - ${asg.subjectId?.name || 'Sub'}`;
+                                  return (
+                                    <span key={asg._id} className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                                      {combo}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-text-secondary/70 font-medium">Not Assigned</span>
+                            )}
+                          </td>
+
+                          <td className="hidden sm:table-cell py-4 px-6 text-sm">
+                            <StatusBadge status={statusProps.status} label={statusProps.label} />
+                          </td>
+
+                          <td className="py-4 px-6 text-sm text-right">
+                            <div className="relative inline-block text-left">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveDropdownId(activeDropdownId === teacher._id ? null : teacher._id);
+                                }}
+                                className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
+                              >
+                                <MoreVertical className="h-5 w-5" />
+                              </button>
+                              {activeDropdownId === teacher._id && (
+                                <>
+                                  <div 
+                                    className="fixed inset-0 z-20"
+                                    onClick={() => setActiveDropdownId(null)}
+                                  />
+                                  <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
+                                    <div className="py-1">
+                                      {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            handleResendInvitation(teacher._id);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          Resend Invite
+                                        </button>
+                                      )}
                                       <button
                                         type="button"
                                         onClick={() => {
                                           setActiveDropdownId(null);
-                                          handleResendInvitation(teacher._id);
+                                          handleOpenView(teacher);
                                         }}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
                                       >
-                                        <MailPlus className="h-4.5 w-4.5 text-gray-400 mr-3" />
-                                        Resend Invite
+                                        <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                        View Profile
                                       </button>
-                                    )}
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveDropdownId(null);
-                                        handleOpenView(teacher);
-                                      }}
-                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
-                                    >
-                                      <Eye className="h-4.5 w-4.5 text-gray-400 mr-3" />
-                                      View Profile
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveDropdownId(null);
-                                        handleOpenEdit(teacher);
-                                      }}
-                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
-                                    >
-                                      <Pencil className="h-4.5 w-4.5 text-gray-400 mr-3" />
-                                      Edit Profile
-                                    </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          handleOpenEdit(teacher);
+                                        }}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                      >
+                                        <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                        Edit Profile
+                                      </button>
+                                    </div>
+                                    <div className="py-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          handleOpenDeleteConfirm(teacher);
+                                        }}
+                                        disabled={teacher.userId?.isActive === false}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                      >
+                                        <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                        Deactivate
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div className="py-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveDropdownId(null);
-                                        handleOpenDeleteConfirm(teacher);
-                                      }}
-                                      disabled={teacher.userId?.isActive === false}
-                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50/50 transition-colors text-left disabled:opacity-40"
-                                    >
-                                      <Trash2 className="h-4.5 w-4.5 text-red-500 mr-3" />
-                                      Deactivate
-                                    </button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

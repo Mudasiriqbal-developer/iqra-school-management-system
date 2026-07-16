@@ -242,51 +242,94 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Joined</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {loading ? (
-                  [1, 2, 3, 4, 5].map((i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-16" /></td>
-                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-28" /></td>
-                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-16" /></td>
-                      <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-20" /></td>
-                      <td className="py-4 px-6"><div className="h-6 bg-gray-100 rounded-full w-20" /></td>
-                    </tr>
-                  ))
-                ) : (dashboardData?.recentRegistrations && dashboardData.recentRegistrations.length > 0) ? (
-                  dashboardData.recentRegistrations.map((row) => (
-                    <tr key={row.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4 px-6 text-sm font-semibold text-gray-600">{row.id}</td>
-                      <td className="py-4 px-6 text-sm font-bold text-navy-950">{row.name}</td>
-                      <td className="py-4 px-6 text-sm font-medium text-gray-600">{row.role}</td>
-                      <td className="py-4 px-6 text-sm text-gray-500">
-                        {row.date ? new Date(row.date).toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                      </td>
-                      <td className="py-4 px-6 text-sm">
-                        <StatusBadge status={row.status} label={row.status === 'active' ? 'Active' : row.status === 'pending' ? 'Pending' : 'Suspended'} />
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="py-8 text-center text-sm text-gray-400 font-medium">
-                      No recent registrations found.
-                    </td>
+          <div>
+            {/* Stacked Cards for Mobile */}
+            <div className="block sm:hidden divide-y divide-border">
+              {loading ? (
+                [1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="p-4 animate-pulse space-y-2">
+                    <div className="h-4 bg-gray-100 rounded w-28" />
+                    <div className="h-4 bg-gray-100 rounded w-16" />
+                  </div>
+                ))
+              ) : (dashboardData?.recentRegistrations && dashboardData.recentRegistrations.length > 0) ? (
+                dashboardData.recentRegistrations.map((row) => (
+                  <div key={row.id} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-text-primary text-sm">{row.name}</div>
+                        <div className="text-xs text-text-secondary font-semibold mt-0.5">{row.role}</div>
+                      </div>
+                      <StatusBadge status={row.status} label={row.status === 'active' ? 'Active' : row.status === 'pending' ? 'Pending' : 'Suspended'} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-text-secondary block">ID</span>
+                        <span className="font-semibold text-text-primary">{row.id}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-text-secondary block">Date Joined</span>
+                        <span className="font-semibold text-text-primary">
+                          {row.date ? new Date(row.date).toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-sm text-text-secondary/50 font-medium">
+                  No recent registrations found.
+                </div>
+              )}
+            </div>
+
+            {/* Table for Desktop */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-background border-b border-border">
+                    <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">ID</th>
+                    <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Name</th>
+                    <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Role</th>
+                    <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Date Joined</th>
+                    <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Status</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {loading ? (
+                    [1, 2, 3, 4, 5].map((i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-16" /></td>
+                        <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-28" /></td>
+                        <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-16" /></td>
+                        <td className="py-4 px-6"><div className="h-4 bg-gray-100 rounded w-20" /></td>
+                        <td className="py-4 px-6"><div className="h-6 bg-gray-100 rounded-full w-20" /></td>
+                      </tr>
+                    ))
+                  ) : (dashboardData?.recentRegistrations && dashboardData.recentRegistrations.length > 0) ? (
+                    dashboardData.recentRegistrations.map((row) => (
+                      <tr key={row.id} className="hover:bg-background/40 transition-colors">
+                        <td className="py-4 px-6 text-sm font-semibold text-text-secondary">{row.id}</td>
+                        <td className="py-4 px-6 text-sm font-bold text-text-primary">{row.name}</td>
+                        <td className="py-4 px-6 text-sm font-medium text-text-secondary">{row.role}</td>
+                        <td className="py-4 px-6 text-sm text-text-secondary">
+                          {row.date ? new Date(row.date).toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                        </td>
+                        <td className="py-4 px-6 text-sm">
+                          <StatusBadge status={row.status} label={row.status === 'active' ? 'Active' : row.status === 'pending' ? 'Pending' : 'Suspended'} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="py-8 text-center text-sm text-text-secondary/50 font-medium">
+                        No recent registrations found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

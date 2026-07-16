@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { LogOut, Loader2 } from 'lucide-react';
 
 const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { logout } = useAuth();
@@ -19,24 +20,35 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar is fixed left, so we offset the main content by pl-64 */}
+      {/* Backdrop overlay for mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Component */}
       <Sidebar 
         subtitle={subtitle} 
         navItems={navItems} 
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
         onLogoutClick={() => setIsLogoutConfirmOpen(true)} 
       />
 
-      {/* Main Content Wrapper */}
-      <div className="flex-1 pl-64 flex flex-col min-h-screen">
+      {/* Main Content Wrapper - responsive offset */}
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen w-full overflow-x-hidden">
         {/* Top Navbar */}
         <Navbar 
           userName={userName} 
           userRole={userRole} 
+          onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
           onLogoutClick={() => setIsLogoutConfirmOpen(true)} 
         />
 
         {/* Main page content */}
-        <main className="flex-grow p-6 md:p-8">
+        <main className="flex-grow p-4 sm:p-6 md:p-8">
           {children}
         </main>
       </div>

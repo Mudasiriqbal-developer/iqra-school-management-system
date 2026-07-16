@@ -264,76 +264,141 @@ const AdminPayroll = () => {
               <p className="text-sm font-bold text-navy-950 mt-4">Compiling staff billing logs...</p>
             </div>
           ) : roster.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Teacher Profile</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Base Salary</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Allowances</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Deductions</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Net Salary</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Payment Method</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {roster.map((row) => {
-                    const statusVal = row.payrollRecord?.status || 'pending';
-                    const badge = getBadgeProps(statusVal);
-                    return (
-                      <tr key={row.teacherId} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="py-4 px-6">
-                          <div>
-                            <div className="font-bold text-navy-950">{row.fullName}</div>
-                            <div className="text-xxs text-gray-400 font-bold uppercase tracking-wider mt-0.5">
-                              ID: {row.employeeId} | {row.qualification || 'No Degree'}
+            <div>
+              {/* Stacked Cards for Mobile */}
+              <div className="block sm:hidden divide-y divide-border">
+                {roster.map((row) => {
+                  const statusVal = row.payrollRecord?.status || 'pending';
+                  const badge = getBadgeProps(statusVal);
+
+                  return (
+                    <div key={row.teacherId} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-text-primary text-sm">{row.fullName}</div>
+                          <div className="text-xs text-text-secondary font-semibold mt-0.5">ID: {row.employeeId}</div>
+                        </div>
+                        <StatusBadge status={badge.status} label={badge.label} />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Base Salary</span>
+                          <span className="font-semibold text-text-primary">Rs. {row.baseSalary?.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Net Salary</span>
+                          <span className="font-bold text-text-primary">Rs. {(row.payrollRecord?.netSalary || row.baseSalary).toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Allowances</span>
+                          <span className="font-semibold text-success">+Rs. {(row.payrollRecord?.allowances || 0).toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Deductions</span>
+                          <span className="font-semibold text-danger">-Rs. {(row.payrollRecord?.deductions || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Payment Method</span>
+                          <span className="font-semibold text-text-primary uppercase tracking-wider">{row.payrollRecord?.paymentMethod?.replace('_', ' ') || 'cash'}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end space-x-2 pt-2 border-t border-border/50">
+                        <button
+                          onClick={() => handleOpenPayout(row)}
+                          disabled={statusVal === 'paid'}
+                          title="Process Payout"
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-success/20 rounded-btn bg-success/5 hover:bg-success/10 text-success text-xs font-bold transition-all shadow-subtle disabled:opacity-35 disabled:hover:bg-transparent"
+                        >
+                          <CreditCard className="h-3.5 w-3.5" />
+                          <span>Disburse</span>
+                        </button>
+                        <button
+                          onClick={() => handleOpenHistory(row)}
+                          title="View History"
+                          className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-background border border-border rounded-btn transition-all"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Table for Desktop */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background border-b border-border">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Teacher Profile</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Base Salary</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Allowances</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Deductions</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Net Salary</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Payment Method</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Status</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {roster.map((row) => {
+                      const statusVal = row.payrollRecord?.status || 'pending';
+                      const badge = getBadgeProps(statusVal);
+                      return (
+                        <tr key={row.teacherId} className="hover:bg-background/40 transition-colors">
+                          <td className="py-4 px-6">
+                            <div>
+                              <div className="font-bold text-text-primary">{row.fullName}</div>
+                              <div className="text-xxs text-text-secondary font-bold uppercase tracking-wider mt-0.5">
+                                ID: {row.employeeId} | {row.qualification || 'No Degree'}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-right text-sm text-gray-600 font-medium">
-                          Rs. {row.baseSalary?.toLocaleString()}
-                        </td>
-                        <td className="py-4 px-6 text-right text-sm text-emerald-600 font-semibold">
-                          +Rs. {(row.payrollRecord?.allowances || 0).toLocaleString()}
-                        </td>
-                        <td className="py-4 px-6 text-right text-sm text-red-600 font-semibold">
-                          -Rs. {(row.payrollRecord?.deductions || 0).toLocaleString()}
-                        </td>
-                        <td className="py-4 px-6 text-right font-extrabold text-navy-950 text-sm">
-                          Rs. {(row.payrollRecord?.netSalary || row.baseSalary).toLocaleString()}
-                        </td>
-                        <td className="py-4 px-6 text-xs text-gray-600 font-semibold uppercase tracking-wider">
-                          {row.payrollRecord?.paymentMethod?.replace('_', ' ') || 'cash'}
-                        </td>
-                        <td className="py-4 px-6">
-                          <StatusBadge status={badge.status} label={badge.label} />
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex items-center justify-center space-x-1.5">
-                            <button
-                              onClick={() => handleOpenPayout(row)}
-                              disabled={statusVal === 'paid'}
-                              title="Process Payout"
-                              className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all disabled:opacity-35 disabled:hover:bg-transparent"
-                            >
-                              <CreditCard className="h-4.5 w-4.5" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenHistory(row)}
-                              title="View History"
-                              className="p-2 text-navy-primary hover:bg-slate-100 rounded-xl transition-all"
-                            >
-                              <Eye className="h-4.5 w-4.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                          <td className="py-4 px-6 text-right text-sm text-text-secondary font-medium">
+                            Rs. {row.baseSalary?.toLocaleString()}
+                          </td>
+                          <td className="py-4 px-6 text-right text-sm text-success font-semibold">
+                            +Rs. {(row.payrollRecord?.allowances || 0).toLocaleString()}
+                          </td>
+                          <td className="py-4 px-6 text-right text-sm text-danger font-semibold">
+                            -Rs. {(row.payrollRecord?.deductions || 0).toLocaleString()}
+                          </td>
+                          <td className="py-4 px-6 text-right font-extrabold text-text-primary text-sm">
+                            Rs. {(row.payrollRecord?.netSalary || row.baseSalary).toLocaleString()}
+                          </td>
+                          <td className="py-4 px-6 text-xs text-text-secondary font-semibold uppercase tracking-wider">
+                            {row.payrollRecord?.paymentMethod?.replace('_', ' ') || 'cash'}
+                          </td>
+                          <td className="py-4 px-6">
+                            <StatusBadge status={badge.status} label={badge.label} />
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex items-center justify-center space-x-1.5">
+                              <button
+                                onClick={() => handleOpenPayout(row)}
+                                disabled={statusVal === 'paid'}
+                                title="Process Payout"
+                                className="p-2 text-success hover:text-success/90 hover:bg-success/10 rounded-btn transition-all disabled:opacity-35 disabled:hover:bg-transparent"
+                              >
+                                <CreditCard className="h-4.5 w-4.5" />
+                              </button>
+                              <button
+                                onClick={() => handleOpenHistory(row)}
+                                title="View History"
+                                className="p-2 text-primary hover:bg-background rounded-btn transition-all"
+                              >
+                                <Eye className="h-4.5 w-4.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="py-24 text-center bg-slate-50 border border-dashed border-gray-150 rounded-b-2xl m-4">
@@ -370,7 +435,7 @@ const AdminPayroll = () => {
               </div>
 
               {/* Base Salary Info */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                     Base Salary (Rs.)
@@ -401,7 +466,7 @@ const AdminPayroll = () => {
               </div>
 
               {/* Allowances & Deductions */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 text-emerald-600">
                     Allowances (+ Rs.)
@@ -431,7 +496,7 @@ const AdminPayroll = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                 {/* Status Selection */}
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">

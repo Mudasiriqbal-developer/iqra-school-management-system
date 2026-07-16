@@ -384,25 +384,68 @@ const AdminAttendance = () => {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Stacked Cards for Mobile */}
+              <div className="block sm:hidden divide-y divide-border">
+                {attendanceRecord.records.map((rec) => {
+                  const studentId = rec.studentId?._id || rec.studentId;
+                  const fullName = rec.studentId?.fullName || 'Unknown Student';
+                  const registrationNumber = rec.studentId?.registrationNumber || 'N/A';
+                  const avatar = getAvatarConfig(fullName);
+                  const badgeProps = getStatusBadgeProps(rec.status);
+
+                  return (
+                    <div key={rec._id} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shadow-inner ${avatar.bg}`}>
+                            {avatar.initials}
+                          </div>
+                          <div>
+                            <span className="font-bold text-text-primary text-sm block">
+                              {fullName}
+                            </span>
+                            <span className="text-xs text-text-secondary font-semibold">
+                              Reg: {registrationNumber}
+                            </span>
+                          </div>
+                        </div>
+                        <StatusBadge status={badgeProps.status} label={badgeProps.label} />
+                      </div>
+
+                      <div className="flex justify-end pt-2 border-t border-border/50">
+                        <button
+                          onClick={() => handleOpenHistoryModal(studentId, fullName, registrationNumber)}
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-primary/20 rounded-btn bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all shadow-subtle"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span>View History</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Table for Desktop */}
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider w-1/3">
+                    <tr className="bg-background border-b border-border">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider w-1/3">
                         Student Info
                       </th>
-                      <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">
                         Registration No
                       </th>
-                      <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">
                         Status
                       </th>
-                      <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-border">
                     {attendanceRecord.records.map((rec) => {
                       const studentId = rec.studentId?._id || rec.studentId;
                       const fullName = rec.studentId?.fullName || 'Unknown Student';
@@ -413,35 +456,31 @@ const AdminAttendance = () => {
                       return (
                         <tr 
                           key={rec._id} 
-                          className="hover:bg-gray-50/50 transition-colors"
+                          className="hover:bg-background/40 transition-colors"
                         >
-                          {/* Student Photo / Name */}
                           <td className="py-4 px-6">
                             <div className="flex items-center space-x-3.5">
                               <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shadow-inner ${avatar.bg}`}>
                                 {avatar.initials}
                               </div>
-                              <span className="font-bold text-navy-950 text-sm">
+                              <span className="font-bold text-text-primary text-sm">
                                 {fullName}
                               </span>
                             </div>
                           </td>
 
-                          {/* Registration No */}
-                          <td className="py-4 px-6 text-sm font-semibold text-gray-600">
+                          <td className="py-4 px-6 text-sm font-semibold text-text-secondary">
                             {registrationNumber}
                           </td>
 
-                          {/* Status Badge */}
                           <td className="py-4 px-6 text-center">
                             <StatusBadge status={badgeProps.status} label={badgeProps.label} />
                           </td>
 
-                          {/* Action Button */}
                           <td className="py-4 px-6 text-right">
                             <button
                               onClick={() => handleOpenHistoryModal(studentId, fullName, registrationNumber)}
-                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-navy-100 rounded-xl bg-navy-50/50 hover:bg-navy-100/60 text-navy-900 text-xs font-bold transition-all shadow-sm"
+                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-primary/20 rounded-btn bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all shadow-subtle"
                             >
                               <Eye className="h-3.5 w-3.5" />
                               <span>View History</span>

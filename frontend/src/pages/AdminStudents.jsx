@@ -371,180 +371,309 @@ const AdminStudents = () => {
               <p className="text-xs text-gray-400 mt-1">Try adjusting your filters or search queries.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50/70 border-b border-gray-100">
-                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Photo</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Student</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Class / Section</th>
-                    <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Father's Contact</th>
-                    <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="py-3.5 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {students.map((student) => {
-                    const statusProps = getStatusBadgeProps(student.status);
-                    
-                    // Generate color palette index based on student name length
-                    const colors = [
-                      'bg-blue-600 text-blue-100',
-                      'bg-purple-600 text-purple-100',
-                      'bg-emerald-600 text-emerald-100',
-                      'bg-amber-600 text-amber-100',
-                      'bg-pink-600 text-pink-100',
-                      'bg-indigo-600 text-indigo-100'
-                    ];
-                    const colorIndex = (student.fullName || '').length % colors.length;
-                    const avatarBg = colors[colorIndex];
+            <div>
+              {/* Stacked Cards for Mobile */}
+              <div className="block sm:hidden divide-y divide-border">
+                {students.map((student) => {
+                  const statusProps = getStatusBadgeProps(student.status);
+                  const colors = [
+                    'bg-blue-600 text-blue-100',
+                    'bg-purple-600 text-purple-100',
+                    'bg-emerald-600 text-emerald-100',
+                    'bg-amber-600 text-amber-100',
+                    'bg-pink-600 text-pink-100',
+                    'bg-indigo-600 text-indigo-100'
+                  ];
+                  const colorIndex = (student.fullName || '').length % colors.length;
+                  const avatarBg = colors[colorIndex];
 
-                    return (
-                      <tr key={student._id} className="hover:bg-gray-50/40 transition-colors">
-                        {/* Student Photo (Tablet & Desktop only) */}
-                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
+                  return (
+                    <div key={student._id} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
                           {student.photoUrl ? (
                             <img
                               src={student.photoUrl}
                               alt={student.fullName}
-                              className="h-10 w-10 rounded-full object-cover border border-gray-100 shadow-sm"
+                              className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
                             />
                           ) : (
-                            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-sm ${avatarBg}`}>
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
                               {getInitials(student.fullName)}
                             </div>
                           )}
-                        </td>
-
-                        {/* Name + Registration Number (Responsive with inline avatar for mobile) */}
-                        <td className="py-4 px-6 text-sm">
-                          <div className="flex items-center space-x-3.5">
-                            <div className="sm:hidden flex-shrink-0">
-                              {student.photoUrl ? (
-                                <img
-                                  src={student.photoUrl}
-                                  alt={student.fullName}
-                                  className="h-9 w-9 rounded-full object-cover border border-gray-100 shadow-sm"
-                                />
-                              ) : (
-                                <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-sm ${avatarBg}`}>
-                                  {getInitials(student.fullName)}
+                          <div>
+                            <div className="font-bold text-text-primary text-sm">{student.fullName}</div>
+                            <div className="text-xs text-text-secondary font-semibold mt-0.5">Reg: {student.registrationNumber}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="relative inline-block text-left">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdownId(activeDropdownId === student._id ? null : student._id);
+                            }}
+                            className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
+                          >
+                            <MoreVertical className="h-5 w-5" />
+                          </button>
+                          {activeDropdownId === student._id && (
+                            <>
+                              <div 
+                                className="fixed inset-0 z-20"
+                                onClick={() => setActiveDropdownId(null)}
+                              />
+                              <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
+                                <div className="py-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      handleOpenView(student);
+                                    }}
+                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                  >
+                                    <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                    View Details
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      handleOpenEdit(student);
+                                    }}
+                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                  >
+                                    <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                    Edit Record
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      handleOpenResetModal(student);
+                                    }}
+                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                  >
+                                    <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                    Reset Password
+                                  </button>
                                 </div>
+                                <div className="py-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      handleOpenDeleteConfirm(student);
+                                    }}
+                                    disabled={student.status === 'suspended'}
+                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                  >
+                                    <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                    Deactivate
+                                  </button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Class / Section</span>
+                          <span className="font-semibold text-text-primary">
+                            {student.classId
+                              ? student.classId.name + ' - ' + (student.sectionId?.name || 'N/A')
+                              : 'N/A'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Father's Contact</span>
+                          <span className="font-semibold text-text-primary">{student.fatherContact}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                        <span className="text-[10px] uppercase font-bold text-text-secondary">Status</span>
+                        <StatusBadge status={statusProps.status} label={statusProps.label} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Table for Desktop */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background border-b border-border">
+                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Photo</th>
+                      <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Student</th>
+                      <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Class / Section</th>
+                      <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Father's Contact</th>
+                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Status</th>
+                      <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {students.map((student) => {
+                      const statusProps = getStatusBadgeProps(student.status);
+                      
+                      const colors = [
+                        'bg-blue-600 text-blue-100',
+                        'bg-purple-600 text-purple-100',
+                        'bg-emerald-600 text-emerald-100',
+                        'bg-amber-600 text-amber-100',
+                        'bg-pink-600 text-pink-100',
+                        'bg-indigo-600 text-indigo-100'
+                      ];
+                      const colorIndex = (student.fullName || '').length % colors.length;
+                      const avatarBg = colors[colorIndex];
+
+                      return (
+                        <tr key={student._id} className="hover:bg-background/40 transition-colors">
+                          <td className="hidden sm:table-cell py-4 px-6 text-sm">
+                            {student.photoUrl ? (
+                              <img
+                                src={student.photoUrl}
+                                alt={student.fullName}
+                                className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
+                              />
+                            ) : (
+                              <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
+                                {getInitials(student.fullName)}
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="py-4 px-6 text-sm">
+                            <div className="flex items-center space-x-3.5">
+                              <div className="sm:hidden flex-shrink-0">
+                                {student.photoUrl ? (
+                                  <img
+                                    src={student.photoUrl}
+                                    alt={student.fullName}
+                                    className="h-9 w-9 rounded-full object-cover border border-border shadow-subtle"
+                                  />
+                                ) : (
+                                  <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-subtle ${avatarBg}`}>
+                                    {getInitials(student.fullName)}
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <div className="font-bold text-text-primary flex items-center space-x-2">
+                                  <span>{student.fullName}</span>
+                                  <span className={`inline-block sm:hidden h-2 w-2 rounded-full ${student.status === 'active' ? 'bg-green-500' : student.status === 'on_leave' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                                </div>
+                                <div className="text-xs text-text-secondary font-semibold mt-0.5">{student.registrationNumber}</div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-4 px-6 text-sm">
+                            <div className="font-bold text-text-primary">
+                              {student.classId
+                                ? (/^\d+$/.test(student.classId.name) ? 'Class ' : '') + 
+                                  student.classId.name + 
+                                  (student.classId.gender && student.classId.gender !== 'mixed' 
+                                    ? ` — ${student.classId.gender.charAt(0).toUpperCase() + student.classId.gender.slice(1)}` 
+                                    : '')
+                                : 'N/A'}
+                            </div>
+                            <div className="text-xs text-text-secondary font-medium mt-0.5">{student.sectionId?.name || 'N/A'}</div>
+                          </td>
+
+                          <td className="hidden md:table-cell py-4 px-6 text-sm font-semibold text-text-secondary">
+                            {student.fatherContact}
+                          </td>
+
+                          <td className="hidden sm:table-cell py-4 px-6 text-sm">
+                            <StatusBadge status={statusProps.status} label={statusProps.label} />
+                          </td>
+
+                          <td className="py-4 px-6 text-sm text-right">
+                            <div className="relative inline-block text-left">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveDropdownId(activeDropdownId === student._id ? null : student._id);
+                                }}
+                                className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
+                              >
+                                <MoreVertical className="h-5 w-5" />
+                              </button>
+                              {activeDropdownId === student._id && (
+                                <>
+                                  <div 
+                                    className="fixed inset-0 z-20"
+                                    onClick={() => setActiveDropdownId(null)}
+                                  />
+                                  <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
+                                    <div className="py-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          handleOpenView(student);
+                                        }}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                      >
+                                        <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                        View Details
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          handleOpenEdit(student);
+                                        }}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                      >
+                                        <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                        Edit Record
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          handleOpenResetModal(student);
+                                        }}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                      >
+                                        <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                        Reset Password
+                                      </button>
+                                    </div>
+                                    <div className="py-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          handleOpenDeleteConfirm(student);
+                                        }}
+                                        disabled={student.status === 'suspended'}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                      >
+                                        <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                        Deactivate
+                                      </button>
+                                    </div>
+                                  </div>
+                                </>
                               )}
                             </div>
-                            <div>
-                              <div className="font-bold text-navy-950 flex items-center space-x-2">
-                                <span>{student.fullName}</span>
-                                <span className={`inline-block sm:hidden h-2 w-2 rounded-full ${student.status === 'active' ? 'bg-green-500' : student.status === 'on_leave' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                              </div>
-                              <div className="text-xs text-gray-400 font-semibold mt-0.5">{student.registrationNumber}</div>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Class / Section */}
-                        <td className="py-4 px-6 text-sm">
-                          <div className="font-bold text-gray-700">
-                            {student.classId
-                              ? (/^\d+$/.test(student.classId.name) ? 'Class ' : '') + 
-                                student.classId.name + 
-                                (student.classId.gender && student.classId.gender !== 'mixed' 
-                                  ? ` — ${student.classId.gender.charAt(0).toUpperCase() + student.classId.gender.slice(1)}` 
-                                  : '')
-                              : 'N/A'}
-                          </div>
-                          <div className="text-xs text-gray-400 font-medium mt-0.5">{student.sectionId?.name || 'N/A'}</div>
-                        </td>
-
-                        {/* Father's Contact */}
-                        <td className="hidden md:table-cell py-4 px-6 text-sm font-semibold text-gray-600">
-                          {student.fatherContact}
-                        </td>
-
-                        {/* Status Badge */}
-                        <td className="hidden sm:table-cell py-4 px-6 text-sm">
-                          <StatusBadge status={statusProps.status} label={statusProps.label} />
-                        </td>
-
-                        {/* Actions (Kebab Dropdown Menu) */}
-                        <td className="py-4 px-6 text-sm text-right">
-                          <div className="relative inline-block text-left">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveDropdownId(activeDropdownId === student._id ? null : student._id);
-                              }}
-                              className="p-2 text-gray-400 hover:text-navy-950 hover:bg-slate-100 rounded-xl transition-all outline-none"
-                            >
-                              <MoreVertical className="h-5 w-5" />
-                            </button>
-                            {activeDropdownId === student._id && (
-                              <>
-                                <div 
-                                  className="fixed inset-0 z-20"
-                                  onClick={() => setActiveDropdownId(null)}
-                                />
-                                <div className="absolute right-0 mt-1.5 w-52 bg-white border border-gray-200 rounded-2xl shadow-xl z-30 py-1.5 divide-y divide-gray-100">
-                                  <div className="py-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveDropdownId(null);
-                                        handleOpenView(student);
-                                      }}
-                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
-                                    >
-                                      <Eye className="h-4.5 w-4.5 text-gray-400 mr-3" />
-                                      View Details
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveDropdownId(null);
-                                        handleOpenEdit(student);
-                                      }}
-                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
-                                    >
-                                      <Pencil className="h-4.5 w-4.5 text-gray-400 mr-3" />
-                                      Edit Record
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveDropdownId(null);
-                                        handleOpenResetModal(student);
-                                      }}
-                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-slate-50 transition-colors text-left"
-                                    >
-                                      <Key className="h-4.5 w-4.5 text-gray-400 mr-3" />
-                                      Reset Password
-                                    </button>
-                                  </div>
-                                  <div className="py-1">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveDropdownId(null);
-                                        handleOpenDeleteConfirm(student);
-                                      }}
-                                      disabled={student.status === 'suspended'}
-                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50/50 transition-colors text-left disabled:opacity-40"
-                                    >
-                                      <Trash2 className="h-4.5 w-4.5 text-red-500 mr-3" />
-                                      Deactivate
-                                    </button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

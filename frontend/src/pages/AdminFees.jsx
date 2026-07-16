@@ -354,128 +354,218 @@ const AdminFees = () => {
               <p className="text-sm font-bold text-navy-950 mt-4">Loading student records...</p>
             </div>
           ) : students.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Student Profile</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Class / Section</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Amount Due</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Amount Paid</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Remaining Balance</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {students.map((item) => {
-                    const studentId = item.studentId;
-                    const fullName = item.fullName;
-                    const registrationNumber = item.registrationNumber;
-                    const classIdName = item.classId?.name || 'N/A';
-                    const sectionIdName = item.sectionId?.name || 'N/A';
-                    
-                    const feeRecord = item.feeRecord || {
-                      amountDue: 0,
-                      amountPaid: 0,
-                      status: 'pending'
-                    };
-                    const remaining = Math.max(0, feeRecord.amountDue - feeRecord.amountPaid);
-                    const badgeProps = getFeeBadgeProps(feeRecord.status);
-                    
-                    const isDownloading = !!downloadingIds[studentId];
+            <div>
+              {/* Stacked Cards for Mobile */}
+              <div className="block sm:hidden divide-y divide-border">
+                {students.map((item) => {
+                  const studentId = item.studentId;
+                  const fullName = item.fullName;
+                  const registrationNumber = item.registrationNumber;
+                  const classIdName = item.classId?.name || 'N/A';
+                  const sectionIdName = item.sectionId?.name || 'N/A';
+                  
+                  const feeRecord = item.feeRecord || {
+                    amountDue: 0,
+                    amountPaid: 0,
+                    status: 'pending'
+                  };
+                  const remaining = Math.max(0, feeRecord.amountDue - feeRecord.amountPaid);
+                  const badgeProps = getFeeBadgeProps(feeRecord.status);
+                  const isDownloading = !!downloadingIds[studentId];
 
-                    return (
-                      <tr key={studentId} className="hover:bg-gray-50/50 transition-colors">
-                        {/* Profile Info */}
-                        <td className="py-4 px-6">
-                          <div>
-                            <div className="font-bold text-navy-950">{fullName}</div>
-                            <div className="text-xxs text-gray-400 font-bold uppercase tracking-wider mt-0.5">
-                              Reg: {registrationNumber}
-                            </div>
+                  return (
+                    <div key={studentId} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-text-primary text-sm">{fullName}</div>
+                          <div className="text-xs text-text-secondary font-semibold mt-0.5">Reg: {registrationNumber}</div>
+                        </div>
+                        <StatusBadge status={badgeProps.status} label={badgeProps.label} />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Class / Section</span>
+                          <span className="font-semibold text-text-primary">{classIdName} - {sectionIdName}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Remaining Balance</span>
+                          <span className={`font-bold ${
+                            remaining > 0 
+                              ? feeRecord.status === 'partial' ? 'text-warning' : 'text-danger'
+                              : 'text-text-secondary'
+                          }`}>Rs. {remaining.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Amount Due</span>
+                          <span className="font-semibold text-text-primary">Rs. {feeRecord.amountDue.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-text-secondary block">Amount Paid</span>
+                          <span className="font-semibold text-success">Rs. {feeRecord.amountPaid.toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end space-x-2 pt-2 border-t border-border/50">
+                        {/* Pay button (disabled if fully paid) */}
+                        {feeRecord.status !== 'paid' ? (
+                          <button
+                            onClick={() => handleOpenPaymentModal(item)}
+                            title="Record Payment"
+                            className="inline-flex items-center space-x-1 px-3 py-1.5 border border-success/20 rounded-btn bg-success/5 hover:bg-success/10 text-success text-xs font-bold transition-all shadow-subtle"
+                          >
+                            <CreditCard className="h-3.5 w-3.5" />
+                            <span>Collect Fee</span>
+                          </button>
+                        ) : (
+                          <div className="inline-flex items-center space-x-1 px-3 py-1.5 border border-border rounded-btn bg-background text-text-secondary/50 text-xs font-bold cursor-not-allowed">
+                            <CreditCard className="h-3.5 w-3.5" />
+                            <span>Paid</span>
                           </div>
-                        </td>
+                        )}
 
-                        {/* Class/Section */}
-                        <td className="py-4 px-6">
-                          <div>
-                            <div className="font-semibold text-gray-700 text-sm">{classIdName}</div>
-                            <div className="text-xxs text-gray-400 font-semibold mt-0.5">Sec: {sectionIdName}</div>
-                          </div>
-                        </td>
+                        {/* Ledger history button */}
+                        <button
+                          onClick={() => handleOpenLedger(item)}
+                          title="View Ledger"
+                          className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-background border border-border rounded-btn transition-all"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
 
-                        {/* Amount Due */}
-                        <td className="py-4 px-6 text-right font-bold text-navy-950 text-sm">
-                          Rs. {feeRecord.amountDue.toLocaleString()}
-                        </td>
+                        {/* Download PDF receipt */}
+                        <button
+                          onClick={() => handleDownloadReceipt(item)}
+                          title="Download PDF Receipt"
+                          disabled={isDownloading}
+                          className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-background border border-border rounded-btn transition-all disabled:opacity-40"
+                        >
+                          {isDownloading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <FileText className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-                        {/* Amount Paid */}
-                        <td className="py-4 px-6 text-right font-bold text-emerald-600 text-sm">
-                          Rs. {feeRecord.amountPaid.toLocaleString()}
-                        </td>
+              {/* Table for Desktop */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background border-b border-border">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Student Profile</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Class / Section</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Amount Due</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Amount Paid</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Remaining Balance</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Status</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {students.map((item) => {
+                      const studentId = item.studentId;
+                      const fullName = item.fullName;
+                      const registrationNumber = item.registrationNumber;
+                      const classIdName = item.classId?.name || 'N/A';
+                      const sectionIdName = item.sectionId?.name || 'N/A';
+                      
+                      const feeRecord = item.feeRecord || {
+                        amountDue: 0,
+                        amountPaid: 0,
+                        status: 'pending'
+                      };
+                      const remaining = Math.max(0, feeRecord.amountDue - feeRecord.amountPaid);
+                      const badgeProps = getFeeBadgeProps(feeRecord.status);
+                      
+                      const isDownloading = !!downloadingIds[studentId];
 
-                        {/* Remaining Balance */}
-                        <td className={`py-4 px-6 text-right font-black text-sm ${
-                          remaining > 0 
-                            ? feeRecord.status === 'partial' ? 'text-amber-500' : 'text-rose-600'
-                            : 'text-gray-400'
-                        }`}>
-                          Rs. {remaining.toLocaleString()}
-                        </td>
-
-                        {/* Status Badge */}
-                        <td className="py-4 px-6">
-                          <StatusBadge status={badgeProps.status} label={badgeProps.label} />
-                        </td>
-
-                        {/* Actions */}
-                        <td className="py-4 px-6">
-                          <div className="flex items-center justify-center space-x-1.5">
-                            {/* Pay button (disabled if fully paid) */}
-                            {feeRecord.status !== 'paid' ? (
-                              <button
-                                onClick={() => handleOpenPaymentModal(item)}
-                                title="Record Payment"
-                                className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all"
-                              >
-                                <CreditCard className="h-4.5 w-4.5" />
-                              </button>
-                            ) : (
-                              <div className="p-2 text-gray-300 cursor-not-allowed">
-                                <CreditCard className="h-4.5 w-4.5" />
+                      return (
+                        <tr key={studentId} className="hover:bg-background/40 transition-colors">
+                          <td className="py-4 px-6">
+                            <div>
+                              <div className="font-bold text-text-primary">{fullName}</div>
+                              <div className="text-xxs text-text-secondary font-bold uppercase tracking-wider mt-0.5">
+                                Reg: {registrationNumber}
                               </div>
-                            )}
+                            </div>
+                          </td>
 
-                            {/* Ledger history button */}
-                            <button
-                              onClick={() => handleOpenLedger(item)}
-                              title="View Ledger"
-                              className="p-2 text-navy-primary hover:bg-slate-100 rounded-xl transition-all"
-                            >
-                              <Eye className="h-4.5 w-4.5" />
-                            </button>
+                          <td className="py-4 px-6">
+                            <div>
+                              <div className="font-semibold text-text-primary text-sm">{classIdName}</div>
+                              <div className="text-xxs text-text-secondary font-semibold mt-0.5">Sec: {sectionIdName}</div>
+                            </div>
+                          </td>
 
-                            {/* Download PDF receipt */}
-                            <button
-                              onClick={() => handleDownloadReceipt(item)}
-                              title="Download PDF Receipt"
-                              disabled={isDownloading}
-                              className="p-2 text-gray-500 hover:text-navy-primary hover:bg-slate-100 rounded-xl transition-all disabled:opacity-40"
-                            >
-                              {isDownloading ? (
-                                <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                          <td className="py-4 px-6 text-right font-bold text-text-primary text-sm">
+                            Rs. {feeRecord.amountDue.toLocaleString()}
+                          </td>
+
+                          <td className="py-4 px-6 text-right font-bold text-success text-sm">
+                            Rs. {feeRecord.amountPaid.toLocaleString()}
+                          </td>
+
+                          <td className={`py-4 px-6 text-right font-black text-sm ${
+                            remaining > 0 
+                              ? feeRecord.status === 'partial' ? 'text-warning' : 'text-danger'
+                              : 'text-text-secondary/50'
+                          }`}>
+                            Rs. {remaining.toLocaleString()}
+                          </td>
+
+                          <td className="py-4 px-6">
+                            <StatusBadge status={badgeProps.status} label={badgeProps.label} />
+                          </td>
+
+                          <td className="py-4 px-6">
+                            <div className="flex items-center justify-center space-x-1.5">
+                              {feeRecord.status !== 'paid' ? (
+                                <button
+                                  onClick={() => handleOpenPaymentModal(item)}
+                                  title="Record Payment"
+                                  className="p-2 text-success hover:text-success/90 hover:bg-success/10 rounded-btn transition-all"
+                                >
+                                  <CreditCard className="h-4.5 w-4.5" />
+                                </button>
                               ) : (
-                                <FileText className="h-4.5 w-4.5" />
+                                <div className="p-2 text-text-secondary/30 cursor-not-allowed">
+                                  <CreditCard className="h-4.5 w-4.5" />
+                                </div>
                               )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+
+                              <button
+                                onClick={() => handleOpenLedger(item)}
+                                title="View Ledger"
+                                className="p-2 text-primary hover:bg-background rounded-btn transition-all"
+                              >
+                                <Eye className="h-4.5 w-4.5" />
+                              </button>
+
+                              <button
+                                onClick={() => handleDownloadReceipt(item)}
+                                title="Download PDF Receipt"
+                                disabled={isDownloading}
+                                className="p-2 text-text-secondary hover:text-primary hover:bg-background rounded-btn transition-all disabled:opacity-40"
+                              >
+                                {isDownloading ? (
+                                  <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                                ) : (
+                                  <FileText className="h-4.5 w-4.5" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="py-24 text-center bg-slate-50 border border-dashed border-gray-150 rounded-b-2xl m-4">

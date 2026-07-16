@@ -386,68 +386,125 @@ const AdminExpenses = () => {
               <p className="text-sm font-bold text-navy-950 mt-4">Loading ledger transactions...</p>
             </div>
           ) : expenses.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Expense Details</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Category</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Amount</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Logged</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Recipient / Paid To</th>
-                    <th className="py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {expenses.map((exp) => (
-                    <tr key={exp._id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4 px-6">
-                        <div>
-                          <div className="font-bold text-navy-950">{exp.title}</div>
-                          {exp.description && (
-                            <div className="text-xxs text-gray-400 font-medium mt-0.5 max-w-xs truncate">
-                              {exp.description}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <StatusBadge
-                          status={getCategoryBadgeColor(exp.category)}
-                          label={exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}
-                        />
-                      </td>
-                      <td className="py-4 px-6 text-right font-extrabold text-red-600 text-sm">
-                        Rs. {exp.amount?.toLocaleString()}
-                      </td>
-                      <td className="py-4 px-6 text-sm text-gray-600 font-medium">
-                        {formatDate(exp.date)}
-                      </td>
-                      <td className="py-4 px-6 text-sm font-semibold text-gray-700">
-                        {exp.paidTo || 'N/A'}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center justify-center space-x-1.5">
-                          <button
-                            onClick={() => handleOpenEdit(exp)}
-                            title="Edit Record"
-                            className="p-2 text-navy-primary hover:bg-slate-100 rounded-xl transition-all"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(exp._id)}
-                            title="Delete Record"
-                            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
+            <div>
+              {/* Stacked Cards for Mobile */}
+              <div className="block sm:hidden divide-y divide-border">
+                {expenses.map((exp) => (
+                  <div key={exp._id} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-text-primary text-sm">{exp.title}</div>
+                        {exp.description && (
+                          <div className="text-xs text-text-secondary mt-0.5 max-w-xs truncate">
+                            {exp.description}
+                          </div>
+                        )}
+                      </div>
+                      <StatusBadge
+                        status={getCategoryBadgeColor(exp.category)}
+                        label={exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-text-secondary block">Amount</span>
+                        <span className="font-bold text-danger">Rs. {exp.amount?.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-text-secondary block">Date Logged</span>
+                        <span className="font-semibold text-text-primary">{formatDate(exp.date)}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-[10px] uppercase font-bold text-text-secondary block">Recipient / Paid To</span>
+                        <span className="font-semibold text-text-primary">{exp.paidTo || 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end space-x-2 pt-2 border-t border-border/50">
+                      <button
+                        onClick={() => handleOpenEdit(exp)}
+                        title="Edit Record"
+                        className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-background border border-border rounded-btn transition-all"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(exp._id)}
+                        title="Delete Record"
+                        className="p-1.5 text-danger hover:bg-danger/10 border border-danger/25 rounded-btn transition-all"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Table for Desktop */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background border-b border-border">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Expense Details</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Category</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Amount</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Date Logged</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Recipient / Paid To</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {expenses.map((exp) => (
+                      <tr key={exp._id} className="hover:bg-background/40 transition-colors">
+                        <td className="py-4 px-6">
+                          <div>
+                            <div className="font-bold text-text-primary">{exp.title}</div>
+                            {exp.description && (
+                              <div className="text-xxs text-text-secondary font-medium mt-0.5 max-w-xs truncate">
+                                {exp.description}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <StatusBadge
+                            status={getCategoryBadgeColor(exp.category)}
+                            label={exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}
+                          />
+                        </td>
+                        <td className="py-4 px-6 text-right font-extrabold text-danger text-sm">
+                          Rs. {exp.amount?.toLocaleString()}
+                        </td>
+                        <td className="py-4 px-6 text-sm text-text-secondary font-medium">
+                          {formatDate(exp.date)}
+                        </td>
+                        <td className="py-4 px-6 text-sm font-semibold text-text-primary">
+                          {exp.paidTo || 'N/A'}
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center justify-center space-x-1.5">
+                            <button
+                              onClick={() => handleOpenEdit(exp)}
+                              title="Edit Record"
+                              className="p-2 text-primary hover:bg-background rounded-btn transition-all"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(exp._id)}
+                              title="Delete Record"
+                              className="p-2 text-danger hover:text-danger/90 hover:bg-danger/10 rounded-btn transition-all"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="py-24 text-center bg-slate-50 border border-dashed border-gray-150 rounded-b-2xl m-4">

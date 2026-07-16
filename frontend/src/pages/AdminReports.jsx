@@ -406,61 +406,122 @@ const AdminReports = () => {
                   <p className="text-sm text-gray-500 mt-1 max-w-sm">No outstanding fees — all students are paid up!</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-100">
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Student</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Class/Section</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Father's Contact</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount Due</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount Paid</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Outstanding</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Due Date</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {defaultersData.map((row) => {
-                        const badgeProps = getStatusBadgeProps(row.status);
-                        return (
-                          <tr key={row.studentId} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="py-4 px-6 text-sm">
-                              <div className="font-bold text-navy-950">{row.fullName}</div>
-                              <div className="text-xs text-gray-400 mt-0.5">{row.registrationNumber}</div>
-                            </td>
-                            <td className="py-4 px-6 text-sm text-gray-600 font-medium">
-                              {row.classId?.name || 'N/A'} / {row.sectionId?.name || 'N/A'}
-                            </td>
-                            <td className="py-4 px-6 text-sm">
-                              <div className="flex items-center space-x-2">
-                                <span className="font-semibold text-gray-700">{row.fatherContact}</span>
+                <div>
+                  {/* Stacked Cards for Mobile */}
+                  <div className="block sm:hidden divide-y divide-border">
+                    {defaultersData.map((row) => {
+                      const badgeProps = getStatusBadgeProps(row.status);
+                      return (
+                        <div key={row.studentId} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-bold text-text-primary text-sm">{row.fullName}</div>
+                              <div className="text-xs text-text-secondary font-semibold mt-0.5">Reg: {row.registrationNumber}</div>
+                            </div>
+                            <StatusBadge status={badgeProps.status} label={badgeProps.label} />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-text-secondary block">Class/Section</span>
+                              <span className="font-semibold text-text-primary">{row.classId?.name || 'N/A'} - {row.sectionId?.name || 'N/A'}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-text-secondary block">Outstanding</span>
+                              <span className="font-bold text-danger">{formatCurrency(row.outstandingAmount)}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-text-secondary block">Amount Due</span>
+                              <span className="font-semibold text-text-primary">{formatCurrency(row.amountDue)}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-text-secondary block">Amount Paid</span>
+                              <span className="font-semibold text-success">{formatCurrency(row.amountPaid)}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-text-secondary block">Due Date</span>
+                              <span className="font-semibold text-text-primary">{formatDate(row.dueDate)}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] uppercase font-bold text-text-secondary block">Father's Contact</span>
+                              <div className="flex items-center space-x-1.5 mt-0.5">
+                                <span className="font-semibold text-text-primary">{row.fatherContact}</span>
                                 <button
                                   onClick={() => handleCopyContact(row.studentId, row.fatherContact, row.fullName)}
                                   title="Copy Contact"
-                                  className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-navy-900 transition-colors"
+                                  className="p-1 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary transition-colors"
                                 >
                                   {copiedRowId === row.studentId ? (
-                                    <Check className="h-3.5 w-3.5 text-green-600" />
+                                    <Check className="h-3 w-3 text-success" />
                                   ) : (
-                                    <Copy className="h-3.5 w-3.5" />
+                                    <Copy className="h-3 w-3" />
                                   )}
                                 </button>
                               </div>
-                              <div className="text-[10px] text-gray-400 mt-0.5">Father: {row.fatherName}</div>
-                            </td>
-                            <td className="py-4 px-6 text-sm text-gray-600 font-semibold">{formatCurrency(row.amountDue)}</td>
-                            <td className="py-4 px-6 text-sm text-gray-600 font-semibold">{formatCurrency(row.amountPaid)}</td>
-                            <td className="py-4 px-6 text-sm font-extrabold text-red-600">{formatCurrency(row.outstandingAmount)}</td>
-                            <td className="py-4 px-6 text-sm text-gray-500">{formatDate(row.dueDate)}</td>
-                            <td className="py-4 px-6 text-sm text-center">
-                              <StatusBadge status={badgeProps.status} label={badgeProps.label} />
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Table for Desktop */}
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-background border-b border-border">
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Student</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Class/Section</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Father's Contact</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Amount Due</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Amount Paid</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Outstanding</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Due Date</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {defaultersData.map((row) => {
+                          const badgeProps = getStatusBadgeProps(row.status);
+                          return (
+                            <tr key={row.studentId} className="hover:bg-background/40 transition-colors">
+                              <td className="py-4 px-6 text-sm">
+                                <div className="font-bold text-text-primary">{row.fullName}</div>
+                                <div className="text-xs text-text-secondary mt-0.5">{row.registrationNumber}</div>
+                              </td>
+                              <td className="py-4 px-6 text-sm text-text-secondary font-medium">
+                                {row.classId?.name || 'N/A'} / {row.sectionId?.name || 'N/A'}
+                              </td>
+                              <td className="py-4 px-6 text-sm">
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-semibold text-text-primary">{row.fatherContact}</span>
+                                  <button
+                                    onClick={() => handleCopyContact(row.studentId, row.fatherContact, row.fullName)}
+                                    title="Copy Contact"
+                                    className="p-1.5 hover:bg-background rounded-lg text-text-secondary hover:text-text-primary transition-colors"
+                                  >
+                                    {copiedRowId === row.studentId ? (
+                                      <Check className="h-3.5 w-3.5 text-success" />
+                                    ) : (
+                                      <Copy className="h-3.5 w-3.5" />
+                                    )}
+                                  </button>
+                                </div>
+                                <div className="text-[10px] text-text-secondary mt-0.5">Father: {row.fatherName}</div>
+                              </td>
+                              <td className="py-4 px-6 text-sm text-text-secondary font-semibold">{formatCurrency(row.amountDue)}</td>
+                              <td className="py-4 px-6 text-sm text-text-secondary font-semibold">{formatCurrency(row.amountPaid)}</td>
+                              <td className="py-4 px-6 text-sm font-extrabold text-danger">{formatCurrency(row.outstandingAmount)}</td>
+                              <td className="py-4 px-6 text-sm text-text-secondary/70">{formatDate(row.dueDate)}</td>
+                              <td className="py-4 px-6 text-sm text-center">
+                                <StatusBadge status={badgeProps.status} label={badgeProps.label} />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
@@ -514,51 +575,99 @@ const AdminReports = () => {
                   <p className="text-sm text-gray-500 mt-1 max-w-sm">No attendance data for this date range yet.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50 border-b border-gray-100">
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Class / Section</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Total Days Recorded</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Total Individual Records</th>
-                        <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Average Attendance %</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {attendanceData.map((row, idx) => (
-                        <tr key={`${row.classId}-${row.sectionId}`} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="py-4 px-6 text-sm font-bold text-navy-950">
+                <div>
+                  {/* Stacked Cards for Mobile */}
+                  <div className="block sm:hidden divide-y divide-border">
+                    {attendanceData.map((row) => (
+                      <div key={`${row.classId}-${row.sectionId}`} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-text-primary text-sm">
                             {row.className} - {row.sectionName}
-                          </td>
-                          <td className="py-4 px-6 text-sm text-gray-600 font-semibold">
-                            {row.totalDaysRecorded} days
-                          </td>
-                          <td className="py-4 px-6 text-sm text-gray-500">
-                            {row.totalRecordsMarked || row.totalRecords}
-                          </td>
-                          <td className="py-4 px-6 text-sm">
-                            <div className="flex items-center space-x-3">
-                              <span className="font-extrabold text-navy-950 min-w-[40px]">
-                                {row.averageAttendancePercentage}%
+                          </span>
+                          <span className="text-xs font-extrabold text-text-primary">
+                            Avg: {row.averageAttendancePercentage}%
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                          <div>
+                            <span className="text-[10px] uppercase font-bold text-text-secondary block">Total Days</span>
+                            <span className="font-semibold text-text-primary">{row.totalDaysRecorded} days</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase font-bold text-text-secondary block">Total Records</span>
+                            <span className="font-semibold text-text-primary">{row.totalRecordsMarked || row.totalRecords}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-border/50 flex flex-col space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[10px] uppercase font-bold text-text-secondary">Progress</span>
+                            {row.averageAttendancePercentage < 75 && (
+                              <span className="flex items-center text-[10px] font-bold text-warning bg-warning/10 border border-warning/20 px-1.5 py-0.5 rounded-lg gap-1 animate-pulse select-none">
+                                <AlertTriangle className="h-2.5 w-2.5" />
+                                <span>Low (&lt;75%)</span>
                               </span>
-                              <div className="w-32 bg-gray-100 h-2 rounded-full overflow-hidden border border-gray-200/20">
-                                <div
-                                  className="bg-navy-900 h-full rounded-full transition-all duration-300"
-                                  style={{ width: `${row.averageAttendancePercentage}%` }}
-                                />
-                              </div>
-                              {row.averageAttendancePercentage < 75 && (
-                                <span className="flex items-center text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200/50 px-2 py-0.5 rounded-lg gap-1 animate-pulse select-none">
-                                  <AlertTriangle className="h-3 w-3" />
-                                  <span>Low (&lt;75%)</span>
-                                </span>
-                              )}
-                            </div>
-                          </td>
+                            )}
+                          </div>
+                          <div className="w-full bg-background h-2 rounded-full overflow-hidden border border-border">
+                            <div
+                              className="bg-primary h-full rounded-full transition-all duration-300"
+                              style={{ width: `${row.averageAttendancePercentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Table for Desktop */}
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-background border-b border-border">
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Class / Section</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Total Days Recorded</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Total Individual Records</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Average Attendance %</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {attendanceData.map((row, idx) => (
+                          <tr key={`${row.classId}-${row.sectionId}`} className="hover:bg-background/40 transition-colors">
+                            <td className="py-4 px-6 text-sm font-bold text-text-primary">
+                              {row.className} - {row.sectionName}
+                            </td>
+                            <td className="py-4 px-6 text-sm text-text-secondary font-semibold">
+                              {row.totalDaysRecorded} days
+                            </td>
+                            <td className="py-4 px-6 text-sm text-text-secondary/70">
+                              {row.totalRecordsMarked || row.totalRecords}
+                            </td>
+                            <td className="py-4 px-6 text-sm">
+                              <div className="flex items-center space-x-3">
+                                <span className="font-extrabold text-text-primary min-w-[40px]">
+                                  {row.averageAttendancePercentage}%
+                                </span>
+                                <div className="w-32 bg-background h-2 rounded-full overflow-hidden border border-border">
+                                  <div
+                                    className="bg-primary h-full rounded-full transition-all duration-300"
+                                    style={{ width: `${row.averageAttendancePercentage}%` }}
+                                  />
+                                </div>
+                                {row.averageAttendancePercentage < 75 && (
+                                  <span className="flex items-center text-xs font-bold text-warning bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-lg gap-1 animate-pulse select-none">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    <span>Low (&lt;75%)</span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
