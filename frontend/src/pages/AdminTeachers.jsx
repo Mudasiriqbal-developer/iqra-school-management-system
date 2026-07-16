@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
@@ -43,6 +44,26 @@ const AdminTeachers = () => {
   // Pagination State
   const [page, setPage] = useState(1);
   const limit = 10;
+
+  const [dropdownCoords, setDropdownCoords] = useState(null);
+
+  const handleKebabClick = (e, teacherId) => {
+    e.stopPropagation();
+    if (activeDropdownId === teacherId) {
+      setActiveDropdownId(null);
+      setDropdownCoords(null);
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setActiveDropdownId(teacherId);
+      setDropdownCoords({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        height: rect.height,
+        bottom: rect.bottom
+      });
+    }
+  };
 
   // Selected entities & Modal states
   const [selectedTeacher, setSelectedTeacher] = useState(null);
@@ -267,7 +288,7 @@ const AdminTeachers = () => {
             <div>
               {/* Stacked Cards for Mobile */}
               <div className="block sm:hidden divide-y divide-border">
-                {paginatedTeachers.map((teacher) => {
+                {paginatedTeachers.map((teacher, index) => {
                   const statusProps = getStatusBadgeProps(teacher.userId);
                   const teacherAsgs = assignments.filter(
                     (a) => (a.teacherId?._id || a.teacherId) === teacher._id
@@ -307,74 +328,96 @@ const AdminTeachers = () => {
                         <div className="relative inline-block text-left">
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveDropdownId(activeDropdownId === teacher._id ? null : teacher._id);
-                            }}
+                            onClick={(e) => handleKebabClick(e, teacher._id)}
                             className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
                           >
                             <MoreVertical className="h-5 w-5" />
                           </button>
-                          {activeDropdownId === teacher._id && (
+                          {activeDropdownId === teacher._id && dropdownCoords && createPortal(
                             <>
                               <div 
-                                className="fixed inset-0 z-20"
-                                onClick={() => setActiveDropdownId(null)}
+                                className="fixed inset-0 z-40"
+                                onClick={() => {
+                                  setActiveDropdownId(null);
+                                  setDropdownCoords(null);
+                                }}
                               />
-                              <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
-                                <div className="py-1">
-                                  {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                              <div 
+                                style={{
+                                  position: 'absolute',
+                                  top: dropdownCoords.top,
+                                  left: dropdownCoords.left,
+                                  width: dropdownCoords.width,
+                                  height: dropdownCoords.height,
+                                  pointerEvents: 'none'
+                                }}
+                                className="z-50"
+                              >
+                                <div 
+                                  style={{ pointerEvents: 'auto' }}
+                                  className={`absolute right-0 w-52 bg-white border border-border rounded-card shadow-xl py-1.5 divide-y divide-border ${
+                                    dropdownCoords.bottom + 220 > window.innerHeight ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                  }`}
+                                >
+                                  <div className="py-1">
+                                    {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveDropdownId(null);
+                                          setDropdownCoords(null);
+                                          handleResendInvitation(teacher._id);
+                                        }}
+                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                      >
+                                        <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                        Resend Invite
+                                      </button>
+                                    )}
                                     <button
                                       type="button"
                                       onClick={() => {
                                         setActiveDropdownId(null);
-                                        handleResendInvitation(teacher._id);
+                                        setDropdownCoords(null);
+                                        handleOpenView(teacher);
                                       }}
                                       className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
                                     >
-                                      <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                      Resend Invite
+                                      <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                      View Profile
                                     </button>
-                                  )}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveDropdownId(null);
-                                      handleOpenView(teacher);
-                                    }}
-                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                  >
-                                    <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                    View Profile
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveDropdownId(null);
-                                      handleOpenEdit(teacher);
-                                    }}
-                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                  >
-                                    <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                    Edit Profile
-                                  </button>
-                                </div>
-                                <div className="py-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveDropdownId(null);
-                                      handleOpenDeleteConfirm(teacher);
-                                    }}
-                                    disabled={teacher.userId?.isActive === false}
-                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
-                                  >
-                                    <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
-                                    Deactivate
-                                  </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        setDropdownCoords(null);
+                                        handleOpenEdit(teacher);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                    >
+                                      <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                      Edit Profile
+                                    </button>
+                                  </div>
+                                  <div className="py-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        setDropdownCoords(null);
+                                        handleOpenDeleteConfirm(teacher);
+                                      }}
+                                      disabled={teacher.userId?.isActive === false}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                    >
+                                      <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                      Deactivate
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            </>
+                            </>,
+                            document.body
                           )}
                         </div>
                       </div>
@@ -418,7 +461,6 @@ const AdminTeachers = () => {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-background border-b border-border">
-                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Photo</th>
                       <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Teacher</th>
                       <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Email</th>
                       <th className="hidden lg:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Qualification</th>
@@ -428,7 +470,7 @@ const AdminTeachers = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {paginatedTeachers.map((teacher) => {
+                    {paginatedTeachers.map((teacher, index) => {
                       const statusProps = getStatusBadgeProps(teacher.userId);
                       
                       const teacherAsgs = assignments.filter(
@@ -448,31 +490,17 @@ const AdminTeachers = () => {
 
                       return (
                         <tr key={teacher._id} className="hover:bg-background/40 transition-colors">
-                          <td className="hidden sm:table-cell py-4 px-6 text-sm">
-                            {teacher.photoUrl ? (
-                              <img
-                                src={teacher.photoUrl}
-                                alt={teacher.userId?.name}
-                                className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
-                              />
-                            ) : (
-                              <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
-                                {getInitials(teacher.userId?.name)}
-                              </div>
-                            )}
-                          </td>
-
                           <td className="py-4 px-6 text-sm">
                             <div className="flex items-center space-x-3.5">
-                              <div className="sm:hidden flex-shrink-0">
-                                {teacher.photoUrl ? (
+                              <div className="flex-shrink-0">
+                                {teacher.photoUrl && teacher.photoUrl.trim() !== "" ? (
                                   <img
                                     src={teacher.photoUrl}
                                     alt={teacher.userId?.name}
-                                    className="h-9 w-9 rounded-full object-cover border border-border shadow-subtle"
+                                    className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
                                   />
                                 ) : (
-                                  <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-subtle ${avatarBg}`}>
+                                  <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
                                     {getInitials(teacher.userId?.name)}
                                   </div>
                                 )}
@@ -520,74 +548,96 @@ const AdminTeachers = () => {
                             <div className="relative inline-block text-left">
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveDropdownId(activeDropdownId === teacher._id ? null : teacher._id);
-                                }}
+                                onClick={(e) => handleKebabClick(e, teacher._id)}
                                 className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
                               >
                                 <MoreVertical className="h-5 w-5" />
                               </button>
-                              {activeDropdownId === teacher._id && (
+                              {activeDropdownId === teacher._id && dropdownCoords && createPortal(
                                 <>
                                   <div 
-                                    className="fixed inset-0 z-20"
-                                    onClick={() => setActiveDropdownId(null)}
+                                    className="fixed inset-0 z-40"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      setDropdownCoords(null);
+                                    }}
                                   />
-                                  <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
-                                    <div className="py-1">
-                                      {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                                  <div 
+                                    style={{
+                                      position: 'absolute',
+                                      top: dropdownCoords.top,
+                                      left: dropdownCoords.left,
+                                      width: dropdownCoords.width,
+                                      height: dropdownCoords.height,
+                                      pointerEvents: 'none'
+                                    }}
+                                    className="z-50"
+                                  >
+                                    <div 
+                                      style={{ pointerEvents: 'auto' }}
+                                      className={`absolute right-0 w-52 bg-white border border-border rounded-card shadow-xl py-1.5 divide-y divide-border ${
+                                        dropdownCoords.bottom + 220 > window.innerHeight ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                      }`}
+                                    >
+                                      <div className="py-1">
+                                        {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setActiveDropdownId(null);
+                                              setDropdownCoords(null);
+                                              handleResendInvitation(teacher._id);
+                                            }}
+                                            className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                          >
+                                            <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                            Resend Invite
+                                          </button>
+                                        )}
                                         <button
                                           type="button"
                                           onClick={() => {
                                             setActiveDropdownId(null);
-                                            handleResendInvitation(teacher._id);
+                                            setDropdownCoords(null);
+                                            handleOpenView(teacher);
                                           }}
                                           className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
                                         >
-                                          <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                          Resend Invite
+                                          <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          View Profile
                                         </button>
-                                      )}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          handleOpenView(teacher);
-                                        }}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                      >
-                                        <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                        View Profile
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          handleOpenEdit(teacher);
-                                        }}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                      >
-                                        <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                        Edit Profile
-                                      </button>
-                                    </div>
-                                    <div className="py-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          handleOpenDeleteConfirm(teacher);
-                                        }}
-                                        disabled={teacher.userId?.isActive === false}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
-                                      >
-                                        <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
-                                        Deactivate
-                                      </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleOpenEdit(teacher);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          Edit Profile
+                                        </button>
+                                      </div>
+                                      <div className="py-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleOpenDeleteConfirm(teacher);
+                                          }}
+                                          disabled={teacher.userId?.isActive === false}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                        >
+                                          <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                          Deactivate
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
-                                </>
+                                </>,
+                                document.body
                               )}
                             </div>
                           </td>

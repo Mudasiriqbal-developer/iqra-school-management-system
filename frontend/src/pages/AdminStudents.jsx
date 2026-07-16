@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
@@ -47,6 +48,26 @@ const AdminStudents = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
+
+  const [dropdownCoords, setDropdownCoords] = useState(null);
+
+  const handleKebabClick = (e, studentId) => {
+    e.stopPropagation();
+    if (activeDropdownId === studentId) {
+      setActiveDropdownId(null);
+      setDropdownCoords(null);
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setActiveDropdownId(studentId);
+      setDropdownCoords({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        height: rect.height,
+        bottom: rect.bottom
+      });
+    }
+  };
 
   // Selected Student & Modal states
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -374,7 +395,7 @@ const AdminStudents = () => {
             <div>
               {/* Stacked Cards for Mobile */}
               <div className="block sm:hidden divide-y divide-border">
-                {students.map((student) => {
+                {students.map((student, index) => {
                   const statusProps = getStatusBadgeProps(student.status);
                   const colors = [
                     'bg-blue-600 text-blue-100',
@@ -411,72 +432,94 @@ const AdminStudents = () => {
                         <div className="relative inline-block text-left">
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveDropdownId(activeDropdownId === student._id ? null : student._id);
-                            }}
+                            onClick={(e) => handleKebabClick(e, student._id)}
                             className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
                           >
                             <MoreVertical className="h-5 w-5" />
                           </button>
-                          {activeDropdownId === student._id && (
+                          {activeDropdownId === student._id && dropdownCoords && createPortal(
                             <>
                               <div 
-                                className="fixed inset-0 z-20"
-                                onClick={() => setActiveDropdownId(null)}
+                                className="fixed inset-0 z-40"
+                                onClick={() => {
+                                  setActiveDropdownId(null);
+                                  setDropdownCoords(null);
+                                }}
                               />
-                              <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
-                                <div className="py-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveDropdownId(null);
-                                      handleOpenView(student);
-                                    }}
-                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                  >
-                                    <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                    View Details
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveDropdownId(null);
-                                      handleOpenEdit(student);
-                                    }}
-                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                  >
-                                    <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                    Edit Record
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveDropdownId(null);
-                                      handleOpenResetModal(student);
-                                    }}
-                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                  >
-                                    <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                    Reset Password
-                                  </button>
-                                </div>
-                                <div className="py-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveDropdownId(null);
-                                      handleOpenDeleteConfirm(student);
-                                    }}
-                                    disabled={student.status === 'suspended'}
-                                    className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
-                                  >
-                                    <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
-                                    Deactivate
-                                  </button>
+                              <div 
+                                style={{
+                                  position: 'absolute',
+                                  top: dropdownCoords.top,
+                                  left: dropdownCoords.left,
+                                  width: dropdownCoords.width,
+                                  height: dropdownCoords.height,
+                                  pointerEvents: 'none'
+                                }}
+                                className="z-50"
+                              >
+                                <div 
+                                  style={{ pointerEvents: 'auto' }}
+                                  className={`absolute right-0 w-52 bg-white border border-border rounded-card shadow-xl py-1.5 divide-y divide-border ${
+                                    dropdownCoords.bottom + 220 > window.innerHeight ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                  }`}
+                                >
+                                  <div className="py-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        setDropdownCoords(null);
+                                        handleOpenView(student);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                    >
+                                      <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                      View Details
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        setDropdownCoords(null);
+                                        handleOpenEdit(student);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                    >
+                                      <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                      Edit Record
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        setDropdownCoords(null);
+                                        handleOpenResetModal(student);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                    >
+                                      <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                      Reset Password
+                                    </button>
+                                  </div>
+                                  <div className="py-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        setDropdownCoords(null);
+                                        handleOpenDeleteConfirm(student);
+                                      }}
+                                      disabled={student.status === 'suspended'}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                    >
+                                      <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                      Deactivate
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            </>
+                            </>,
+                            document.body
                           )}
                         </div>
                       </div>
@@ -504,13 +547,11 @@ const AdminStudents = () => {
                   );
                 })}
               </div>
-
               {/* Table for Desktop */}
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-background border-b border-border">
-                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Photo</th>
                       <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Student</th>
                       <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Class / Section</th>
                       <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Father's Contact</th>
@@ -519,7 +560,7 @@ const AdminStudents = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {students.map((student) => {
+                    {students.map((student, index) => {
                       const statusProps = getStatusBadgeProps(student.status);
                       
                       const colors = [
@@ -535,31 +576,17 @@ const AdminStudents = () => {
 
                       return (
                         <tr key={student._id} className="hover:bg-background/40 transition-colors">
-                          <td className="hidden sm:table-cell py-4 px-6 text-sm">
-                            {student.photoUrl ? (
-                              <img
-                                src={student.photoUrl}
-                                alt={student.fullName}
-                                className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
-                              />
-                            ) : (
-                              <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
-                                {getInitials(student.fullName)}
-                              </div>
-                            )}
-                          </td>
-
                           <td className="py-4 px-6 text-sm">
                             <div className="flex items-center space-x-3.5">
-                              <div className="sm:hidden flex-shrink-0">
-                                {student.photoUrl ? (
+                              <div className="flex-shrink-0">
+                                {student.photoUrl && student.photoUrl.trim() !== "" ? (
                                   <img
                                     src={student.photoUrl}
                                     alt={student.fullName}
-                                    className="h-9 w-9 rounded-full object-cover border border-border shadow-subtle"
+                                    className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
                                   />
                                 ) : (
-                                  <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-bold border border-white shadow-subtle ${avatarBg}`}>
+                                  <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
                                     {getInitials(student.fullName)}
                                   </div>
                                 )}
@@ -599,72 +626,94 @@ const AdminStudents = () => {
                             <div className="relative inline-block text-left">
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveDropdownId(activeDropdownId === student._id ? null : student._id);
-                                }}
+                                onClick={(e) => handleKebabClick(e, student._id)}
                                 className="p-2 text-text-secondary hover:text-text-primary hover:bg-background rounded-btn transition-all outline-none"
                               >
                                 <MoreVertical className="h-5 w-5" />
                               </button>
-                              {activeDropdownId === student._id && (
+                              {activeDropdownId === student._id && dropdownCoords && createPortal(
                                 <>
                                   <div 
-                                    className="fixed inset-0 z-20"
-                                    onClick={() => setActiveDropdownId(null)}
+                                    className="fixed inset-0 z-40"
+                                    onClick={() => {
+                                      setActiveDropdownId(null);
+                                      setDropdownCoords(null);
+                                    }}
                                   />
-                                  <div className="absolute right-0 mt-1.5 w-52 bg-surface border border-border rounded-card shadow-subtle z-30 py-1.5 divide-y divide-border">
-                                    <div className="py-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          handleOpenView(student);
-                                        }}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                      >
-                                        <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                        View Details
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          handleOpenEdit(student);
-                                        }}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                      >
-                                        <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                        Edit Record
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          handleOpenResetModal(student);
-                                        }}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                      >
-                                        <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                        Reset Password
-                                      </button>
-                                    </div>
-                                    <div className="py-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          handleOpenDeleteConfirm(student);
-                                        }}
-                                        disabled={student.status === 'suspended'}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
-                                      >
-                                        <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
-                                        Deactivate
-                                      </button>
+                                  <div 
+                                    style={{
+                                      position: 'absolute',
+                                      top: dropdownCoords.top,
+                                      left: dropdownCoords.left,
+                                      width: dropdownCoords.width,
+                                      height: dropdownCoords.height,
+                                      pointerEvents: 'none'
+                                    }}
+                                    className="z-50"
+                                  >
+                                    <div 
+                                      style={{ pointerEvents: 'auto' }}
+                                      className={`absolute right-0 w-52 bg-white border border-border rounded-card shadow-xl py-1.5 divide-y divide-border ${
+                                        dropdownCoords.bottom + 220 > window.innerHeight ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+                                      }`}
+                                    >
+                                      <div className="py-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleOpenView(student);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <Eye className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          View Details
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleOpenEdit(student);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <Pencil className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          Edit Record
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleOpenResetModal(student);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          Reset Password
+                                        </button>
+                                      </div>
+                                      <div className="py-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleOpenDeleteConfirm(student);
+                                          }}
+                                          disabled={student.status === 'suspended'}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-danger hover:bg-danger/10 transition-colors text-left disabled:opacity-40"
+                                        >
+                                          <Trash2 className="h-4.5 w-4.5 text-danger mr-3" />
+                                          Deactivate
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
-                                </>
+                                </>,
+                                document.body
                               )}
                             </div>
                           </td>
