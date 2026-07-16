@@ -2,8 +2,16 @@ import React from 'react';
 import { Search, Bell, HelpCircle, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvatar = "" }) => {
+const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvatar = "", onLogoutClick }) => {
   const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    if (onLogoutClick) {
+      onLogoutClick();
+    } else {
+      logout();
+    }
+  };
 
   // Prefer AuthContext data, fallback to props
   const name = user?.name || userName;
@@ -64,7 +72,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
 
         {/* Logout Button */}
         <button
-          onClick={logout}
+          onClick={handleLogout}
           title="Logout"
           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none"
         >
