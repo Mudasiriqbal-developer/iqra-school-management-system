@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GraduationCap, LogOut, Plus, HelpCircle } from 'lucide-react';
+import { GraduationCap, LogOut, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], onLogoutClick }) => {
@@ -62,13 +62,7 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], onLogoutCli
 
       {/* Bottom Pinned Section */}
       <div className="p-4 border-t border-white/10 space-y-1">
-        {/* Dynamic Action Button */}
-        {subtitle !== "Student Portal" && (
-          <button className="w-full bg-white text-navy-primary font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors shadow-sm text-sm mb-3">
-            <Plus className="h-4 w-4 text-navy-primary" />
-            <span>Add New Record</span>
-          </button>
-        )}
+
 
         {/* Support Link */}
         <a
