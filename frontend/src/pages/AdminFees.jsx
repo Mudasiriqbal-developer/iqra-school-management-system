@@ -34,7 +34,7 @@ import {
   getSectionsByClass
 } from '../features/fees/feeService';
 
-import WalletPaymentModal from '../features/fees/WalletPaymentModal';
+import RecordPaymentModal from '../features/fees/RecordPaymentModal';
 import StudentLedgerDrawer from '../features/fees/StudentLedgerDrawer';
 
 const AdminFees = () => {
@@ -52,7 +52,7 @@ const AdminFees = () => {
   ];
 
   // Component Modals/Drawers visibility
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isLedgerOpen, setIsLedgerOpen] = useState(false);
 
   // Target Student for Modal operations
@@ -185,9 +185,9 @@ const AdminFees = () => {
     }
   };
 
-  const handleOpenWalletModal = (student) => {
+  const handleOpenPaymentModal = (student) => {
     setSelectedStudent(student);
-    setIsWalletModalOpen(true);
+    setIsPaymentModalOpen(true);
   };
 
   const handleOpenLedger = (student) => {
@@ -435,7 +435,7 @@ const AdminFees = () => {
                             {/* Pay button (disabled if fully paid) */}
                             {feeRecord.status !== 'paid' ? (
                               <button
-                                onClick={() => handleOpenWalletModal(item)}
+                                onClick={() => handleOpenPaymentModal(item)}
                                 title="Record Payment"
                                 className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all"
                               >
@@ -532,14 +532,14 @@ const AdminFees = () => {
 
       </div>
 
-      {/* Wallet Payment Modal */}
-      <WalletPaymentModal
-        isOpen={isWalletModalOpen}
+      {/* Record Payment Modal */}
+      <RecordPaymentModal
+        isOpen={isPaymentModalOpen}
         feeRecord={selectedStudent?.feeRecord}
         studentName={selectedStudent?.fullName}
         onSuccess={fetchData}
         onClose={() => {
-          setIsWalletModalOpen(false);
+          setIsPaymentModalOpen(false);
           setSelectedStudent(null);
         }}
       />

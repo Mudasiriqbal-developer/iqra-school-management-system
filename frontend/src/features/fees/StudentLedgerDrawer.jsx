@@ -4,7 +4,7 @@ import { getStudentLedger, setMonthlyFee, downloadReceipt } from './feeService';
 import { getStudentById } from '../students/studentService';
 import StatusBadge from '../../components/shared/StatusBadge';
 import { toast } from 'react-hot-toast';
-import WalletPaymentModal from './WalletPaymentModal';
+import RecordPaymentModal from './RecordPaymentModal';
 
 const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
   const [ledger, setLedger] = useState(null);
@@ -16,7 +16,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
   const [expandedMonths, setExpandedMonths] = useState({}); // e.g. { "2026-07": true }
   const [successNote, setSuccessNote] = useState('');
   const [selectedFeeRecord, setSelectedFeeRecord] = useState(null);
-  const [isWalletOpen, setIsWalletOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Fetch data on open or when studentId changes
   useEffect(() => {
@@ -62,9 +62,9 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
     }));
   };
 
-  const handlePayMonth = (record) => {
+  const handleRecordPayment = (record) => {
     setSelectedFeeRecord(record);
-    setIsWalletOpen(true);
+    setIsPaymentModalOpen(true);
   };
 
   const handleSaveMonthlyFee = async () => {
@@ -306,11 +306,11 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handlePayMonth(record);
+                                    handleRecordPayment(record);
                                   }}
                                   className="p-1 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-100 transition-colors"
                                 >
-                                  Pay
+                                  Record Payment
                                 </button>
                               )}
                               <StatusBadge status={badge.status} label={badge.label} />
@@ -374,15 +374,15 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
 
       </div>
 
-      <WalletPaymentModal
-        isOpen={isWalletOpen}
+      <RecordPaymentModal
+        isOpen={isPaymentModalOpen}
         feeRecord={selectedFeeRecord}
         studentName={studentName}
         onSuccess={() => {
           fetchLedgerAndStudent();
         }}
         onClose={() => {
-          setIsWalletOpen(false);
+          setIsPaymentModalOpen(false);
           setSelectedFeeRecord(null);
         }}
       />
