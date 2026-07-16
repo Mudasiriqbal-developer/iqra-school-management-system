@@ -84,18 +84,10 @@ const TeacherViewDrawer = ({ isOpen, onClose, teacher, assignments = [], onRefre
         {/* Header Banner */}
         <div className="relative bg-navy-900 px-6 py-6 text-white flex justify-between items-start">
           <div className="flex items-center space-x-4">
-            {/* Photo / Fallback Avatar */}
-            {teacher.photoUrl ? (
-              <img
-                src={teacher.photoUrl}
-                alt={teacher.userId?.name}
-                className="h-16 w-16 rounded-full object-cover border-2 border-white/80 shadow-md"
-              />
-            ) : (
-              <div className={`h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white/80 shadow-md ${avatarBg}`}>
-                {getInitials(teacher.userId?.name)}
-              </div>
-            )}
+            {/* Initials Fallback Avatar */}
+            <div className={`h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white/80 shadow-md ${avatarBg}`}>
+              {getInitials(teacher.userId?.name)}
+            </div>
 
             <div>
               <h2 className="text-xl font-extrabold tracking-tight">{teacher.userId?.name || 'N/A'}</h2>

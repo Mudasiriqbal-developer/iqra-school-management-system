@@ -85,18 +85,10 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
         {/* Header Banner */}
         <div className="relative bg-navy-900 px-6 py-6 text-white flex justify-between items-start">
           <div className="flex items-center space-x-4">
-            {/* Student Photo / Fallback Avatar */}
-            {student.photoUrl ? (
-              <img
-                src={student.photoUrl}
-                alt={student.fullName}
-                className="h-16 w-16 rounded-full object-cover border-2 border-white/80 shadow-md"
-              />
-            ) : (
-              <div className={`h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white/80 shadow-md ${avatarBg}`}>
-                {getInitials(student.fullName)}
-              </div>
-            )}
+            {/* Initials Fallback Avatar */}
+            <div className={`h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white/80 shadow-md ${avatarBg}`}>
+              {getInitials(student.fullName)}
+            </div>
 
             <div>
               <h2 className="text-xl font-extrabold tracking-tight">{student.fullName}</h2>

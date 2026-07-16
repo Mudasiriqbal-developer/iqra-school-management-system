@@ -412,17 +412,9 @@ const AdminStudents = () => {
                     <div key={student._id} className="p-4 space-y-3 bg-surface hover:bg-background/40 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          {student.photoUrl ? (
-                            <img
-                              src={student.photoUrl}
-                              alt={student.fullName}
-                              className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
-                            />
-                          ) : (
-                            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
-                              {getInitials(student.fullName)}
-                            </div>
-                          )}
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
+                            {getInitials(student.fullName)}
+                          </div>
                           <div>
                             <div className="font-bold text-text-primary text-sm">{student.fullName}</div>
                             <div className="text-xs text-text-secondary font-semibold mt-0.5">Reg: {student.registrationNumber}</div>
@@ -579,17 +571,9 @@ const AdminStudents = () => {
                           <td className="py-4 px-6 text-sm">
                             <div className="flex items-center space-x-3.5">
                               <div className="flex-shrink-0">
-                                {student.photoUrl && student.photoUrl.trim() !== "" ? (
-                                  <img
-                                    src={student.photoUrl}
-                                    alt={student.fullName}
-                                    className="h-10 w-10 rounded-full object-cover border border-border shadow-subtle"
-                                  />
-                                ) : (
-                                  <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
-                                    {getInitials(student.fullName)}
-                                  </div>
-                                )}
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold border border-white shadow-subtle ${avatarBg}`}>
+                                  {getInitials(student.fullName)}
+                                </div>
                               </div>
                               <div>
                                 <div className="font-bold text-text-primary flex items-center space-x-2">

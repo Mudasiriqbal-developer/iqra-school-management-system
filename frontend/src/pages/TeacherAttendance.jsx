@@ -399,19 +399,11 @@ const TeacherAttendance = () => {
                             {/* Student Details */}
                             <td className="py-4 px-6">
                               <div className="flex items-center space-x-3.5">
-                                {student.photoUrl ? (
-                                  <img
-                                    src={student.photoUrl}
-                                    alt={student.fullName}
-                                    className="h-10 w-10 rounded-xl object-cover border border-gray-100 shadow-sm"
-                                  />
-                                ) : (
                                   <div
                                     className={`h-10 w-10 rounded-xl flex items-center justify-center text-xs font-extrabold shadow-sm ${avatar.bg}`}
                                   >
                                     {avatar.initials}
                                   </div>
-                                )}
                                 <div>
                                   <div className="text-sm font-bold text-navy-950">
                                     {student.fullName}
