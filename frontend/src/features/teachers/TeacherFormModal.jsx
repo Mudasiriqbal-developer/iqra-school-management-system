@@ -11,7 +11,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
     qualification: '',
     phone: '',
     joiningDate: '',
-    photoUrl: '',
     baseSalary: 0,
   });
 
@@ -30,7 +29,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
           qualification: teacher.qualification || '',
           phone: teacher.userId?.phone || '',
           joiningDate: teacher.joiningDate ? teacher.joiningDate.substring(0, 10) : '',
-          photoUrl: teacher.photoUrl || '',
           baseSalary: teacher.baseSalary || 0,
         });
       } else {
@@ -41,7 +39,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
           qualification: '',
           phone: '',
           joiningDate: new Date().toISOString().substring(0, 10),
-          photoUrl: '',
           baseSalary: 0,
         });
       }
@@ -106,7 +103,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
         employeeId: formData.employeeId.trim(),
         qualification: formData.qualification.trim() || undefined,
         phone: formData.phone.trim() || undefined,
-        photoUrl: formData.photoUrl.trim() || undefined,
         joiningDate: formData.joiningDate || undefined,
         baseSalary: Number(formData.baseSalary) || 0,
       };
@@ -255,22 +251,6 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
               {errors.phone && (
                 <span className="text-red-500 text-xs font-medium mt-1">{errors.phone}</span>
               )}
-            </div>
-
-            {/* Photo URL */}
-            <div className="flex flex-col">
-              <label htmlFor="photoUrl" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
-                Photo URL
-              </label>
-              <input
-                id="photoUrl"
-                type="text"
-                name="photoUrl"
-                value={formData.photoUrl}
-                onChange={handleChange}
-                placeholder="e.g. https://example.com/avatar.jpg"
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm focus:border-navy-700"
-              />
             </div>
 
             {/* Joining Date */}
