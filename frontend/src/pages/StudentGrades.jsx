@@ -47,13 +47,14 @@ const StudentGrades = () => {
     fetchGradesAndProfile();
   }, []);
 
-  // Compute GPA and statistics dynamically
+  // Compute overall percentage and statistics dynamically
   const gradeStats = useMemo(() => {
     if (grades.length === 0) {
-      return { gpa: 'N/A', totalSubjects: 0, passingStatus: 'No Records', failCount: 0 };
+      return { overallPercentage: 'N/A', totalSubjects: 0, passingStatus: 'No Records', failCount: 0 };
     }
 
-    let totalPoints = 0;
+    let totalObtained = 0;
+    let totalMax = 0;
     let failCount = 0;
     const uniqueSubjects = new Set();
 
@@ -62,27 +63,20 @@ const StudentGrades = () => {
         uniqueSubjects.add(g.subjectId._id || g.subjectId);
       }
 
+      totalObtained += g.marksObtained || 0;
+      totalMax += g.totalMarks || 0;
+
       const pct = (g.marksObtained / g.totalMarks) * 100;
-      if (pct >= 90) totalPoints += 4.0;
-      else if (pct >= 85) totalPoints += 4.0;
-      else if (pct >= 80) totalPoints += 3.7;
-      else if (pct >= 75) totalPoints += 3.3;
-      else if (pct >= 70) totalPoints += 3.0;
-      else if (pct >= 65) totalPoints += 2.7;
-      else if (pct >= 60) totalPoints += 2.3;
-      else if (pct >= 55) totalPoints += 2.0;
-      else if (pct >= 50) totalPoints += 1.0;
-      else {
-        totalPoints += 0.0;
+      if (pct < 50) {
         failCount++;
       }
     });
 
-    const gpa = (totalPoints / grades.length).toFixed(2);
+    const overallPercentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : '0.0';
     const passingStatus = failCount > 0 ? 'Needs Attention' : 'Passed';
 
     return {
-      gpa,
+      overallPercentage,
       totalSubjects: uniqueSubjects.size,
       passingStatus,
       failCount,
@@ -147,17 +141,17 @@ const StudentGrades = () => {
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Grades & Marksheet</h1>
-          <p className="text-sm text-gray-500 mt-1">Review your academic grades, midterm/final scores, and GPA summary.</p>
+          <p className="text-sm text-gray-500 mt-1">Review your academic grades, midterm/final scores, and overall performance summary.</p>
         </div>
 
         {/* Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             icon={Award}
-            label="Cumulative GPA"
-            value={gradeStats.gpa}
-            trend="Academic Standings"
-            trendColor={gradeStats.gpa !== 'N/A' && parseFloat(gradeStats.gpa) >= 3.0 ? 'active' : 'pending'}
+            label="Overall Percentage"
+            value={gradeStats.overallPercentage !== 'N/A' ? `${gradeStats.overallPercentage}%` : 'N/A'}
+            trend="Academic Performance"
+            trendColor={gradeStats.overallPercentage !== 'N/A' && parseFloat(gradeStats.overallPercentage) >= 60 ? 'active' : 'pending'}
           />
           <StatCard
             icon={Star}

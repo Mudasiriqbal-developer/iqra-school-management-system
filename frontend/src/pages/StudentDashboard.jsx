@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LayoutDashboard, Calendar, Award, BookOpen, Clock, CreditCard, ArrowRight, Settings } from 'lucide-react';
+import { LayoutDashboard, Calendar, Award, CreditCard, ArrowRight, Settings, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import DashboardLayout from '../components/shared/DashboardLayout';
@@ -63,22 +63,15 @@ const StudentDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const gpa = useMemo(() => {
+  const overallPercentage = useMemo(() => {
     if (grades.length === 0) return 'N/A';
-    let totalPoints = 0;
+    let totalObtained = 0;
+    let totalMax = 0;
     grades.forEach((g) => {
-      const pct = (g.marksObtained / g.totalMarks) * 100;
-      if (pct >= 90) totalPoints += 4.0;
-      else if (pct >= 85) totalPoints += 4.0;
-      else if (pct >= 80) totalPoints += 3.7;
-      else if (pct >= 75) totalPoints += 3.3;
-      else if (pct >= 70) totalPoints += 3.0;
-      else if (pct >= 65) totalPoints += 2.7;
-      else if (pct >= 60) totalPoints += 2.3;
-      else if (pct >= 55) totalPoints += 2.0;
-      else if (pct >= 50) totalPoints += 1.0;
+      totalObtained += g.marksObtained || 0;
+      totalMax += g.totalMarks || 0;
     });
-    return (totalPoints / grades.length).toFixed(2);
+    return totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : '0.0';
   }, [grades]);
 
   if (loading) {
@@ -117,14 +110,14 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* 4 StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 3 StatCards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard
             icon={Award}
-            label="GPA"
-            value={gpa}
-            trend="Average Score"
-            trendColor={gpa !== 'N/A' && parseFloat(gpa) >= 3.0 ? 'active' : 'pending'}
+            label="Overall Percentage"
+            value={overallPercentage !== 'N/A' ? `${overallPercentage}%` : 'N/A'}
+            trend="Academic Performance"
+            trendColor={overallPercentage !== 'N/A' && parseFloat(overallPercentage) >= 60 ? 'active' : 'pending'}
           />
 
           <StatCard
@@ -135,18 +128,11 @@ const StudentDashboard = () => {
             trendColor={attendance?.absentDays > 0 ? 'danger' : 'active'}
           />
           <StatCard
-            icon={Clock}
-            label="Pending Assignments"
-            value="3"
-            trend="Needs Attention"
-            trendColor="pending"
-          />
-          <StatCard
-            icon={BookOpen}
-            label="Library Books Due"
-            value="1"
-            trend="Overdue"
-            trendColor="danger"
+            icon={FileText}
+            label="Enrolled Courses"
+            value="6"
+            trend="Core Curriculum"
+            trendColor="info"
           />
         </div>
 
