@@ -23,6 +23,7 @@ import StudentSettings from './pages/StudentSettings';
 import AdminReports from './pages/AdminReports';
 import AdminAttendance from './pages/AdminAttendance';
 import ProtectedRoute from './components/shared/ProtectedRoute';
+import NotFound from './pages/NotFound';
 
 
 
@@ -190,7 +191,7 @@ function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Fallback Catch-all Route */}
-        <Route path="*" element={<Login />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
