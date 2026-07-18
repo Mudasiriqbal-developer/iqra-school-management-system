@@ -8,12 +8,13 @@ import {
   CartesianGrid,
   Tooltip
 } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-[#00153D] text-white text-xs px-3 py-2 rounded-lg shadow-md border border-[#00215E]/30">
+      <div className="bg-[#00153D] text-white text-xs px-3 py-2 rounded-lg shadow-md border border-[#00215E]/30 dark:bg-slate-850 dark:border-slate-700">
         <p className="font-semibold">{`${data.month} ${data.year}: ${payload[0].value}%`}</p>
       </div>
     );
@@ -22,7 +23,14 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 const AttendanceTrendChart = ({ data = [] }) => {
+  const { isDark } = useTheme();
   const hasNoData = !data || data.length === 0 || data.every(item => Number(item.averageAttendancePercentage) === 0);
+
+  // Dynamic color configuration
+  const gridColor = isDark ? '#334155' : '#F3F4F6';
+  const labelColor = isDark ? '#94A3B8' : '#9CA3AF';
+  const lineColor = isDark ? '#38BDF8' : '#00215E';
+  const dotFillColor = isDark ? '#1E293B' : '#FFF';
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden p-6">
@@ -44,30 +52,30 @@ const AttendanceTrendChart = ({ data = [] }) => {
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
               <XAxis
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                tick={{ fill: labelColor, fontSize: 12, fontWeight: 500 }}
                 dy={10}
               />
               <YAxis
                 domain={[0, 100]}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: '#9CA3AF', fontSize: 12, fontWeight: 500 }}
+                tick={{ fill: labelColor, fontSize: 12, fontWeight: 500 }}
                 dx={-5}
                 tickFormatter={(val) => `${val}%`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#F3F4F6' }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: gridColor }} />
               <Line
                 type="monotone"
                 dataKey="averageAttendancePercentage"
-                stroke="#00215E"
+                stroke={lineColor}
                 strokeWidth={3}
-                dot={{ r: 4, stroke: '#00215E', strokeWidth: 2, fill: '#FFF' }}
-                activeDot={{ r: 6, stroke: '#00215E', strokeWidth: 2, fill: '#FFF' }}
+                dot={{ r: 4, stroke: lineColor, strokeWidth: 2, fill: dotFillColor }}
+                activeDot={{ r: 6, stroke: lineColor, strokeWidth: 2, fill: dotFillColor }}
               />
             </LineChart>
           </ResponsiveContainer>

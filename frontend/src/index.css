@@ -20,3 +20,219 @@
 .bg-navy-light {
   background-color: #002F87 !important;
 }
+
+/* ==========================================
+   GLOBAL DARK MODE OVERRIDES
+   ========================================== */
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Base Body Style */
+.dark body {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #f8fafc !important; /* slate-50 */
+}
+
+/* Backgrounds & Surface Cards */
+.dark .bg-white,
+.dark .bg-surface {
+  background-color: #1e293b !important; /* slate-800 */
+}
+
+.dark .bg-gray-50,
+.dark .bg-slate-50,
+.dark .bg-background {
+  background-color: #0f172a !important; /* slate-900 */
+}
+
+.dark .bg-gray-100 {
+  background-color: #1e293b !important; /* slate-800 */
+}
+
+.dark .bg-gray-50\/50 {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+}
+
+.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.dark .bg-navy-50 {
+  background-color: rgba(56, 189, 248, 0.1) !important;
+}
+
+/* Borders */
+.dark .border-gray-200,
+.dark .border-gray-100,
+.dark .border-border,
+.dark .border-slate-200\/60,
+.dark .border-gray-200\/60,
+.dark .border-white\/10 {
+  border-color: #334155 !important; /* slate-700 */
+}
+
+.dark .divide-border > * + *,
+.dark .divide-gray-200 > * + *,
+.dark .divide-y > * + * {
+  border-color: #334155 !important;
+}
+
+/* Text Colors */
+.dark .text-gray-900,
+.dark .text-gray-850,
+.dark .text-gray-800,
+.dark .text-navy-950,
+.dark .text-text-primary,
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+.dark .text-gray-700,
+.dark .text-gray-650,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-text-secondary {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+
+.dark .text-gray-400 {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+.dark .text-navy-900 {
+  color: #38bdf8 !important; /* sky-400 for branding/highlights */
+}
+
+.dark .text-navy-primary {
+  color: #38bdf8 !important; /* sky-400 pagination/loaders */
+}
+
+.dark .text-navy-800 {
+  color: #7dd3fc !important;
+}
+
+/* Badges in dark mode */
+.dark .bg-sky-50 {
+  background-color: rgba(56, 189, 248, 0.1) !important;
+}
+.dark .text-sky-600 {
+  color: #38bdf8 !important;
+}
+.dark .border-sky-100\/50 {
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+.dark .bg-rose-50 {
+  background-color: rgba(244, 63, 94, 0.1) !important;
+}
+.dark .text-rose-600 {
+  color: #fb7185 !important;
+}
+.dark .border-rose-100\/50 {
+  border-color: rgba(244, 63, 94, 0.2) !important;
+}
+
+
+/* Input Fields, Selects & Textareas */
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="number"],
+.dark input[type="date"],
+.dark select,
+.dark textarea {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #38bdf8 !important; /* sky-400 */
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important; /* slate-500 */
+}
+
+/* Table overrides */
+.dark table {
+  border-color: #334155 !important;
+}
+
+.dark thead tr {
+  background-color: #0f172a !important;
+  border-bottom-color: #334155 !important;
+}
+
+.dark tbody tr {
+  background-color: #1e293b !important;
+  border-bottom-color: #334155 !important;
+}
+
+.dark tbody tr:hover {
+  background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+/* Modals & Dialog Backdrops */
+.dark .bg-slate-900\/40,
+.dark .bg-slate-900\/60 {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+}
+
+/* Hover Overrides */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-slate-50:hover {
+  background-color: #334155 !important;
+}
+
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: #334155 !important;
+}
+
+.dark .hover\:bg-background\/40:hover {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Scrollbars in Dark Mode */
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Preserve Brand and Status Badges */
+.dark .bg-navy-900 {
+  background-color: #00215E !important; /* keep original brand primary */
+}
+.dark .hover\:bg-navy-800:hover {
+  background-color: #002F87 !important;
+}
+.dark .text-white {
+  color: #ffffff !important; /* keep white text white */
+}
+.dark .bg-blue-600.text-blue-100,
+.dark .bg-purple-600.text-purple-100,
+.dark .bg-emerald-600.text-emerald-100,
+.dark .bg-amber-600.text-amber-100,
+.dark .bg-pink-600.text-pink-100,
+.dark .bg-indigo-600.text-indigo-100 {
+  color: #ffffff !important;
+}
+
