@@ -236,3 +236,30 @@
   color: #ffffff !important;
 }
 
+/* ==========================================
+   GLOBAL SCROLL-SAFE MODAL LAYOUTS & SCROLL LOCK
+   ========================================== */
+
+/* Disable background page scrolling when any modal overlay or mobile sidebar is open */
+html:has(.backdrop-blur-sm),
+body:has(.backdrop-blur-sm) {
+  overflow: hidden !important;
+}
+
+/* Fix flexbox scroll-centering bug globally on modal overlays */
+.fixed.inset-0.flex.items-center.justify-center,
+.flex.min-h-full.items-center.justify-center {
+  align-items: flex-start !important;
+  overflow-y: auto !important;
+}
+
+/* Enable vertically centered layout when modal fits, and scrollable margin when it overflows */
+.fixed.inset-0.flex.items-center.justify-center > div,
+.flex.min-h-full.items-center.justify-center > div {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+

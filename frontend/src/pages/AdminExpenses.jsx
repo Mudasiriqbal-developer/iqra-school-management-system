@@ -252,7 +252,33 @@ const AdminExpenses = () => {
     toast.success('Expenses updated');
   };
 
-  const pagesArray = Array.from({ length: totalPages }, (_, i) => i + 1);
+  // Build pagination page array (collapsing pagination helper)
+  const getPageNumbers = (currentPage, totalPages) => {
+    const delta = 1;
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
 
   return (
     <DashboardLayout
@@ -529,19 +555,31 @@ const AdminExpenses = () => {
                 </button>
 
                 <div className="flex items-center space-x-1">
-                  {pagesArray.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                        page === p
-                          ? 'bg-[#00215E] text-white shadow-sm'
-                          : 'text-navy-primary hover:bg-gray-100 bg-white border border-gray-200'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                  {getPageNumbers(page, totalPages).map((p, idx) => {
+                    if (p === '...') {
+                      return (
+                        <span 
+                          key={`dots-${idx}`} 
+                          className="px-2 py-1.5 text-xs font-bold text-gray-400 dark:text-slate-500"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                          page === p
+                            ? 'bg-[#00215E] text-white shadow-sm dark:bg-sky-500 dark:text-slate-950'
+                            : 'text-navy-primary hover:bg-gray-100 bg-white border border-gray-200 dark:text-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-750'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <button
