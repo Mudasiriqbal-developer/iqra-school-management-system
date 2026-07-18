@@ -48,7 +48,7 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
         />
 
         {/* Main page content */}
-        <main className="flex-grow p-4 sm:p-6 md:p-8">
+        <main className="flex-grow p-4 sm:p-5 md:p-6 xl:p-8">
           {children}
         </main>
       </div>
