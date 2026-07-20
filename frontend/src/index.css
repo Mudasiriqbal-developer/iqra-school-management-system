@@ -201,6 +201,10 @@
   background-color: #334155 !important;
 }
 
+.dark .hover\:bg-background:hover {
+  background-color: #334155 !important;
+}
+
 .dark .hover\:bg-background\/40:hover {
   background-color: rgba(15, 23, 42, 0.4) !important;
 }
