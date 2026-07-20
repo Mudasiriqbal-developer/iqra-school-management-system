@@ -71,3 +71,29 @@ export const downloadCollectionsPDF = async (month, year) => {
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
 };
+
+/**
+ * Download Fee Defaulters report as PDF and save to local machine.
+ * @param {string} classId - MongoDB ID of the Class
+ * @param {string} sectionId - MongoDB ID of the Section
+ */
+export const downloadDefaultersPDF = async (classId, sectionId) => {
+  const params = {};
+  if (classId) params.classId = classId;
+  if (sectionId) params.sectionId = sectionId;
+
+  const response = await api.get('/reports/fee-defaulters/export-pdf', {
+    params,
+    responseType: 'blob'
+  });
+
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'fee-defaulters-report.pdf');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};

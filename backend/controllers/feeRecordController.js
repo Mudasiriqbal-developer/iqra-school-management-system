@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const FeeRecord = require('../models/FeeRecord');
 const Student = require('../models/Student');
 const PDFDocument = require('pdfkit');
+const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
+
 
 /**
  * Helper: Given a studentId, get or create the current month's FeeRecord
@@ -202,130 +204,181 @@ const generateReceiptPDF = async (req, res, next) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${student.registrationNumber}-fee-receipt.pdf"`);
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ 
+      margins: { top: 125, bottom: 60, left: 50, right: 50 },
+      bufferPages: true
+    });
     doc.pipe(res);
 
-    // Header
-    doc.font('Helvetica-Bold').fontSize(20).text('IHASS - Iqra Hadiqa Tul Atfal School', { align: 'center' });
-    doc.fontSize(14).text('Fee Payment Receipt', { align: 'center' });
-    doc.moveDown(1);
+    const title = 'Fee Payment Receipt';
+    const subtitle = `Reg No: ${student.registrationNumber}`;
+
+    // Draw first page header/footer
+    drawBrandedHeader(doc, title, subtitle);
+    drawFooter(doc);
+
+    // Subsequent page header/footer
+    doc.on('pageAdded', () => {
+      drawBrandedHeader(doc, title, subtitle);
+      drawFooter(doc);
+    });
+
+    let currentY = 125;
 
     // Student Info Box
-    const startY = doc.y;
-    doc.font('Helvetica-Bold').fontSize(11).text('Student Information', 50, startY);
-    doc.moveTo(50, startY + 15).lineTo(562, startY + 15).stroke();
-    doc.moveDown(0.8);
+    doc.save();
+    doc.rect(50, currentY, 512, 18).fill('#00215E');
+    doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8.5).text('STUDENT INFORMATION', 60, currentY + 5);
+    doc.restore();
 
-    const infoY = doc.y;
-    doc.font('Helvetica-Bold').text('Name:', 50, infoY);
-    doc.font('Helvetica').text(student.fullName, 100, infoY);
+    currentY += 18;
+    doc.save();
+    doc.rect(50, currentY, 512, 45).fillAndStroke('#F8FAFC', '#E2E8F0');
+    doc.fillColor('#00215E').font('Helvetica-Bold').fontSize(8);
+    
+    doc.text('Name:', 65, currentY + 12);
+    doc.fillColor('#1E293B').font('Helvetica').fontSize(8.5).text(student.fullName, 110, currentY + 11);
 
-    doc.font('Helvetica-Bold').text('Reg No:', 230, infoY);
-    doc.font('Helvetica').text(student.registrationNumber, 280, infoY);
+    doc.fillColor('#00215E').font('Helvetica-Bold').fontSize(8).text('Registration No:', 230, currentY + 12);
+    doc.fillColor('#1E293B').font('Helvetica').fontSize(8.5).text(student.registrationNumber, 310, currentY + 11);
 
-    doc.font('Helvetica-Bold').text("Father's Name:", 390, infoY);
-    doc.font('Helvetica').text(student.fatherName, 480, infoY);
+    doc.fillColor('#00215E').font('Helvetica-Bold').fontSize(8).text("Father's Name:", 390, currentY + 12);
+    doc.fillColor('#1E293B').font('Helvetica').fontSize(8.5).text(student.fatherName, 465, currentY + 11);
+    doc.restore();
+    
+    currentY += 60;
 
-    doc.moveDown(2);
-
-    // Table headers
+    // Table headers config
     const monthColX = 50;
-    const dueColX = 130;
-    const paidColX = 210;
+    const dueColX = 150;
+    const paidColX = 220;
     const statusColX = 290;
-    const paymentsColX = 370;
+    const paymentsColX = 360;
 
     const colWidths = {
-      month: 75,
-      due: 75,
-      paid: 75,
-      status: 75,
-      payments: 192
+      month: 95,
+      due: 65,
+      paid: 65,
+      status: 65,
+      payments: 202
     };
 
-    let yPosition = doc.y;
-    doc.font('Helvetica-Bold').fontSize(10);
-    doc.text('Month', monthColX, yPosition, { width: colWidths.month });
-    doc.text('Amount Due', dueColX, yPosition, { width: colWidths.due, align: 'right' });
-    doc.text('Amount Paid', paidColX, yPosition, { width: colWidths.paid, align: 'right' });
-    doc.text('Status', statusColX, yPosition, { width: colWidths.status, align: 'center' });
-    doc.text('Payment Details (Date & Amount)', paymentsColX, yPosition, { width: colWidths.payments });
+    // Draw table header
+    doc.save();
+    doc.rect(50, currentY, 512, 22).fill('#00215E');
+    doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8.5);
+    doc.text('Month / Type', monthColX + 5, currentY + 7, { width: colWidths.month - 5 });
+    doc.text('Amt Due', dueColX, currentY + 7, { width: colWidths.due, align: 'right' });
+    doc.text('Amt Paid', paidColX, currentY + 7, { width: colWidths.paid, align: 'right' });
+    doc.text('Status', statusColX, currentY + 7, { width: colWidths.status, align: 'center' });
+    doc.text('Payment Details (Date & Method)', paymentsColX, currentY + 7, { width: colWidths.payments });
+    doc.restore();
 
-    doc.moveTo(50, yPosition + 15).lineTo(562, yPosition + 15).stroke();
-    yPosition += 25;
+    let yPosition = currentY + 28;
 
     let totalBilled = 0;
     let totalPaid = 0;
 
-    doc.font('Helvetica');
-    records.forEach(r => {
+    records.forEach((r, index) => {
       totalBilled += r.amountDue;
       totalPaid += r.amountPaid;
 
       const numPayments = r.payments.length;
       const isAdmission = r.type === 'admission';
-      const labelLines = isAdmission ? 3 : 1;
-      const rowHeight = Math.max(labelLines, numPayments) * 15 + 5;
+      const rowHeight = Math.max(1, numPayments) * 16 + 8;
 
-      if (yPosition + rowHeight > 700) {
+      // Check page overflow
+      if (yPosition + rowHeight > 690) {
         doc.addPage();
-        yPosition = 50;
+        yPosition = 125;
 
-        doc.font('Helvetica-Bold').fontSize(10);
-        doc.text('Month', monthColX, yPosition, { width: colWidths.month });
-        doc.text('Amount Due', dueColX, yPosition, { width: colWidths.due, align: 'right' });
-        doc.text('Amount Paid', paidColX, yPosition, { width: colWidths.paid, align: 'right' });
-        doc.text('Status', statusColX, yPosition, { width: colWidths.status, align: 'center' });
-        doc.text('Payment Details (Date & Amount)', paymentsColX, yPosition, { width: colWidths.payments });
-        doc.moveTo(50, yPosition + 15).lineTo(562, yPosition + 15).stroke();
-        doc.font('Helvetica');
-        yPosition += 25;
+        // Draw table header again
+        doc.save();
+        doc.rect(50, yPosition, 512, 22).fill('#00215E');
+        doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8.5);
+        doc.text('Month / Type', monthColX + 5, yPosition + 7, { width: colWidths.month - 5 });
+        doc.text('Amt Due', dueColX, yPosition + 7, { width: colWidths.due, align: 'right' });
+        doc.text('Amt Paid', paidColX, yPosition + 7, { width: colWidths.paid, align: 'right' });
+        doc.text('Status', statusColX, yPosition + 7, { width: colWidths.status, align: 'center' });
+        doc.text('Payment Details (Date & Method)', paymentsColX, yPosition + 7, { width: colWidths.payments });
+        doc.restore();
+        yPosition += 28;
       }
 
-      const monthLabel = isAdmission ? 'Admission Fee & Books (Registration)' : r.month;
-      doc.text(monthLabel, monthColX, yPosition, { width: colWidths.month });
-      doc.text(r.amountDue.toFixed(2), dueColX, yPosition, { width: colWidths.due, align: 'right' });
-      doc.text(r.amountPaid.toFixed(2), paidColX, yPosition, { width: colWidths.paid, align: 'right' });
-      doc.text(r.status.toUpperCase(), statusColX, yPosition, { width: colWidths.status, align: 'center' });
+      // Alternating row background
+      if (index % 2 === 0) {
+        doc.save();
+        doc.rect(50, yPosition - 4, 512, rowHeight).fill('#F8FAFC');
+        doc.restore();
+      }
 
+      // Print values
+      doc.save();
+      doc.fillColor('#1E293B').font('Helvetica').fontSize(8);
+      const monthLabel = isAdmission ? 'Admission & Books' : r.month;
+      doc.font(isAdmission ? 'Helvetica-Bold' : 'Helvetica').text(monthLabel, monthColX + 5, yPosition + 4, { width: colWidths.month - 5 });
+      doc.text(r.amountDue.toFixed(2), dueColX, yPosition + 4, { width: colWidths.due, align: 'right' });
+      doc.text(r.amountPaid.toFixed(2), paidColX, yPosition + 4, { width: colWidths.paid, align: 'right' });
+
+      // Status Badge Color Simulation
+      let statusColor = '#16A34A'; // green
+      if (r.status === 'pending') statusColor = '#D97706'; // amber
+      if (r.status === 'unpaid') statusColor = '#EF4444'; // red
+      doc.font('Helvetica-Bold').fillColor(statusColor).text(r.status.toUpperCase(), statusColX, yPosition + 4, { width: colWidths.status, align: 'center' });
+
+      doc.fillColor('#1E293B').font('Helvetica');
       if (numPayments === 0) {
-        doc.text('-', paymentsColX, yPosition, { width: colWidths.payments });
-        yPosition += 20;
+        doc.text('-', paymentsColX, yPosition + 4, { width: colWidths.payments });
       } else {
         r.payments.forEach((p, idx) => {
           const dateStr = new Date(p.paidOn).toISOString().split('T')[0];
-          const pText = `${dateStr}: Rs. ${p.amount} (${p.method})`;
-          doc.text(pText, paymentsColX, yPosition + (idx * 15), { width: colWidths.payments });
+          const pText = `${dateStr}: Rs. ${p.amount} (${p.method.toUpperCase()})`;
+          doc.text(pText, paymentsColX, yPosition + 4 + (idx * 16), { width: colWidths.payments });
         });
-        yPosition += numPayments * 15 + 5;
       }
+      doc.restore();
 
-      doc.moveTo(50, yPosition).lineTo(562, yPosition).strokeColor('#cccccc').lineWidth(0.5).stroke().strokeColor('#000000').lineWidth(1);
-      yPosition += 5;
+      // Divider line
+      doc.moveTo(50, yPosition + rowHeight - 4).lineTo(562, yPosition + rowHeight - 4).strokeColor('#E2E8F0').lineWidth(0.5).stroke();
+      yPosition += rowHeight;
     });
 
-    if (yPosition + 50 > 720) {
+    // Summary box check
+    if (yPosition + 60 > 710) {
       doc.addPage();
-      yPosition = 50;
+      yPosition = 125;
     }
-
+    
     yPosition += 10;
-    doc.moveTo(50, yPosition).lineTo(562, yPosition).stroke();
-    yPosition += 10;
+    doc.save();
+    doc.rect(50, yPosition, 512, 45).fillAndStroke('#F8FAFC', '#E2E8F0');
+    doc.fillColor('#00215E').font('Helvetica-Bold').fontSize(8.5);
+    
+    doc.text('Total Billed Amount:', 65, yPosition + 12);
+    doc.fillColor('#1E293B').font('Helvetica').text(`Rs. ${totalBilled.toFixed(2)}`, 165, yPosition + 12);
 
-    doc.font('Helvetica-Bold').fontSize(11);
-    doc.text('Total Billed:', monthColX, yPosition);
-    doc.text(`Rs. ${totalBilled.toFixed(2)}`, monthColX + 70, yPosition);
-
-    doc.text('Total Paid:', paidColX, yPosition);
-    doc.text(`Rs. ${totalPaid.toFixed(2)}`, paidColX + 65, yPosition);
+    doc.fillColor('#00215E').font('Helvetica-Bold').text('Total Paid Amount:', 65, yPosition + 26);
+    doc.fillColor('#1E293B').font('Helvetica').text(`Rs. ${totalPaid.toFixed(2)}`, 165, yPosition + 26);
 
     const outstanding = totalBilled - totalPaid;
-    doc.text('Outstanding:', paymentsColX, yPosition);
-    doc.text(`Rs. ${outstanding.toFixed(2)}`, paymentsColX + 75, yPosition);
+    doc.fillColor('#00215E').font('Helvetica-Bold').text('Net Outstanding Dues:', 310, yPosition + 18);
+    doc.fontSize(11).fillColor(outstanding > 0 ? '#DC2626' : '#16A34A').text(`Rs. ${outstanding.toFixed(2)}`, 415, yPosition + 16, { width: 130, align: 'right' });
+    doc.restore();
 
-    const nowStr = new Date().toLocaleString();
-    doc.fontSize(8).font('Helvetica-Oblique').text(`Receipt generated on ${nowStr}`, 50, 740, { align: 'center' });
+    yPosition += 55;
+
+    // Authorized Signature
+    if (yPosition + 45 > 715) {
+      doc.addPage();
+      yPosition = 125;
+    }
+    doc.save();
+    doc.moveTo(380, yPosition + 35).lineTo(530, yPosition + 35).strokeColor('#64748B').lineWidth(0.5).stroke();
+    doc.fillColor('#64748B').fontSize(7.5).font('Helvetica-Bold').text('Accounts Registrar Signature', 380, yPosition + 40, { align: 'center', width: 150 });
+    doc.restore();
+
+    // Finalize page numbering
+    addPageNumbers(doc);
 
     doc.end();
   } catch (error) {

@@ -14,7 +14,8 @@ import {
   getFeeDefaulters,
   getAttendanceSummary,
   downloadCollectionsCSV,
-  downloadCollectionsPDF
+  downloadCollectionsPDF,
+  downloadDefaultersPDF
 } from '../features/reports/reportService';
 import { getClasses, getSectionsByClass } from '../features/students/studentService';
 
@@ -72,6 +73,7 @@ const AdminReports = () => {
   const [exportYear, setExportYear] = useState(defaultDate.getFullYear());
   const [downloadingCSV, setDownloadingCSV] = useState(false);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [downloadingDefaultersPDF, setDownloadingDefaultersPDF] = useState(false);
 
   // Load Classes list on mount
   useEffect(() => {
@@ -193,6 +195,20 @@ const AdminReports = () => {
       toast.error(err.response?.data?.message || 'Failed to download PDF report');
     } finally {
       setDownloadingPDF(false);
+    }
+  };
+
+  // Export Defaulters PDF Handler
+  const handleExportDefaultersPDF = async () => {
+    try {
+      setDownloadingDefaultersPDF(true);
+      await downloadDefaultersPDF(defaultersClassId, defaultersSectionId);
+      toast.success('Defaulters PDF downloaded successfully');
+    } catch (err) {
+      console.error('Defaulters PDF Export Error:', err);
+      toast.error(err.response?.data?.message || 'Failed to download Defaulters PDF');
+    } finally {
+      setDownloadingDefaultersPDF(false);
     }
   };
 
@@ -392,6 +408,26 @@ const AdminReports = () => {
 
             {/* Defaulters Table */}
             <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
+              {!loading && defaultersData.length > 0 && (
+                <div className="p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gray-50/50">
+                  <div>
+                    <h3 className="text-sm font-bold text-navy-950">Pending Fee Defaulters</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">List of students with outstanding fee balances</p>
+                  </div>
+                  <button
+                    onClick={handleExportDefaultersPDF}
+                    disabled={downloadingDefaultersPDF}
+                    className="bg-[#00215E] text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-1.5 hover:bg-navy-900 transition-colors shadow-sm text-xs disabled:opacity-50"
+                  >
+                    {downloadingDefaultersPDF ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileText className="h-3.5 w-3.5" />
+                    )}
+                    <span>Download Defaulters PDF</span>
+                  </button>
+                </div>
+              )}
               {loading ? (
                 <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
                   <Loader2 className="h-8 w-8 text-navy-900 animate-spin" />
