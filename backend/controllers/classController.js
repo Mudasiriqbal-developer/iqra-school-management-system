@@ -25,6 +25,17 @@ const createClass = async (req, res, next) => {
 
     const newClass = await Class.create({ name, gender: classGender });
 
+    // Automatically create default Section "A" for the new class
+    try {
+      await Section.create({
+        name: 'A',
+        classId: newClass._id,
+        orderIndex: 0,
+      });
+    } catch (sectionError) {
+      console.error('Failed to create default Section A for new class:', sectionError);
+    }
+
     // Copy over existing subjects for this grade if any sibling class exists
     try {
       const siblingClass = await Class.findOne({ name, _id: { $ne: newClass._id } });

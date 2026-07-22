@@ -58,11 +58,19 @@ const seedClasses = async () => {
       const className = defaultClasses[i];
 
       // Create mixed-gender class
-      await Class.create({
+      const newClass = await Class.create({
         name: className,
         gender: 'mixed',
         orderIndex: i
       });
+
+      // Automatically create default Section "A" for the seeded class
+      await Section.create({
+        name: 'A',
+        classId: newClass._id,
+        orderIndex: 0
+      });
+
       createdCount++;
     }
 
