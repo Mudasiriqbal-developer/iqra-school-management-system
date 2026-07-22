@@ -101,11 +101,11 @@ const drawFooter = (doc) => {
   doc.fillColor('#94A3B8')
      .font('Helvetica')
      .fontSize(7)
-     .text('IHASS Suite • IQRA School Management System', 50, pageHeight - 40, { width: pageWidth - 250 });
+     .text('IHASS Suite • IQRA School Management System', 50, pageHeight - 40, { width: pageWidth - 250, lineBreak: false });
      
   // Center-aligned date timestamp
   const nowStr = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-  doc.text(`Generated: ${nowStr}`, 50, pageHeight - 40, { align: 'center', width: pageWidth - 100 });
+  doc.text(`Generated: ${nowStr}`, 50, pageHeight - 40, { align: 'center', width: pageWidth - 100, lineBreak: false });
   
   doc.restore();
 
@@ -117,27 +117,30 @@ const drawFooter = (doc) => {
  * Iterates over all buffered pages of a PDFKit document to append page numbers.
  * Requires `bufferPages: true` in the PDFDocument initialization options.
  * @param {object} doc - PDFKit document instance
+ * @param {function} listenerToRemove - Optional pageAdded event listener callback to unbind before page switching
  */
-const addPageNumbers = (doc) => {
+const addPageNumbers = (doc, listenerToRemove = null) => {
+  if (listenerToRemove) {
+    doc.removeListener('pageAdded', listenerToRemove);
+  }
+
   const range = doc.bufferedPageRange();
   const pageHeight = doc.page.height;
   const pageWidth = doc.page.width;
   
-  // Temporarily disable bottom margin to prevent page breaks during numbering
   const oldBottomMargin = doc.page.margins.bottom;
-  doc.page.margins.bottom = 0;
   
   for (let i = range.start; i < range.start + range.count; i++) {
     doc.switchToPage(i);
+    doc.page.margins.bottom = 0;
     doc.save();
     doc.fillColor('#94A3B8')
        .font('Helvetica')
        .fontSize(7)
-       .text(`Page ${i + 1} of ${range.count}`, pageWidth - 150, pageHeight - 40, { align: 'right', width: 100 });
+       .text(`Page ${i + 1} of ${range.count}`, pageWidth - 150, pageHeight - 40, { align: 'right', width: 100, lineBreak: false });
     doc.restore();
   }
 
-  // Restore original bottom margin
   doc.page.margins.bottom = oldBottomMargin;
 };
 

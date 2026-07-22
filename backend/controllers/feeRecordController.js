@@ -193,10 +193,11 @@ const generateReceiptPDF = async (req, res, next) => {
     drawFooter(doc);
 
     // Subsequent page header/footer
-    doc.on('pageAdded', () => {
+    const onPageAdded = () => {
       drawBrandedHeader(doc, title, subtitle);
       drawFooter(doc);
-    });
+    };
+    doc.on('pageAdded', onPageAdded);
 
     let currentY = 125;
 
@@ -353,7 +354,7 @@ const generateReceiptPDF = async (req, res, next) => {
     doc.restore();
 
     // Finalize page numbering
-    addPageNumbers(doc);
+    addPageNumbers(doc, onPageAdded);
 
     doc.end();
   } catch (error) {

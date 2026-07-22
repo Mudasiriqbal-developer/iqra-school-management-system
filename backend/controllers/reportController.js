@@ -214,10 +214,11 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     drawFooter(doc);
 
     // Register listener for subsequent pages
-    doc.on('pageAdded', () => {
+    const onPageAdded = () => {
       drawBrandedHeader(doc, title, subtitleStr);
       drawFooter(doc);
-    });
+    };
+    doc.on('pageAdded', onPageAdded);
 
     const totalSum = payments.reduce((sum, item) => sum + item.amount, 0);
     let currentY = 125;
@@ -352,7 +353,7 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     doc.restore();
 
     // Finalize page numbering
-    addPageNumbers(doc);
+    addPageNumbers(doc, onPageAdded);
 
     doc.end();
   } catch (error) {
@@ -413,10 +414,11 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
     drawFooter(doc);
 
     // Register listener for subsequent pages
-    doc.on('pageAdded', () => {
+    const onPageAdded = () => {
       drawBrandedHeader(doc, title, subtitleStr);
       drawFooter(doc);
-    });
+    };
+    doc.on('pageAdded', onPageAdded);
 
     let currentY = 125;
 
@@ -554,7 +556,7 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
     doc.restore();
 
     // Finalize page numbering
-    addPageNumbers(doc);
+    addPageNumbers(doc, onPageAdded);
 
     doc.end();
   } catch (error) {
