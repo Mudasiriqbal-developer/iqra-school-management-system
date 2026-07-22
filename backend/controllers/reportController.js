@@ -336,13 +336,13 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     yPosition += 8;
 
     doc.save();
-    doc.font('Helvetica-Bold').fontSize(9).fillColor('#1E293B');
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1E293B');
     doc.text('Report Summary:', studentColX + 5, yPosition);
-    doc.font('Helvetica').text(`Total transactions logged: ${payments.length}`, studentColX + 5, yPosition + 12);
+    doc.font('Helvetica').fontSize(8).text(`Total transactions logged: ${payments.length}`, studentColX + 5, yPosition + 12);
     doc.text(`Period Covered: ${monthNameStr} ${y}`, studentColX + 5, yPosition + 24);
 
-    doc.font('Helvetica-Bold').text('Total Collected Amount:', dateColX - 30, yPosition + 10, { width: 150, align: 'right' });
-    doc.fontSize(12).fillColor('#16A34A').text(`Rs. ${totalSum.toFixed(2)}`, amountColX - 20, yPosition + 8, { width: 120, align: 'right' });
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1E293B').text('Total Collected Amount:', 220, yPosition + 10, { width: 220, align: 'right', lineBreak: false });
+    doc.fontSize(11).fillColor('#16A34A').text(`Rs. ${totalSum.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 445, yPosition + 8, { width: 117, align: 'right', lineBreak: false });
     doc.restore();
 
     // Signatures (drawn directly in line as part of the unified footer block)
@@ -539,13 +539,15 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
     yPosition += 8;
 
     doc.save();
-    doc.font('Helvetica-Bold').fontSize(9).fillColor('#1E293B');
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1E293B');
     doc.text('Report Summary:', nameColX + 5, yPosition);
-    doc.font('Helvetica').text(`Total defaulters listed: ${defaulters.length}`, nameColX + 5, yPosition + 12);
+    doc.font('Helvetica').fontSize(8).text(`Total defaulters listed: ${defaulters.length}`, nameColX + 5, yPosition + 12);
     doc.text('Status: Pending Payment', nameColX + 5, yPosition + 24);
 
-    doc.font('Helvetica-Bold').text('Total Defaulter Outstanding:', dueColX - 30, yPosition + 10, { width: 150, align: 'right' });
-    doc.fontSize(11).fillColor('#DC2626').text(`Rs. ${totalOutstanding.toFixed(2)}`, outstandingColX - 20, yPosition + 8, { width: 80, align: 'right' });
+    // Label positioned cleanly on left of summary area (X = 220 to 440) to prevent text collision
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1E293B').text('Total Defaulter Outstanding:', 220, yPosition + 10, { width: 220, align: 'right', lineBreak: false });
+    // Amount positioned in dedicated right area (X = 445 to 562) with currency formatting
+    doc.fontSize(11).fillColor('#DC2626').text(`Rs. ${totalOutstanding.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 445, yPosition + 8, { width: 117, align: 'right', lineBreak: false });
     doc.restore();
 
     // Signatures (drawn directly in line as part of the unified footer block)
