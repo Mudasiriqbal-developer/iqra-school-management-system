@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Calendar, Award, CreditCard, Wallet, CalendarClock, Receipt, ArrowRight, Settings } from 'lucide-react';
+import { LayoutDashboard, Calendar, Award, CreditCard, Wallet, CalendarClock, Receipt, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import DashboardLayout from '../components/shared/DashboardLayout';

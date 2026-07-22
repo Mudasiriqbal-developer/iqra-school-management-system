@@ -3,7 +3,6 @@ const { check } = require('express-validator');
 const {
   createTeacher,
   getAllTeachers,
-  getTeacherById,
   updateTeacher,
   deleteTeacher,
   getMyClassSection,
@@ -30,13 +29,6 @@ router.get('/my-class', authorize('teacher'), getMyClassSection);
  * @access  Private (Admin Only)
  */
 router.get('/', authorize('admin'), getAllTeachers);
-
-/**
- * @route   GET /api/teachers/:id
- * @desc    Get teacher by ID
- * @access  Private (Admin Only)
- */
-router.get('/:id', authorize('admin'), getTeacherById);
 
 /**
  * @route   POST /api/teachers

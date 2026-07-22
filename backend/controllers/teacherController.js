@@ -129,34 +129,6 @@ const getAllTeachers = async (req, res, next) => {
 };
 
 /**
- * @desc    Get teacher by ID with populated User profile
- * @route   GET /api/teachers/:id
- * @access  Private (Admin)
- */
-const getTeacherById = async (req, res, next) => {
-  try {
-    const teacher = await Teacher.findById(req.params.id)
-      .populate('userId', 'name email phone isActive role isActivated activationTokenExpires');
-
-    if (!teacher) {
-      return res.status(404).json({
-        success: false,
-        data: null,
-        message: 'Teacher not found',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: teacher,
-      message: 'Teacher fetched successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * @desc    Update teacher profile and associated User record
  * @route   PUT /api/teachers/:id
  * @access  Private (Admin)
@@ -370,7 +342,6 @@ const resendInvitation = async (req, res, next) => {
 module.exports = {
   createTeacher,
   getAllTeachers,
-  getTeacherById,
   updateTeacher,
   deleteTeacher,
   getMyClassSection,

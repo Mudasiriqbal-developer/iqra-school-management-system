@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, DollarSign, Wallet, FileText, ChevronDown, ChevronUp, Save, Loader2 } from 'lucide-react';
+import { X, Calendar, Wallet, FileText, ChevronDown, ChevronUp, Save, Loader2 } from 'lucide-react';
 import { getStudentLedger, setMonthlyFee, downloadReceipt } from './feeService';
 import { getStudentById } from '../students/studentService';
 import StatusBadge from '../../components/shared/StatusBadge';

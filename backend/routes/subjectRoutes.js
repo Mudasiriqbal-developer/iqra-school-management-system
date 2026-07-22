@@ -3,7 +3,6 @@ const { check } = require('express-validator');
 const {
   createSubject,
   getAllSubjects,
-  getSubjectById,
   updateSubject,
   deleteSubject,
   reorderSubjects,
@@ -28,13 +27,6 @@ router.put('/reorder', authorize('admin'), reorderSubjects);
  * @access  Private (Admin, Teacher)
  */
 router.get('/', authorize('admin', 'teacher'), getAllSubjects);
-
-/**
- * @route   GET /api/subjects/:id
- * @desc    Get subject by ID
- * @access  Private (Admin, Teacher)
- */
-router.get('/:id', authorize('admin', 'teacher'), getSubjectById);
 
 /**
  * @route   POST /api/subjects

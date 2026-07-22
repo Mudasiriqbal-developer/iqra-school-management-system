@@ -17,7 +17,6 @@ import {
   DollarSign,
   TrendingUp,
   AlertTriangle,
-  CalendarClock,
   FileText,
   Loader2
 } from 'lucide-react';

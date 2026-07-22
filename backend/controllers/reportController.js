@@ -2,7 +2,6 @@ const Student = require('../models/Student');
 const Attendance = require('../models/Attendance');
 const Class = require('../models/Class');
 const Section = require('../models/Section');
-const { Parser } = require('json2csv');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
 
@@ -154,11 +153,9 @@ const exportMonthlyCollectionsCSV = async (req, res, next) => {
       });
     }
 
-    const { payments } = await getMonthlyPayments(month, year);
-
-    const fields = ['studentName', 'registrationNumber', 'className', 'sectionName', 'amount', 'method', 'paidOn'];
-    const json2csvParser = new Parser({ fields });
-    const csv = json2csvParser.parse(payments);
+    const header = 'Student Name,Registration Number,Class,Section,Amount,Method,Paid On\n';
+    const rows = payments.map(p => `"${p.studentName}","${p.registrationNumber}","${p.className}","${p.sectionName}",${p.amount},"${p.method}","${p.paidOn}"`).join('\n');
+    const csv = header + rows;
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="collections-${month}-${year}.csv"`);

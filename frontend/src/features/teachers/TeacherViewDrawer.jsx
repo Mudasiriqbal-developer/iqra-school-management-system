@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Award, Phone, Mail, BookOpen, Shield, Calendar, Trash2, Plus, Loader2 } from 'lucide-react';
+import { X, Award, Phone, Mail, BookOpen, Shield, Calendar, Plus, Loader2 } from 'lucide-react';
 import StatusBadge from '../../components/shared/StatusBadge';
 import { deleteAssignment } from './teacherService';
 import toast from 'react-hot-toast';

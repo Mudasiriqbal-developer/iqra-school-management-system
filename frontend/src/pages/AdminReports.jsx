@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   BarChart3, FileSpreadsheet, FileText, Copy, Check, Users, Calendar, CalendarCheck,
-  AlertTriangle, Download, Loader2, ArrowRight, LayoutDashboard, Wallet,
-  BookOpen, Award, Filter, TrendingUp, DollarSign, CalendarClock
+  AlertTriangle, Download, Loader2, LayoutDashboard, Wallet,
+  BookOpen, Award, Filter, TrendingUp, DollarSign
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -669,7 +669,7 @@ const AdminReports = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {attendanceData.map((row, idx) => (
+                        {attendanceData.map((row) => (
                           <tr key={`${row.classId}-${row.sectionId}`} className="hover:bg-background/40 transition-colors">
                             <td className="py-4 px-6 text-sm font-bold text-text-primary">
                               {row.className} - {row.sectionName}

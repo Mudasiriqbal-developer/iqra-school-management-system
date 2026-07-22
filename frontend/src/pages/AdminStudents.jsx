@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { 
-  Users, Award, Calendar, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
+  Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, CalendarClock, Key, MoreVertical
+  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, Key, MoreVertical
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -420,7 +420,7 @@ const AdminStudents = () => {
             <div>
               {/* Stacked Cards for Mobile */}
               <div className="block sm:hidden divide-y divide-border">
-                {students.map((student, index) => {
+                {students.map((student) => {
                   const statusProps = getStatusBadgeProps(student.status);
                   const colors = [
                     'bg-blue-600 text-blue-100',
@@ -577,7 +577,7 @@ const AdminStudents = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {students.map((student, index) => {
+                    {students.map((student) => {
                       const statusProps = getStatusBadgeProps(student.status);
                       
                       const colors = [

@@ -7,16 +7,12 @@ import {
   CalendarCheck,
   BarChart3,
   Wallet,
-  Plus,
   RefreshCw,
   TrendingDown,
   DollarSign,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   CreditCard,
-  X,
-  CalendarClock
+  X
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 

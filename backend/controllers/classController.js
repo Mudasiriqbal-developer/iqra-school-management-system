@@ -73,32 +73,6 @@ const getAllClasses = async (req, res, next) => {
 };
 
 /**
- * @desc    Get class by ID
- * @route   GET /api/classes/:id
- * @access  Private (Admin, Teacher)
- */
-const getClassById = async (req, res, next) => {
-  try {
-    const singleClass = await Class.findById(req.params.id);
-    if (!singleClass) {
-      return res.status(404).json({
-        success: false,
-        data: null,
-        message: 'Class not found',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: singleClass,
-      message: 'Class fetched successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * @desc    Update a class
  * @route   PUT /api/classes/:id
  * @access  Private (Admin)
@@ -222,7 +196,6 @@ const reorderClasses = async (req, res, next) => {
 module.exports = {
   createClass,
   getAllClasses,
-  getClassById,
   updateClass,
   deleteClass,
   reorderClasses,

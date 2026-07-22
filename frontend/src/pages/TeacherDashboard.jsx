@@ -10,7 +10,6 @@ import {
   AlertCircle,
   RefreshCw,
   ArrowRight,
-  CalendarDays,
   Award
 } from 'lucide-react';
 import DashboardLayout from '../components/shared/DashboardLayout';

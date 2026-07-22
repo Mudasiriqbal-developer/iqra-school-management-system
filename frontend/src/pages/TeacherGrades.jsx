@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Calendar,
   Award,
-  CalendarDays,
   Users,
   Save,
   RefreshCw,

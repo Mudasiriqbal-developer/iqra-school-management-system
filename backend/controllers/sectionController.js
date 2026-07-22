@@ -71,32 +71,6 @@ const getAllSections = async (req, res, next) => {
 };
 
 /**
- * @desc    Get section by ID
- * @route   GET /api/sections/:id
- * @access  Private (Admin, Teacher)
- */
-const getSectionById = async (req, res, next) => {
-  try {
-    const section = await Section.findById(req.params.id).populate('classId', 'name');
-    if (!section) {
-      return res.status(404).json({
-        success: false,
-        data: null,
-        message: 'Section not found',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: section,
-      message: 'Section fetched successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * @desc    Update a section
  * @route   PUT /api/sections/:id
  * @access  Private (Admin)
@@ -322,7 +296,6 @@ const reorderSections = async (req, res, next) => {
 module.exports = {
   createSection,
   getAllSections,
-  getSectionById,
   updateSection,
   deleteSection,
   assignClassTeacher,

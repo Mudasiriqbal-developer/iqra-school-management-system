@@ -3,7 +3,6 @@ const { check } = require('express-validator');
 const {
   createClass,
   getAllClasses,
-  getClassById,
   updateClass,
   deleteClass,
   reorderClasses,
@@ -29,13 +28,6 @@ router.put('/reorder', authorize('admin'), reorderClasses);
  * @access  Private (Admin, Teacher)
  */
 router.get('/', authorize('admin', 'teacher'), getAllClasses);
-
-/**
- * @route   GET /api/classes/:id
- * @desc    Get class by ID
- * @access  Private (Admin, Teacher)
- */
-router.get('/:id', authorize('admin', 'teacher'), getClassById);
 
 /**
  * @route   POST /api/classes

@@ -78,32 +78,6 @@ const getAllSubjects = async (req, res, next) => {
 };
 
 /**
- * @desc    Get subject by ID
- * @route   GET /api/subjects/:id
- * @access  Private (Admin, Teacher)
- */
-const getSubjectById = async (req, res, next) => {
-  try {
-    const subject = await Subject.findById(req.params.id).populate('classId', 'name');
-    if (!subject) {
-      return res.status(404).json({
-        success: false,
-        data: null,
-        message: 'Subject not found',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: subject,
-      message: 'Subject fetched successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
  * @desc    Update a subject
  * @route   PUT /api/subjects/:id
  * @access  Private (Admin)
@@ -249,7 +223,6 @@ const reorderSubjects = async (req, res, next) => {
 module.exports = {
   createSubject,
   getAllSubjects,
-  getSubjectById,
   updateSubject,
   deleteSubject,
   reorderSubjects,

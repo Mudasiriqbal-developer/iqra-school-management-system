@@ -1,6 +1,5 @@
 const express = require('express');
 const {
-  getStudentFeeRecord,
   getStudentLedger,
   recordPayment,
   generateReceiptPDF,
@@ -15,7 +14,6 @@ router.use(protect);
 router.use(authorize('admin'));
 
 router.get('/current-month', getCurrentMonthFeeList);
-router.get('/student/:studentId/current', getStudentFeeRecord);
 router.get('/student/:studentId', getStudentLedger);
 router.get('/student/:studentId/receipt-pdf', generateReceiptPDF);
 router.post('/:id/pay', recordPayment);

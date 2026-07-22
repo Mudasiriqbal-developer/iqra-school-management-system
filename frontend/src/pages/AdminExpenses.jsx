@@ -17,9 +17,7 @@ import {
   Calendar,
   Edit2,
   Trash2,
-  DollarSign,
-  AlertCircle,
-  CalendarClock
+  DollarSign
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 

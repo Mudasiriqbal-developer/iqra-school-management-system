@@ -32,31 +32,6 @@ const getOrCreateCurrentMonthRecord = async (studentId) => {
 };
 
 /**
- * @desc    Get or create current month's fee record for a student
- * @route   GET /api/fee-records/student/:studentId/current
- * @access  Private (Admin Only)
- */
-const getStudentFeeRecord = async (req, res, next) => {
-  try {
-    const { studentId } = req.params;
-    const record = await getOrCreateCurrentMonthRecord(studentId);
-    return res.status(200).json({
-      success: true,
-      data: record,
-      message: 'Current month fee record retrieved successfully'
-    });
-  } catch (error) {
-    if (error.message === 'Student not found') {
-      return res.status(404).json({
-        success: false,
-        message: 'Student not found'
-      });
-    }
-    next(error);
-  }
-};
-
-/**
  * @desc    Get all fee records for a student (ledger)
  * @route   GET /api/fee-records/student/:studentId
  * @access  Private (Admin Only)
@@ -465,7 +440,6 @@ const getCurrentMonthFeeList = async (req, res, next) => {
 
 module.exports = {
   getOrCreateCurrentMonthRecord,
-  getStudentFeeRecord,
   getStudentLedger,
   recordPayment,
   generateReceiptPDF,

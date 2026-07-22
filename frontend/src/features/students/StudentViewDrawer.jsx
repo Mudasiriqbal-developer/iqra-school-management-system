@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, User, MapPin, Phone, Mail, BookOpen, Shield, DollarSign, CalendarCheck, Lock } from 'lucide-react';
+import { X, User, MapPin, Phone, BookOpen, Shield, DollarSign, CalendarCheck, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StatusBadge from '../../components/shared/StatusBadge';
 import { downloadAdmissionReceipt } from './studentService';

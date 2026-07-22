@@ -4,7 +4,6 @@ import {
   Users,
   Award,
   BookOpen,
-  Calendar,
   CalendarCheck,
   DollarSign,
   BarChart3,
@@ -14,7 +13,6 @@ import {
   Loader2,
   Wallet,
   TrendingUp,
-  CalendarClock,
   Pencil,
   Trash2,
   Check,
@@ -74,7 +72,6 @@ const AdminAcademics = () => {
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
-  const [loadingTeachers, setLoadingTeachers] = useState(false);
 
   // Ref to track the currently active/selected class ID for avoiding fetch race conditions
   const activeClassIdRef = useRef(null);
@@ -146,7 +143,7 @@ const AdminAcademics = () => {
       try {
         await reorderClasses(updated.map(c => c._id));
         toast.success('Classes reordered');
-      } catch (err) {
+      } catch (_err) {
         toast.error('Failed to save class order');
         fetchClasses();
       }
@@ -159,7 +156,7 @@ const AdminAcademics = () => {
       try {
         await reorderSections(updated.map(s => s._id));
         toast.success('Sections reordered');
-      } catch (err) {
+      } catch (_err) {
         toast.error('Failed to save section order');
         if (selectedClass) {
           fetchDetailsForClass(selectedClass._id);
@@ -174,7 +171,7 @@ const AdminAcademics = () => {
       try {
         await reorderSubjects(updated.map(s => s._id));
         toast.success('Subjects reordered');
-      } catch (err) {
+      } catch (_err) {
         toast.error('Failed to save subject order');
         if (selectedClass) {
           fetchDetailsForClass(selectedClass._id);
@@ -663,7 +660,7 @@ const AdminAcademics = () => {
                       <div
                         key={cls._id}
                         draggable={true}
-                        onDragStart={(e) => {
+                        onDragStart={(_e) => {
                           dragSourceIndexRef.current = originalIndex;
                           dragTypeRef.current = 'class';
                         }}
@@ -858,7 +855,7 @@ const AdminAcademics = () => {
                       <div
                         key={sec._id}
                         draggable={true}
-                        onDragStart={(e) => {
+                        onDragStart={(_e) => {
                           dragSourceIndexRef.current = index;
                           dragTypeRef.current = 'section';
                         }}
@@ -1096,7 +1093,7 @@ const AdminAcademics = () => {
                         onSave={(newName) => handleUpdateSubject(sub._id, newName)}
                         onDelete={() => handleDeleteSubject(sub._id)}
                         draggable={true}
-                        onDragStart={(e) => {
+                        onDragStart={(_e) => {
                           dragSourceIndexRef.current = index;
                           dragTypeRef.current = 'subject';
                         }}
