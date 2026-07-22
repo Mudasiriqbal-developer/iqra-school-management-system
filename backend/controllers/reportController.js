@@ -267,14 +267,15 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     doc.restore();
 
     let yPosition = currentY + 28;
+    const maxAllowedY = 670;
 
     payments.forEach((payment, index) => {
-      // Page break check (table body)
-      if (yPosition > 690) {
+      // Safe manual page break check before drawing the row (24pt height)
+      if (yPosition + 24 > maxAllowedY) {
         doc.addPage();
         yPosition = 125; // starts after top margin
 
-        // Draw Table Header again
+        // Draw Table Header again at top of new page
         doc.save();
         doc.rect(50, yPosition, 512, 22).fill('#00215E');
         doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8.5);
@@ -323,8 +324,9 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
       yPosition += 24;
     });
 
-    // Final total row check
-    if (yPosition > 710) {
+    // Single unified check for Report Summary + Signature block (requires ~95pt height)
+    const requiredFooterHeight = 95;
+    if (yPosition + requiredFooterHeight > maxAllowedY) {
       doc.addPage();
       yPosition = 125;
     }
@@ -342,16 +344,11 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     doc.fontSize(12).fillColor('#16A34A').text(`Rs. ${totalSum.toFixed(2)}`, amountColX - 20, yPosition + 8, { width: 120, align: 'right' });
     doc.restore();
 
-    // Signatures
-    yPosition += 45;
-    if (yPosition > 710) {
-      doc.addPage();
-      yPosition = 125;
-    }
-    
+    // Signatures (drawn directly in line as part of the unified footer block)
+    const sigY = yPosition + 45;
     doc.save();
-    doc.moveTo(380, yPosition).lineTo(530, yPosition).strokeColor('#64748B').lineWidth(0.5).stroke();
-    doc.fillColor('#64748B').fontSize(7.5).font('Helvetica-Bold').text('Authorized Cashier / Accountant', 380, yPosition + 5, { align: 'center', width: 150 });
+    doc.moveTo(380, sigY).lineTo(530, sigY).strokeColor('#64748B').lineWidth(0.5).stroke();
+    doc.fillColor('#64748B').fontSize(7.5).font('Helvetica-Bold').text('Authorized Cashier / Accountant', 380, sigY + 5, { align: 'center', width: 150 });
     doc.restore();
 
     // Finalize page numbering
@@ -471,14 +468,15 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
     doc.restore();
 
     let yPosition = currentY + 28;
+    const maxAllowedY = 670; // Safe threshold well before bottom margin boundary (732pt)
 
     defaulters.forEach((row, index) => {
-      // Page break check (table body)
-      if (yPosition > 690) {
+      // Safe manual page break check before drawing the row (26pt height)
+      if (yPosition + 26 > maxAllowedY) {
         doc.addPage();
-        yPosition = 125; // starts after top margin
+        yPosition = 125; // starts after top header margin
 
-        // Draw Table Header again
+        // Draw Table Header again at top of new page
         doc.save();
         doc.rect(50, yPosition, 512, 22).fill('#00215E');
         doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8);
@@ -528,8 +526,9 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
       yPosition += 26;
     });
 
-    // Final total row check
-    if (yPosition > 710) {
+    // Single unified check for Report Summary + Signature block (requires ~95pt height)
+    const requiredFooterHeight = 95;
+    if (yPosition + requiredFooterHeight > maxAllowedY) {
       doc.addPage();
       yPosition = 125;
     }
@@ -547,16 +546,11 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
     doc.fontSize(11).fillColor('#DC2626').text(`Rs. ${totalOutstanding.toFixed(2)}`, outstandingColX - 20, yPosition + 8, { width: 80, align: 'right' });
     doc.restore();
 
-    // Signatures
-    yPosition += 45;
-    if (yPosition > 710) {
-      doc.addPage();
-      yPosition = 125;
-    }
-    
+    // Signatures (drawn directly in line as part of the unified footer block)
+    const sigY = yPosition + 45;
     doc.save();
-    doc.moveTo(380, yPosition).lineTo(530, yPosition).strokeColor('#64748B').lineWidth(0.5).stroke();
-    doc.fillColor('#64748B').fontSize(7.5).font('Helvetica-Bold').text('Accounts Office / Principal', 380, yPosition + 5, { align: 'center', width: 150 });
+    doc.moveTo(380, sigY).lineTo(530, sigY).strokeColor('#64748B').lineWidth(0.5).stroke();
+    doc.fillColor('#64748B').fontSize(7.5).font('Helvetica-Bold').text('Accounts Office / Principal', 380, sigY + 5, { align: 'center', width: 150 });
     doc.restore();
 
     // Finalize page numbering
