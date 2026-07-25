@@ -153,6 +153,8 @@ const exportMonthlyCollectionsCSV = async (req, res, next) => {
       });
     }
 
+    const { payments } = await getMonthlyPayments(month, year);
+
     const header = 'Student Name,Registration Number,Class,Section,Amount,Method,Paid On\n';
     const rows = payments.map(p => `"${p.studentName}","${p.registrationNumber}","${p.className}","${p.sectionName}",${p.amount},"${p.method}","${p.paidOn}"`).join('\n');
     const csv = header + rows;
