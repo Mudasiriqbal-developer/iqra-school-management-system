@@ -78,13 +78,13 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
       {/* Bottom Pinned Section */}
       <div className="p-4 border-t border-white/10 space-y-1">
         {/* Support Link */}
-        <a
-          href="#"
+        <Link
+          to="/support"
           className="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 group"
         >
           <HelpCircle className="h-5 w-5 text-slate-400 group-hover:scale-110 transition-transform duration-200" />
           <span>Support</span>
-        </a>
+        </Link>
 
         {/* Logout Link */}
         <button

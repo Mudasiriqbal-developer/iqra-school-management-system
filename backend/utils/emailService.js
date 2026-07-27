@@ -201,9 +201,68 @@ const sendResetPasswordEmail = async (toEmail, userName, resetLink) => {
   }
 };
 
+const sendSupportTicketNotificationEmail = async (adminEmails, ticket, user) => {
+  try {
+    const fromName = process.env.EMAIL_FROM_NAME || 'IHASS - Iqra Hadiqa Tul Atfal School';
+    const fromEmail = process.env.EMAIL_USER;
+
+    const mailOptions = {
+      from: `"${fromName}" <${fromEmail}>`,
+      to: adminEmails.join(','),
+      subject: `New Support Ticket: [${ticket.category}] - ${ticket.subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <h2 style="color: #00215E;">New Support Ticket Submitted</h2>
+          <p style="color: #555555; font-size: 16px; line-height: 1.5;">
+            A new support ticket has been created on the <strong>IHASS School Management System</strong>.
+          </p>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <tr style="background-color: #f9f9f9;">
+              <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold; width: 30%;">Ticket ID:</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0;">${ticket._id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Submitted By:</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0;">${user.name} (${user.email})</td>
+            </tr>
+            <tr style="background-color: #f9f9f9;">
+              <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">User Role:</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0; text-transform: capitalize;">${user.role}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Category:</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0;">${ticket.category}</td>
+            </tr>
+            <tr style="background-color: #f9f9f9;">
+              <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Subject:</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>${ticket.subject}</strong></td>
+            </tr>
+          </table>
+          <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #00215E; margin: 20px 0; border-radius: 4px;">
+            <h4 style="margin-top: 0; color: #333;">Message:</h4>
+            <p style="color: #555; white-space: pre-wrap; margin-bottom: 0;">${ticket.message}</p>
+          </div>
+          <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;" />
+          <p style="color: #999999; font-size: 12px; text-align: center;">
+            IHASS - Iqra Hadiqa Tul Atfal School Management System
+          </p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Support ticket email sent successfully:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending support ticket email:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendTeacherInvitationEmail,
   sendActivationConfirmationEmail,
   sendInvitationEmail,
   sendResetPasswordEmail,
+  sendSupportTicketNotificationEmail,
 };

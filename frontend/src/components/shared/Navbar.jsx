@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Bell, HelpCircle, LogOut, Menu, Sun, Moon, Monitor } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -93,9 +94,13 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
       {/* Right Tools and Profile */}
       <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
         {/* Help Icon - hidden on mobile */}
-        <button className="hidden sm:block p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none">
+        <Link
+          to="/support"
+          className="hidden sm:block p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none"
+          title="Support Center"
+        >
           <HelpCircle className="h-5 w-5" />
-        </button>
+        </Link>
 
         {/* Notification Bell */}
         <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all relative focus:outline-none">
