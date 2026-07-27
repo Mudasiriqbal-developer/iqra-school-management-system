@@ -21,20 +21,20 @@ const StatCard = ({ icon: Icon, label, value, trend, trendColor }) => {
   };
 
   return (
-    <div className="bg-white p-5 rounded-2xl border border-gray-200/60 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-200 min-h-[160px]">
+    <div className="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-gray-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 min-h-[160px] group">
       <div className="flex-1 flex flex-col justify-between">
         <div className="flex justify-between items-start">
           {/* Icon in soft colored circle/square */}
-          <div className="p-2.5 bg-navy-50 rounded-xl text-navy-950 border border-navy-100/50 flex-shrink-0">
+          <div className="p-2.5 bg-navy-50/80 dark:bg-sky-950/40 text-navy-950 dark:text-sky-400 border border-navy-100/60 dark:border-sky-900/40 rounded-xl flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-200">
             {Icon && <Icon className="h-5 w-5" />}
           </div>
         </div>
 
         <div className="mt-4">
-          <span className={`${getValueFontSize(value)} font-extrabold text-navy-950 tracking-tight block leading-tight break-words`} title={typeof value === 'string' ? value : undefined}>
+          <span className={`${getValueFontSize(value)} font-extrabold text-navy-950 dark:text-slate-50 tracking-tight block leading-tight break-words`} title={typeof value === 'string' ? value : undefined}>
             {value}
           </span>
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1.5 block">
+          <div className="text-xs font-semibold text-gray-400 dark:text-slate-400 uppercase tracking-wider mt-1.5 block">
             {label}
           </div>
         </div>
@@ -42,7 +42,7 @@ const StatCard = ({ icon: Icon, label, value, trend, trendColor }) => {
 
       {trend && (
         <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700/80 flex items-center">
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${badgeClass} w-full text-center truncate`} title={trend}>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${badgeClass} w-full text-center truncate shadow-2xs`} title={trend}>
             {trend}
           </span>
         </div>

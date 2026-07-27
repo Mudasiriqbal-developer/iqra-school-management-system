@@ -65,12 +65,12 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
   const ActiveThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
 
   return (
-    <header className="bg-white border-b border-gray-200 h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 right-0 z-10 w-full">
+    <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 right-0 z-30 w-full transition-colors duration-200">
       {/* Left: Menu toggle & Search */}
       <div className="flex items-center space-x-3 flex-1 min-w-0 mr-4">
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none flex-shrink-0"
+          className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none flex-shrink-0"
           title="Open Menu"
         >
           <Menu className="h-5 w-5" />
@@ -84,7 +84,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
             <input
               type="text"
               placeholder="Search..."
-              className="block w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 text-xs bg-gray-50 focus:bg-white transition-all"
+              className="block w-full pl-9 pr-4 py-2 border border-gray-200/80 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/40 focus:border-navy-700 text-xs bg-gray-50/80 dark:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800 transition-all shadow-inner"
             />
           </div>
         </div>
@@ -93,14 +93,14 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
       {/* Right Tools and Profile */}
       <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
         {/* Help Icon - hidden on mobile */}
-        <button className="hidden sm:block p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none">
+        <button className="hidden sm:block p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none">
           <HelpCircle className="h-5 w-5" />
         </button>
 
         {/* Notification Bell */}
-        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative focus:outline-none">
+        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all relative focus:outline-none">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 border border-white"></span>
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 border border-white dark:border-slate-900 animate-status-pulse"></span>
         </button>
 
         {/* Theme Selector */}
@@ -108,13 +108,13 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
           <button
             onClick={() => setIsThemeMenuOpen(prev => !prev)}
             title="Toggle Theme"
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors focus:outline-none flex items-center justify-center"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none flex items-center justify-center"
           >
-            <ActiveThemeIcon className="h-5 w-5 transition-transform duration-300 hover:scale-110" />
+            <ActiveThemeIcon className="h-5 w-5 transition-transform duration-300 hover:rotate-12" />
           </button>
 
           {isThemeMenuOpen && (
-            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-100 rounded-xl shadow-xl py-1.5 z-50 dark:bg-slate-800 dark:border-slate-700">
+            <div className="absolute right-0 mt-2 w-44 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl shadow-xl py-2 z-50 animate-modal-zoom">
               {themeOptions.map((opt) => {
                 const Icon = opt.icon;
                 const isSelected = theme === opt.value;
@@ -125,9 +125,9 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
                       setTheme(opt.value);
                       setIsThemeMenuOpen(false);
                     }}
-                    className={`w-full flex items-center space-x-2.5 px-3.5 py-2 text-xs font-semibold transition-colors duration-150 text-left ${
+                    className={`w-full flex items-center space-x-2.5 px-3.5 py-2 text-xs font-semibold transition-all duration-150 text-left ${
                       isSelected
-                        ? 'bg-navy-50 text-[#00215E] dark:bg-sky-950/40 dark:text-sky-400'
+                        ? 'bg-navy-50 text-[#00215E] dark:bg-sky-950/40 dark:text-sky-400 font-bold'
                         : 'text-gray-600 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700/50'
                     }`}
                   >
@@ -144,28 +144,28 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
         <button
           onClick={handleLogout}
           title="Logout"
-          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none"
+          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all focus:outline-none"
         >
           <LogOut className="h-5 w-5" />
         </button>
 
         {/* Divider */}
-        <div className="h-6 w-px bg-gray-200"></div>
+        <div className="h-6 w-px bg-gray-200 dark:bg-slate-700"></div>
 
         {/* Profile Info */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           <div className="flex flex-col text-right hidden md:flex">
-            <span className="text-xs font-bold text-gray-900 leading-tight">{name}</span>
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{formattedRole}</span>
+            <span className="text-xs font-bold text-gray-900 dark:text-slate-100 leading-tight">{name}</span>
+            <span className="text-[10px] font-semibold text-gray-400 dark:text-slate-400 uppercase tracking-wider">{formattedRole}</span>
           </div>
           {userAvatar ? (
             <img
               src={userAvatar}
               alt={name}
-              className="h-9 w-9 rounded-full object-cover border border-gray-100"
+              className="h-9 w-9 rounded-full object-cover border border-gray-100 shadow-sm"
             />
           ) : (
-            <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold ${avatarBg} border border-white shadow-sm flex-shrink-0`}>
+            <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold ${avatarBg} border border-white/80 dark:border-slate-800 shadow-sm flex-shrink-0`}>
               {initials}
             </div>
           )}

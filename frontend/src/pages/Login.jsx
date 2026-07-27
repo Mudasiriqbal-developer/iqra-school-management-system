@@ -91,12 +91,12 @@ const Login = () => {
         <div className="max-w-md w-full mx-auto my-auto">
           {/* Brand Header */}
           <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center space-x-2.5">
-              <GraduationCap className="h-10 w-10 text-navy-900" />
-              <span className="text-3xl font-black tracking-wider text-navy-950">IHASS</span>
+            <div className="p-3 bg-navy-50 dark:bg-sky-950/40 rounded-2xl border border-navy-100 dark:border-sky-900/40 mb-4 shadow-sm">
+              <GraduationCap className="h-10 w-10 text-navy-900 dark:text-sky-400" />
             </div>
-            <h1 className="text-2xl font-extrabold text-navy-950 mt-6 tracking-tight">Portal Login</h1>
-            <p className="text-gray-500 text-sm mt-1.5 text-center">
+            <span className="text-3xl font-black tracking-wider text-navy-950 dark:text-slate-50">IHASS</span>
+            <h1 className="text-2xl font-extrabold text-navy-950 dark:text-slate-50 mt-4 tracking-tight">Portal Login</h1>
+            <p className="text-gray-500 dark:text-slate-400 text-sm mt-1.5 text-center font-medium">
               Welcome back. Please sign in to access your portal.
             </p>
           </div>
@@ -104,10 +104,10 @@ const Login = () => {
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+              <label htmlFor="email" className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                 Email or Registration Number
               </label>
-              <div className="relative rounded-xl shadow-sm">
+              <div className="relative rounded-xl shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Mail className="h-5 w-5" />
                 </div>
@@ -118,18 +118,18 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. name@ihass.edu or stud101"
-                  className="block w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all bg-gray-50 focus:bg-white"
+                  className="block w-full pl-11 pr-4 py-3 border border-gray-200/80 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 text-sm transition-all bg-gray-50/80 dark:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label htmlFor="password" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label htmlFor="password" className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                   Password
                 </label>
               </div>
-              <div className="relative rounded-xl shadow-sm">
+              <div className="relative rounded-xl shadow-xs">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Lock className="h-5 w-5" />
                 </div>
@@ -140,12 +140,12 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="block w-full pl-11 pr-11 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all bg-gray-50 focus:bg-white"
+                  className="block w-full pl-11 pr-11 py-3 border border-gray-200/80 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 focus:border-navy-700 text-sm transition-all bg-gray-50/80 dark:bg-slate-800/80 focus:bg-white dark:focus:bg-slate-800"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 focus:outline-none transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -157,13 +157,13 @@ const Login = () => {
                 <input
                   id="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-navy-800 border-gray-300 rounded focus:ring-navy-700"
+                  className="h-4 w-4 text-navy-800 border-gray-300 rounded focus:ring-navy-700 cursor-pointer"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600 dark:text-slate-400 cursor-pointer select-none">
                   Remember me
                 </label>
               </div>
-              <Link to="/forgot-password" className="text-sm font-semibold text-navy-800 hover:text-navy-700 transition-colors">
+              <Link to="/forgot-password" className="text-sm font-semibold text-navy-800 dark:text-sky-400 hover:text-navy-700 dark:hover:text-sky-300 transition-colors">
                 Forgot Password?
               </Link>
             </div>
@@ -171,10 +171,10 @@ const Login = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 px-4 rounded-xl font-bold transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-navy-700 focus:ring-offset-2 mt-4 flex items-center justify-center space-x-2 ${
+              className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-navy-700 focus:ring-offset-2 mt-4 flex items-center justify-center space-x-2 ${
                 isSubmitting
                   ? 'bg-gray-400 text-gray-200 cursor-not-allowed shadow-none'
-                  : 'bg-navy-900 text-white hover:bg-navy-800 shadow-navy-900/10'
+                  : 'bg-navy-900 text-white hover:bg-navy-800 shadow-navy-900/20'
               }`}
             >
               {isSubmitting ? 'Logging in...' : 'Sign In'}

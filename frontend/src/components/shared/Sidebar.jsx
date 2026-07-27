@@ -22,18 +22,20 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
       {/* Brand Header */}
       <div className="p-6 border-b border-white/10 flex items-center justify-between">
         <div className="flex flex-col">
-          <div className="flex items-center space-x-2.5">
-            <GraduationCap className="h-8 w-8 text-white" />
-            <span className="text-xl font-bold tracking-wider">IHASS</span>
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-white/10 rounded-xl border border-white/20 shadow-inner flex items-center justify-center">
+              <GraduationCap className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-bold tracking-wider font-sans">IHASS</span>
           </div>
-          <span className="text-xs text-slate-300 font-medium tracking-wide mt-1.5">
+          <span className="text-xs text-slate-300 font-medium tracking-wide mt-2">
             {subtitle}
           </span>
         </div>
         {/* Mobile Close Button */}
         <button
           onClick={onClose}
-          className="lg:hidden p-1.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white focus:outline-none"
+          className="lg:hidden p-1.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white focus:outline-none transition-colors"
           title="Close Menu"
         >
           <X className="h-5 w-5" />
@@ -41,7 +43,7 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
       </div>
 
       {/* Nav Items */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-1">
+      <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -52,22 +54,22 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
               onClick={onClose} // Auto close drawer on navigation
               className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative ${
                 isActive
-                  ? 'bg-white/10 text-white font-bold'
-                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                  ? 'bg-gradient-to-r from-white/20 via-white/10 to-transparent text-white font-bold shadow-sm'
+                  : 'text-slate-300 hover:bg-white/10 hover:text-white'
               }`}
             >
               {/* Left Accent Bar */}
               {isActive && (
-                <div className="absolute left-0 top-3.5 bottom-3.5 w-1 bg-white rounded-r"></div>
+                <div className="absolute left-0 top-3 bottom-3 w-1 bg-sky-400 rounded-r shadow-[0_0_8px_rgba(56,189,248,0.8)]"></div>
               )}
               {Icon && (
                 <Icon
-                  className={`h-5 w-5 transition-colors duration-200 ${
-                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
+                  className={`h-5 w-5 transition-all duration-200 group-hover:scale-110 ${
+                    isActive ? 'text-sky-300' : 'text-slate-400 group-hover:text-white'
                   }`}
                 />
               )}
-              <span>{item.label}</span>
+              <span className="tracking-tight">{item.label}</span>
             </Link>
           );
         })}
@@ -78,18 +80,18 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
         {/* Support Link */}
         <a
           href="#"
-          className="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition-colors duration-200"
+          className="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition-all duration-200 group"
         >
-          <HelpCircle className="h-5 w-5 text-slate-400" />
+          <HelpCircle className="h-5 w-5 text-slate-400 group-hover:scale-110 transition-transform duration-200" />
           <span>Support</span>
         </a>
 
         {/* Logout Link */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-200 hover:bg-red-950/20 hover:text-red-100 transition-colors duration-200 text-left focus:outline-none"
+          className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-200 hover:bg-red-950/40 hover:text-red-100 transition-all duration-200 text-left focus:outline-none group"
         >
-          <LogOut className="h-5 w-5 text-red-300" />
+          <LogOut className="h-5 w-5 text-red-300 group-hover:scale-110 transition-transform duration-200" />
           <span>Logout</span>
         </button>
       </div>

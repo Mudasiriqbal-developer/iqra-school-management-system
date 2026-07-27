@@ -241,29 +241,95 @@
 }
 
 /* ==========================================
-   GLOBAL SCROLL-SAFE MODAL LAYOUTS & SCROLL LOCK
+   GLOBAL UI UTILITIES & MICRO-ANIMATIONS
    ========================================== */
 
-/* Disable background page scrolling when any modal overlay or mobile sidebar is open */
-html:has(.backdrop-blur-sm),
-body:has(.backdrop-blur-sm) {
-  overflow: hidden !important;
+/* Selection Highlight */
+::selection {
+  background-color: #00215E;
+  color: #ffffff;
 }
 
-/* Fix flexbox scroll-centering bug globally on modal overlays */
-.fixed.inset-0.flex.items-center.justify-center,
-.flex.min-h-full.items-center.justify-center {
-  align-items: flex-start !important;
-  overflow-y: auto !important;
+.dark ::selection {
+  background-color: #38bdf8;
+  color: #0f172a;
 }
 
-/* Enable vertically centered layout when modal fits, and scrollable margin when it overflows */
-.fixed.inset-0.flex.items-center.justify-center > div,
-.flex.min-h-full.items-center.justify-center > div {
-  margin-top: auto !important;
-  margin-bottom: auto !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
+/* Scrollbars in Light Mode */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Button & Interactive Press Feedback */
+button:active:not(:disabled),
+a.btn-active:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Smooth Table Row Focus */
+tbody tr {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+/* Modal Entrance Animation */
+@keyframes modalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-zoom {
+  animation: modalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Subtle Pulse Dot */
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+}
+
+.animate-status-pulse {
+  animation: statusPulse 2s infinite ease-in-out;
+}
+
 
 

@@ -32,35 +32,35 @@ const ConfirmModal = ({
   }[type];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
       <div 
-        className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden transform transition-all scale-100"
+        className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-700 p-6 overflow-hidden transform animate-modal-zoom"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start space-x-4">
-          <div className={`p-3 rounded-xl border ${iconColor} shrink-0`}>
+          <div className={`p-3.5 rounded-2xl border ${iconColor} shrink-0 shadow-xs`}>
             <IconComponent className="h-6 w-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-navy-950 mb-1 leading-snug">
+            <h3 className="text-lg font-extrabold text-navy-950 dark:text-slate-50 mb-1 leading-snug">
               {title}
             </h3>
-            <p className="text-sm text-gray-500 font-medium leading-relaxed">
+            <p className="text-sm text-gray-500 dark:text-slate-300 font-medium leading-relaxed">
               {message}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-50">
+        <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-700/80">
           <button
             onClick={onCancel}
-            className="px-4 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-50 active:bg-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-gray-200"
+            className="px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-gray-200"
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-5 py-2.5 text-white rounded-xl text-sm font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${confirmBtnColor}`}
+            className={`px-5 py-2.5 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${confirmBtnColor}`}
           >
             {confirmText}
           </button>
