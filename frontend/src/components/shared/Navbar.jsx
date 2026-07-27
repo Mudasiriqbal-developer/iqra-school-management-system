@@ -65,7 +65,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
   const ActiveThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
 
   return (
-    <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 right-0 z-30 w-full transition-colors duration-200">
+    <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 right-0 z-30 w-full transition-colors duration-200">
       {/* Left: Menu toggle & Search */}
       <div className="flex items-center space-x-3 flex-1 min-w-0 mr-4">
         <button
@@ -100,7 +100,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
         {/* Notification Bell */}
         <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all relative focus:outline-none">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 border border-white dark:border-slate-900 animate-status-pulse"></span>
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 border border-white dark:border-slate-900"></span>
         </button>
 
         {/* Theme Selector */}
@@ -114,7 +114,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
           </button>
 
           {isThemeMenuOpen && (
-            <div className="absolute right-0 mt-2 w-44 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-gray-100 dark:border-slate-700 rounded-2xl shadow-xl py-2 z-50 animate-modal-zoom">
+            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-xl py-2 z-50 animate-modal-zoom">
               {themeOptions.map((opt) => {
                 const Icon = opt.icon;
                 const isSelected = theme === opt.value;

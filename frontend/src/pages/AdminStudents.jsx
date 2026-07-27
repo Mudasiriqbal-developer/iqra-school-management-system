@@ -846,7 +846,7 @@ const AdminStudents = () => {
 
       {/* Delete Confirmation Modal */}
       {isDeleteConfirmOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
             <div className="flex items-center space-x-3 text-amber-600 mb-4">
               <AlertTriangle className="h-6 w-6" />
@@ -878,7 +878,7 @@ const AdminStudents = () => {
 
       {/* Reset Student Password Modal */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
             <div className="flex items-center space-x-3 text-navy-900 mb-4">
               <Key className="h-6 w-6" />
@@ -941,7 +941,7 @@ const AdminStudents = () => {
 
       {/* Receipt Download Confirmation Modal */}
       {isReceiptConfirmOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
             <div className="flex items-center space-x-3 text-navy-900 mb-4">
               <BookOpen className="h-6 w-6" />

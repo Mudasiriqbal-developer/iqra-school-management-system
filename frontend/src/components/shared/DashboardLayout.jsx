@@ -23,7 +23,7 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
       {/* Backdrop overlay for mobile */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden transition-opacity duration-300"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -58,14 +58,14 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+            className="fixed inset-0 bg-slate-900/60 transition-opacity duration-300"
             onClick={() => !isLoggingOut && setIsLogoutConfirmOpen(false)}
           />
           
           {/* Modal Card */}
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-sm w-full p-6 relative z-10 transform transition-all duration-300 scale-100 flex flex-col items-center text-center">
             {/* Warning Icon Container */}
-            <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 mb-4 animate-pulse">
+            <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 mb-4">
               <LogOut className="h-6 w-6" />
             </div>
 

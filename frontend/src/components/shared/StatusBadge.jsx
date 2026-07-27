@@ -7,7 +7,7 @@ const StatusBadge = ({ status = 'active', label }) => {
   switch (status) {
     case 'active':
       badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40';
-      dotStyle = 'bg-emerald-500 animate-status-pulse';
+      dotStyle = 'bg-emerald-500';
       break;
     case 'pending':
       badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/40';

@@ -640,7 +640,7 @@ const AdminReports = () => {
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-[10px] uppercase font-bold text-text-secondary">Progress</span>
                             {row.averageAttendancePercentage < 75 && (
-                              <span className="flex items-center text-[10px] font-bold text-warning bg-warning/10 border border-warning/20 px-1.5 py-0.5 rounded-lg gap-1 animate-pulse select-none">
+                              <span className="flex items-center text-[10px] font-bold text-warning bg-warning/10 border border-warning/20 px-1.5 py-0.5 rounded-lg gap-1 select-none">
                                 <AlertTriangle className="h-2.5 w-2.5" />
                                 <span>Low (&lt;75%)</span>
                               </span>
@@ -692,7 +692,7 @@ const AdminReports = () => {
                                   />
                                 </div>
                                 {row.averageAttendancePercentage < 75 && (
-                                  <span className="flex items-center text-xs font-bold text-warning bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-lg gap-1 animate-pulse select-none">
+                                  <span className="flex items-center text-xs font-bold text-warning bg-warning/10 border border-warning/20 px-2 py-0.5 rounded-lg gap-1 select-none">
                                     <AlertTriangle className="h-3 w-3" />
                                     <span>Low (&lt;75%)</span>
                                   </span>

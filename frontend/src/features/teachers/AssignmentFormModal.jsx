@@ -170,7 +170,7 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
   if (!isOpen || !teacher) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100">
         
         {/* Header */}

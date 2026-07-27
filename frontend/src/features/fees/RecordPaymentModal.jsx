@@ -84,7 +84,7 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
     (selectedOption === 'custom' && (!customAmount || parseFloat(customAmount) <= 0));
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-gray-150 overflow-hidden transform transition-all scale-100">
         
         {/* Header */}

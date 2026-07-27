@@ -152,7 +152,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
   const summary = ledger?.summary || { totalBilled: 0, totalPaid: 0, totalOutstanding: 0 };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex justify-end">
       
       {/* Backdrop click close */}
       <div className="absolute inset-0" onClick={onClose}></div>

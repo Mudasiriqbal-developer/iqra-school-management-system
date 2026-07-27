@@ -45,7 +45,7 @@ const AdminFormModal = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-navy-950/40 backdrop-blur-sm transition-opacity" 
+        className="fixed inset-0 bg-navy-950/40 transition-opacity" 
         onClick={onClose}
       />
 

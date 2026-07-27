@@ -467,7 +467,7 @@ const TeacherAttendance = () => {
                 <div className="flex items-center space-x-2">
                   {stats.unmarked > 0 ? (
                     <>
-                      <AlertCircle className="h-4.5 w-4.5 text-amber-500 animate-pulse" />
+                      <AlertCircle className="h-4.5 w-4.5 text-amber-500" />
                       <span className="text-xs font-semibold text-gray-500">
                         {stats.unmarked} of {stats.total} students unmarked.
                       </span>

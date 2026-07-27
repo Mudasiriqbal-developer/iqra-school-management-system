@@ -281,19 +281,6 @@ a.btn-active:active {
   transition: transform 0.1s ease;
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.85) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
 /* Smooth Table Row Focus */
 tbody tr {
   transition: background-color 0.15s ease, transform 0.15s ease;
@@ -313,22 +300,6 @@ tbody tr {
 
 .animate-modal-zoom {
   animation: modalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Subtle Pulse Dot */
-@keyframes statusPulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.15);
-  }
-}
-
-.animate-status-pulse {
-  animation: statusPulse 2s infinite ease-in-out;
 }
 
 

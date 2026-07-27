@@ -786,7 +786,7 @@ const AdminTeachers = () => {
 
       {/* Delete/Deactivate Confirmation Modal */}
       {isDeleteConfirmOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
             <div className="flex items-center space-x-3 text-amber-600 mb-4">
               <AlertTriangle className="h-6 w-6" />

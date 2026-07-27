@@ -32,7 +32,7 @@ const ConfirmModal = ({
   }[type];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 transition-all duration-300">
       <div 
         className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-700 p-6 overflow-hidden transform animate-modal-zoom"
         onClick={(e) => e.stopPropagation()}

@@ -130,7 +130,7 @@ const ActivateAccount = () => {
 
         {/* Center Graphic */}
         <div className="flex flex-col items-center justify-center flex-grow z-10 my-8">
-          <div className="relative w-64 h-64 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md shadow-2xl mb-8">
+          <div className="relative w-64 h-64 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl mb-8">
             <div className="absolute text-white/20 transform -translate-x-12 -translate-y-8 scale-90">
               <School className="h-28 w-28 stroke-[1]" />
             </div>

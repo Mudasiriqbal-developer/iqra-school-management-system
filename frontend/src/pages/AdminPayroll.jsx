@@ -406,7 +406,7 @@ const AdminPayroll = () => {
 
       {/* Salary Payout Modal */}
       {isPayoutModalOpen && targetTeacher && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl border border-gray-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
