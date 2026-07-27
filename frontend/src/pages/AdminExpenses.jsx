@@ -547,7 +547,7 @@ const AdminExpenses = () => {
                 <button
                   disabled={page === 1}
                   onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                  className="p-2 border border-gray-200 rounded-xl bg-white text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-45 disabled:hover:bg-white"
+                  className="p-2 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-slate-800"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -570,8 +570,8 @@ const AdminExpenses = () => {
                         onClick={() => setPage(p)}
                         className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
                           page === p
-                            ? 'bg-[#00215E] text-white shadow-sm dark:bg-sky-500 dark:text-slate-950'
-                            : 'text-navy-primary hover:bg-gray-100 bg-white border border-gray-200 dark:text-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-750'
+                            ? 'bg-[#00215E] text-white shadow-xs dark:bg-sky-500 dark:text-slate-950'
+                            : 'text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                         }`}
                       >
                         {p}
@@ -583,7 +583,7 @@ const AdminExpenses = () => {
                 <button
                   disabled={page === totalPages}
                   onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                  className="p-2 border border-gray-200 rounded-xl bg-white text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-45 disabled:hover:bg-white"
+                  className="p-2 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-slate-800"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

@@ -745,7 +745,7 @@ const AdminAcademics = () => {
                                   setEditClassNameValue(cls.name);
                                   setEditClassGenderValue(cls.gender || 'mixed');
                                 }}
-                                className="p-1 text-gray-400 hover:text-navy-950 hover:bg-gray-100 rounded"
+                                className="p-1 text-gray-400 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
                                 title="Edit Class"
                               >
                                 <Pencil className="h-3.5 w-3.5" />
@@ -755,7 +755,7 @@ const AdminAcademics = () => {
                                   e.stopPropagation();
                                   handleDeleteClass(cls._id);
                                 }}
-                                className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                className="p-1 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded transition-colors"
                                 title="Delete Class"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -916,14 +916,14 @@ const AdminAcademics = () => {
                                     setEditingSectionId(sec._id);
                                     setEditSectionValue(sec.name);
                                   }}
-                                  className="p-1 text-gray-400 hover:text-navy-950 hover:bg-gray-100 rounded"
+                                  className="p-1 text-gray-400 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
                                   title="Edit Section Name"
                                 >
                                   <Pencil className="h-3 w-3" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteSection(sec._id)}
-                                  className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                  className="p-1 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded transition-colors"
                                   title="Delete Section"
                                 >
                                   <Trash2 className="h-3 w-3" />

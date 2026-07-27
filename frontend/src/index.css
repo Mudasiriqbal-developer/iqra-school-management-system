@@ -166,6 +166,18 @@
 }
 
 /* Table overrides */
+table {
+  border-color: #e2e8f0;
+}
+
+tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+tbody tr:hover {
+  background-color: #f1f5f9 !important; /* slate-100 - crisp, high-visibility hover in light mode */
+}
+
 .dark table {
   border-color: #334155 !important;
 }
@@ -181,7 +193,7 @@
 }
 
 .dark tbody tr:hover {
-  background-color: rgba(51, 65, 85, 0.3) !important;
+  background-color: #334155 !important; /* slate-700 - crisp, high-visibility hover in dark mode */
 }
 
 /* Modals & Dialog Backdrops */
@@ -190,23 +202,28 @@
   background-color: rgba(15, 23, 42, 0.85) !important;
 }
 
-/* Hover Overrides */
+/* Light & Dark Theme Hover Consistency Overrides */
+.hover\:bg-gray-50:hover,
+.hover\:bg-slate-50:hover,
+.hover\:bg-slate-50\/50:hover,
+.hover\:bg-background:hover,
+.hover\:bg-background\/40:hover {
+  background-color: #f1f5f9 !important; /* slate-100 in light mode */
+}
+
+.hover\:bg-gray-100:hover,
+.hover\:bg-slate-100:hover {
+  background-color: #e2e8f0 !important; /* slate-200 in light mode */
+}
+
 .dark .hover\:bg-gray-50:hover,
-.dark .hover\:bg-slate-50:hover {
-  background-color: #334155 !important;
-}
-
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-50\/50:hover,
 .dark .hover\:bg-gray-100:hover,
-.dark .hover\:bg-slate-100:hover {
-  background-color: #334155 !important;
-}
-
-.dark .hover\:bg-background:hover {
-  background-color: #334155 !important;
-}
-
+.dark .hover\:bg-slate-100:hover,
+.dark .hover\:bg-background:hover,
 .dark .hover\:bg-background\/40:hover {
-  background-color: rgba(15, 23, 42, 0.4) !important;
+  background-color: #334155 !important; /* slate-700 in dark mode */
 }
 
 /* Scrollbars in Dark Mode */

@@ -283,21 +283,21 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                           {/* Month Row */}
                           <div
                             onClick={() => handleToggleMonth(record.month)}
-                            className="flex justify-between items-center p-4 bg-white hover:bg-slate-50/50 cursor-pointer select-none transition-colors"
+                            className="flex justify-between items-center p-4 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 cursor-pointer select-none transition-colors"
                           >
                             <div className="space-y-1">
-                              <p className="text-xs font-black text-navy-950 flex items-center">
+                              <p className="text-xs font-black text-navy-950 dark:text-slate-100 flex items-center">
                                 {record.type === 'admission' ? 'Admission & Books Due' : formatMonth(record.month)}
                                 {record.type === 'admission' && (
-                                  <span className="ml-2 text-[9px] font-black uppercase px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md">
+                                  <span className="ml-2 text-[9px] font-black uppercase px-1.5 py-0.5 bg-blue-50 dark:bg-sky-950/40 text-blue-700 dark:text-sky-300 border border-blue-100 dark:border-sky-800/40 rounded-md">
                                     One-Time
                                   </span>
                                 )}
                               </p>
-                              <div className="flex items-center space-x-3 text-[10px] text-gray-500 font-semibold">
-                                <span>Due: <strong className="text-navy-950">Rs. {record.amountDue}</strong></span>
-                                <span>Paid: <strong className="text-emerald-600">Rs. {record.amountPaid}</strong></span>
-                                {remaining > 0 && <span>Left: <strong className="text-rose-600">Rs. {remaining}</strong></span>}
+                              <div className="flex items-center space-x-3 text-[10px] text-gray-500 dark:text-slate-400 font-semibold">
+                                <span>Due: <strong className="text-navy-950 dark:text-slate-100">Rs. {record.amountDue}</strong></span>
+                                <span>Paid: <strong className="text-emerald-600 dark:text-emerald-400">Rs. {record.amountPaid}</strong></span>
+                                {remaining > 0 && <span>Left: <strong className="text-rose-600 dark:text-rose-400">Rs. {remaining}</strong></span>}
                               </div>
                             </div>
                             <div className="flex items-center space-x-3">
@@ -308,7 +308,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                                     e.stopPropagation();
                                     handleRecordPayment(record);
                                   }}
-                                  className="p-1 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-100 transition-colors"
+                                  className="p-1 px-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-100 dark:border-emerald-800/40 transition-colors"
                                 >
                                   Record Payment
                                 </button>
