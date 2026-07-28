@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
 const Student = require('../models/Student');
+const Settings = require('../models/Settings');
 const FeeRecord = require('../models/FeeRecord');
 const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
@@ -967,16 +968,18 @@ const generateAdmissionReceiptPDF = async (req, res, next) => {
     });
     doc.pipe(res);
 
+    const settings = await Settings.findOne({ schoolId: 'default' });
+
     const title = 'Admission Fee Receipt';
     const subtitle = `Reg No: ${student.registrationNumber}`;
 
     // Draw first page header/footer
-    drawBrandedHeader(doc, title, subtitle);
+    drawBrandedHeader(doc, title, subtitle, settings);
     drawFooter(doc);
 
     // Subsequent page header/footer
     const onPageAdded = () => {
-      drawBrandedHeader(doc, title, subtitle);
+      drawBrandedHeader(doc, title, subtitle, settings);
       drawFooter(doc);
     };
     doc.on('pageAdded', onPageAdded);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   LayoutDashboard, Users, Award, BookOpen, Wallet, CalendarCheck, BarChart3,
   Calendar, CheckCircle, XCircle, RefreshCw, AlertCircle, Eye,
-  TrendingUp, DollarSign
+  TrendingUp, DollarSign, Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -26,6 +26,7 @@ const AdminAttendance = () => {
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   // Date defaults

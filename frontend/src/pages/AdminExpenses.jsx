@@ -17,7 +17,8 @@ import {
   Calendar,
   Edit2,
   Trash2,
-  DollarSign
+  DollarSign,
+  Settings
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -55,6 +56,7 @@ const AdminExpenses = () => {
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   // Filters State

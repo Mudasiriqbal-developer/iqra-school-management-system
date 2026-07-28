@@ -25,12 +25,14 @@ const Support = () => {
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   const teacherNavItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: CalendarCheck, path: '/teacher/attendance' },
-    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' }
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
+    { label: 'Settings', icon: Settings, path: '/teacher/settings' }
   ];
 
   const studentNavItems = [

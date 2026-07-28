@@ -18,6 +18,7 @@ const payrollRoutes = require('./routes/payrollRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const gradeRoutes = require('./routes/gradeRoutes');
 const supportRoutes = require('./routes/supportRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 
@@ -59,6 +60,7 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/grades', gradeRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Centralized Error Handler Middleware (Must be after routes)
 app.use(errorHandler);

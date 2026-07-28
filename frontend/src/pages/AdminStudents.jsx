@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { 
   Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, Key, MoreVertical
+  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, Key, MoreVertical, Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -27,6 +27,7 @@ const AdminStudents = () => {
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   // States

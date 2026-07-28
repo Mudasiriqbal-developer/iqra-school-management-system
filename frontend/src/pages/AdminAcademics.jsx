@@ -17,7 +17,8 @@ import {
   Trash2,
   Check,
   X,
-  GripVertical
+  GripVertical,
+  Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -58,6 +59,7 @@ const AdminAcademics = () => {
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   // Core academic state

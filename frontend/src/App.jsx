@@ -22,6 +22,8 @@ import StudentGrades from './pages/StudentGrades';
 import StudentSettings from './pages/StudentSettings';
 import AdminReports from './pages/AdminReports';
 import AdminAttendance from './pages/AdminAttendance';
+import AdminSettings from './pages/AdminSettings';
+import TeacherSettings from './pages/TeacherSettings';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Support from './pages/Support';
 import NotFound from './pages/NotFound';
@@ -120,6 +122,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/teacher-dashboard"
@@ -143,6 +153,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['teacher']}>
               <TeacherGrades />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/settings"
+          element={
+            <ProtectedRoute allowedRoles={['teacher']}>
+              <TeacherSettings />
             </ProtectedRoute>
           }
         />

@@ -11,7 +11,8 @@ import {
   Save,
   UserCheck,
   RefreshCw,
-  Award
+  Award,
+  Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/shared/DashboardLayout';
@@ -34,7 +35,8 @@ const TeacherAttendance = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
-    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' }
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
+    { label: 'Settings', icon: Settings, path: '/teacher/settings' }
   ];
 
 

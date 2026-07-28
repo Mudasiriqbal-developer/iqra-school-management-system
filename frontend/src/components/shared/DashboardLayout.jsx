@@ -1,14 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, Loader2 } from 'lucide-react';
+import api from '../../services/api';
 
 const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const [schoolSettings, setSchoolSettings] = useState(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await api.get('/settings');
+        if (response.data.success) {
+          setSchoolSettings(response.data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching settings for DashboardLayout:', err);
+      }
+    };
+    if (user) {
+      loadSettings();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     setIsLoggingOut(true);
@@ -35,6 +53,8 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onLogoutClick={() => setIsLogoutConfirmOpen(true)} 
+        schoolName={schoolSettings?.schoolName}
+        logoUrl={schoolSettings?.logoUrl}
       />
 
       {/* Main Content Wrapper - responsive offset */}

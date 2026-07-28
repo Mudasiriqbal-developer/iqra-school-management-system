@@ -2,6 +2,7 @@ const Student = require('../models/Student');
 const Attendance = require('../models/Attendance');
 const Class = require('../models/Class');
 const Section = require('../models/Section');
+const Settings = require('../models/Settings');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
 
@@ -209,15 +210,17 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     });
     doc.pipe(res);
 
+    const settings = await Settings.findOne({ schoolId: 'default' });
+
     const title = 'Monthly Collections Report';
 
     // Draw first page header/footer
-    drawBrandedHeader(doc, title, subtitleStr);
+    drawBrandedHeader(doc, title, subtitleStr, settings);
     drawFooter(doc);
 
     // Register listener for subsequent pages
     const onPageAdded = () => {
-      drawBrandedHeader(doc, title, subtitleStr);
+      drawBrandedHeader(doc, title, subtitleStr, settings);
       drawFooter(doc);
     };
     doc.on('pageAdded', onPageAdded);
@@ -409,15 +412,18 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
     });
     doc.pipe(res);
 
+    const settings = await Settings.findOne({ schoolId: 'default' });
+
     const title = 'Fee Defaulters Report';
 
     // Draw first page header/footer
-    drawBrandedHeader(doc, title, subtitleStr);
+    drawBrandedHeader(doc, title, subtitleStr, settings);
     drawFooter(doc);
 
     // Register listener for subsequent pages
     const onPageAdded = () => {
-      drawBrandedHeader(doc, title, subtitleStr);
+      drawBrandedHeader(doc, title, subtitleStr, settings);
+      doc.y = 125; // Reset coordinate to body start to prevent text overlay issues
       drawFooter(doc);
     };
     doc.on('pageAdded', onPageAdded);

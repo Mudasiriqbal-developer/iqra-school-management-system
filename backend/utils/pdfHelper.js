@@ -9,7 +9,7 @@
  * @param {string} title - Main title of the report / document
  * @param {string} subtitle - Optional description or filter info
  */
-const drawBrandedHeader = (doc, title, subtitle = '') => {
+const drawBrandedHeader = (doc, title, subtitle = '', settings = null) => {
   const pageWidth = doc.page.width;
   
   doc.save();
@@ -17,53 +17,92 @@ const drawBrandedHeader = (doc, title, subtitle = '') => {
   // 1. Navy Blue Background Banner (#00215E)
   doc.rect(0, 0, pageWidth, 100).fill('#00215E');
   
-  // 2. School Logo Icon (Vector Graphic Graduation Cap)
-  doc.fillColor('#FFFFFF');
-  // Graduation Cap Diamond:
-  doc.moveTo(35, 48)
-     .lineTo(52, 40)
-     .lineTo(69, 48)
-     .lineTo(52, 56)
-     .closePath()
-     .fill();
-  // Cap body/base:
-  doc.moveTo(43, 51)
-     .lineTo(43, 57)
-     .quadraticCurveTo(52, 61, 61, 57)
-     .lineTo(61, 51)
-     .lineTo(52, 54)
-     .closePath()
-     .fill();
-  // Tassel:
-  doc.strokeColor('#FFFFFF');
-  doc.lineWidth(1.2);
-  doc.moveTo(52, 48)
-     .lineTo(62, 57)
-     .lineTo(62, 63)
-     .stroke();
+  // 2. School Logo Icon (Vector Graphic Graduation Cap or settings logo)
+  let logoDrawn = false;
+  if (settings && settings.logoUrl) {
+    try {
+      // PDFKit supports base64 data URIs or local file paths.
+      // If it fails (e.g. invalid format or remote HTTP URL not fetched), catch and fallback.
+      doc.image(settings.logoUrl, 30, 28, { width: 40, height: 40 });
+      logoDrawn = true;
+    } catch (err) {
+      // Fallback
+    }
+  }
+
+  if (!logoDrawn) {
+    doc.fillColor('#FFFFFF');
+    // Graduation Cap Diamond:
+    doc.moveTo(35, 48)
+       .lineTo(52, 40)
+       .lineTo(69, 48)
+       .lineTo(52, 56)
+       .closePath()
+       .fill();
+    // Cap body/base:
+    doc.moveTo(43, 51)
+       .lineTo(43, 57)
+       .quadraticCurveTo(52, 61, 61, 57)
+       .lineTo(61, 51)
+       .lineTo(52, 54)
+       .closePath()
+       .fill();
+    // Tassel:
+    doc.strokeColor('#FFFFFF');
+    doc.lineWidth(1.2);
+    doc.moveTo(52, 48)
+       .lineTo(62, 57)
+       .lineTo(62, 63)
+       .stroke();
+  }
   
   // 3. School Name & Branding
+  const schoolName = settings?.schoolName || 'IHASS SCHOOL SYSTEM';
+  const subLabel = settings?.address || 'IQRA HADIQA TUL ATFAL SCHOOL SYSTEM';
+  
+  // Dynamic font sizing to prevent overlapping for long names
+  let nameFontSize = 16;
+  if (schoolName.length > 40) {
+    nameFontSize = 10;
+  } else if (schoolName.length > 30) {
+    nameFontSize = 12;
+  } else if (schoolName.length > 20) {
+    nameFontSize = 14;
+  }
+
+  let subLabelFontSize = 8;
+  if (subLabel.length > 50) {
+    subLabelFontSize = 6;
+  } else if (subLabel.length > 35) {
+    subLabelFontSize = 7;
+  }
+  
+  // Left branding block constrained to X: 80-310 (width: 230)
+  // Start slightly higher at Y: 24 to give wrapping text more space
   doc.fillColor('#FFFFFF')
      .font('Helvetica-Bold')
-     .fontSize(18)
-     .text('IHASS SCHOOL SYSTEM', 80, 28, { characterSpacing: 0.5 });
+     .fontSize(nameFontSize)
+     .text(schoolName.toUpperCase(), 80, 24, { width: 230, characterSpacing: 0.5 });
      
-  doc.fontSize(8)
+  // Place the address dynamically below the school name to prevent vertical overlaps
+  const nextY = Math.max(doc.y + 2, 46);
+     
+  doc.fontSize(subLabelFontSize)
      .font('Helvetica-Bold')
      .fillColor('#93C5FD') // Brighter cyan/blue for contrast
-     .text('IQRA HADIQA TUL ATFAL SCHOOL SYSTEM', 80, 48);
+     .text(subLabel.toUpperCase(), 80, nextY, { width: 230 });
      
-  // 4. Report Title (Right-aligned)
+  // 4. Report Title (Right-aligned, constrained to X: 320 to pageWidth - 30)
   doc.fillColor('#FFFFFF')
      .font('Helvetica-Bold')
      .fontSize(11)
-     .text(title.toUpperCase(), 250, 30, { align: 'right', width: pageWidth - 300 });
+     .text(title.toUpperCase(), 320, 26, { align: 'right', width: pageWidth - 350 });
      
   if (subtitle) {
     doc.fillColor('#CBD5E1')
        .font('Helvetica-Oblique')
        .fontSize(8)
-       .text(subtitle, 250, 48, { align: 'right', width: pageWidth - 300 });
+       .text(subtitle, 320, 46, { align: 'right', width: pageWidth - 350 });
   }
 
   // 5. Branded Primary Accent Line (#4F6EF7)

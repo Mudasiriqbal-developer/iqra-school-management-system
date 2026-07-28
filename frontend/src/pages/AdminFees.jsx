@@ -18,7 +18,8 @@ import {
   TrendingUp,
   AlertTriangle,
   FileText,
-  Loader2
+  Loader2,
+  Settings
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -48,6 +49,7 @@ const AdminFees = () => {
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   // Component Modals/Drawers visibility

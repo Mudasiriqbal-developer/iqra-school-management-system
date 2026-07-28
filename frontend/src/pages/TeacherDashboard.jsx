@@ -10,7 +10,8 @@ import {
   AlertCircle,
   RefreshCw,
   ArrowRight,
-  Award
+  Award,
+  Settings
 } from 'lucide-react';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
@@ -26,7 +27,8 @@ const TeacherDashboard = () => {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/teacher-dashboard' },
     { label: 'Mark Attendance', icon: Calendar, path: '/teacher/attendance' },
-    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' }
+    { label: 'Manage Grades', icon: Award, path: '/teacher/grades' },
+    { label: 'Settings', icon: Settings, path: '/teacher/settings' }
   ];
 
 

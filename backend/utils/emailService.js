@@ -1,4 +1,14 @@
 const nodemailer = require('nodemailer');
+const Settings = require('../models/Settings');
+
+const getSchoolName = async () => {
+  try {
+    const settings = await Settings.findOne({ schoolId: 'default' });
+    return settings?.schoolName || 'Iqra Hadiqa Tul Atfal School';
+  } catch (error) {
+    return 'Iqra Hadiqa Tul Atfal School';
+  }
+};
 
 // Create a reusable transporter object using SMTP transport
 const transporter = nodemailer.createTransport({
@@ -19,7 +29,8 @@ const transporter = nodemailer.createTransport({
  */
 const sendTeacherInvitationEmail = async (toEmail, teacherName, activationLink) => {
   try {
-    const fromName = process.env.EMAIL_FROM_NAME || 'IHASS - Iqra Hadiqa Tul Atfal School';
+    const schoolName = await getSchoolName();
+    const fromName = process.env.EMAIL_FROM_NAME || `IHASS - ${schoolName}`;
     const fromEmail = process.env.EMAIL_USER;
 
     const mailOptions = {
@@ -30,7 +41,7 @@ const sendTeacherInvitationEmail = async (toEmail, teacherName, activationLink) 
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
           <h2 style="color: #333333;">Welcome to IHASS, ${teacherName}!</h2>
           <p style="color: #555555; font-size: 16px; line-height: 1.5;">
-            An account has been created for you on the <strong>IHASS (Iqra Hadiqa Tul Atfal School) School Management System</strong>.
+            An account has been created for you on the <strong>${schoolName} School Management System</strong>.
           </p>
           <p style="color: #555555; font-size: 16px; line-height: 1.5;">
             Please activate your account and set your password by clicking the button below:
@@ -49,7 +60,7 @@ const sendTeacherInvitationEmail = async (toEmail, teacherName, activationLink) 
           </p>
           <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;" />
           <p style="color: #999999; font-size: 12px; text-align: center;">
-            IHASS - Iqra Hadiqa Tul Atfal School Management System
+            ${schoolName} Management System
           </p>
         </div>
       `,
@@ -72,7 +83,8 @@ const sendTeacherInvitationEmail = async (toEmail, teacherName, activationLink) 
  */
 const sendActivationConfirmationEmail = async (toEmail, teacherName) => {
   try {
-    const fromName = process.env.EMAIL_FROM_NAME || 'IHASS - Iqra Hadiqa Tul Atfal School';
+    const schoolName = await getSchoolName();
+    const fromName = process.env.EMAIL_FROM_NAME || `IHASS - ${schoolName}`;
     const fromEmail = process.env.EMAIL_USER;
 
     const mailOptions = {
@@ -86,12 +98,12 @@ const sendActivationConfirmationEmail = async (toEmail, teacherName) => {
             Hello ${teacherName},
           </p>
           <p style="color: #555555; font-size: 16px; line-height: 1.5;">
-            Your account on the <strong>IHASS School Management System</strong> has been successfully activated. 
+            Your account on the <strong>${schoolName} School Management System</strong> has been successfully activated. 
             You can now log in using your email and the password you set.
           </p>
           <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;" />
           <p style="color: #999999; font-size: 12px; text-align: center;">
-            IHASS - Iqra Hadiqa Tul Atfal School Management System
+            ${schoolName} Management System
           </p>
         </div>
       `,
@@ -109,7 +121,8 @@ const sendActivationConfirmationEmail = async (toEmail, teacherName) => {
 
 const sendInvitationEmail = async (toEmail, userName, roleName, activationLink) => {
   try {
-    const fromName = process.env.EMAIL_FROM_NAME || 'IHASS - Iqra Hadiqa Tul Atfal School';
+    const schoolName = await getSchoolName();
+    const fromName = process.env.EMAIL_FROM_NAME || `IHASS - ${schoolName}`;
     const fromEmail = process.env.EMAIL_USER;
 
     const mailOptions = {
@@ -120,7 +133,7 @@ const sendInvitationEmail = async (toEmail, userName, roleName, activationLink) 
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
           <h2 style="color: #333333;">Welcome to IHASS, ${userName}!</h2>
           <p style="color: #555555; font-size: 16px; line-height: 1.5;">
-            An account has been created for you as a <strong>${roleName}</strong> on the <strong>IHASS (Iqra Hadiqa Tul Atfal School) School Management System</strong>.
+            An account has been created for you as a <strong>${roleName}</strong> on the <strong>${schoolName} School Management System</strong>.
           </p>
           <p style="color: #555555; font-size: 16px; line-height: 1.5;">
             Please activate your account and set your password by clicking the button below:
@@ -139,7 +152,7 @@ const sendInvitationEmail = async (toEmail, userName, roleName, activationLink) 
           </p>
           <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;" />
           <p style="color: #999999; font-size: 12px; text-align: center;">
-            IHASS - Iqra Hadiqa Tul Atfal School Management System
+            ${schoolName} Management System
           </p>
         </div>
       `,
@@ -156,7 +169,8 @@ const sendInvitationEmail = async (toEmail, userName, roleName, activationLink) 
 
 const sendResetPasswordEmail = async (toEmail, userName, resetLink) => {
   try {
-    const fromName = process.env.EMAIL_FROM_NAME || 'IHASS - Iqra Hadiqa Tul Atfal School';
+    const schoolName = await getSchoolName();
+    const fromName = process.env.EMAIL_FROM_NAME || `IHASS - ${schoolName}`;
     const fromEmail = process.env.EMAIL_USER;
 
     const mailOptions = {
@@ -170,7 +184,7 @@ const sendResetPasswordEmail = async (toEmail, userName, resetLink) => {
             Hello ${userName},
           </p>
           <p style="color: #555555; font-size: 16px; line-height: 1.5;">
-            You requested to reset your password for the <strong>IHASS School Management System</strong>.
+            You requested to reset your password for the <strong>${schoolName} School Management System</strong>.
             Click the button below to set a new password:
           </p>
           <div style="text-align: center; margin: 30px 0;">
@@ -186,7 +200,7 @@ const sendResetPasswordEmail = async (toEmail, userName, resetLink) => {
           </p>
           <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;" />
           <p style="color: #999999; font-size: 12px; text-align: center;">
-            IHASS - Iqra Hadiqa Tul Atfal School Management System
+            ${schoolName} Management System
           </p>
         </div>
       `,
@@ -203,7 +217,8 @@ const sendResetPasswordEmail = async (toEmail, userName, resetLink) => {
 
 const sendSupportTicketNotificationEmail = async (adminEmails, ticket, user) => {
   try {
-    const fromName = process.env.EMAIL_FROM_NAME || 'IHASS - Iqra Hadiqa Tul Atfal School';
+    const schoolName = await getSchoolName();
+    const fromName = process.env.EMAIL_FROM_NAME || `IHASS - ${schoolName}`;
     const fromEmail = process.env.EMAIL_USER;
 
     const mailOptions = {
@@ -214,7 +229,7 @@ const sendSupportTicketNotificationEmail = async (adminEmails, ticket, user) => 
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
           <h2 style="color: #00215E;">New Support Ticket Submitted</h2>
           <p style="color: #555555; font-size: 16px; line-height: 1.5;">
-            A new support ticket has been created on the <strong>IHASS School Management System</strong>.
+            A new support ticket has been created on the <strong>${schoolName} School Management System</strong>.
           </p>
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
             <tr style="background-color: #f9f9f9;">
@@ -244,7 +259,7 @@ const sendSupportTicketNotificationEmail = async (adminEmails, ticket, user) => 
           </div>
           <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;" />
           <p style="color: #999999; font-size: 12px; text-align: center;">
-            IHASS - Iqra Hadiqa Tul Atfal School Management System
+            ${schoolName} Management System
           </p>
         </div>
       `,

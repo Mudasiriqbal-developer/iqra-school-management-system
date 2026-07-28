@@ -12,7 +12,8 @@ import {
   DollarSign,
   Eye,
   CreditCard,
-  X
+  X,
+  Settings
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -38,6 +39,7 @@ const AdminPayroll = () => {
     { label: 'Salary Payroll', icon: DollarSign, path: '/admin/payroll' },
     { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
     { label: 'Reports', icon: BarChart3, path: '/admin/reports' },
+    { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
   // Month Picker (default to current month e.g., "2026-07")

@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { GraduationCap, LogOut, HelpCircle, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = false, onClose, onLogoutClick }) => {
+const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = false, onClose, onLogoutClick, schoolName, logoUrl }) => {
   const location = useLocation();
   const { logout } = useAuth();
 
@@ -22,11 +22,17 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
       {/* Brand Header */}
       <div className="p-6 border-b border-white/10 flex items-center justify-between">
         <div className="flex flex-col">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-white/10 rounded-xl border border-white/20 shadow-inner flex items-center justify-center">
-              <GraduationCap className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-wider font-sans">IHASS</span>
+          <div className="flex items-center space-x-2.5 max-w-[210px] overflow-hidden">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-8 w-8 object-contain rounded-lg flex-shrink-0 bg-white/10 p-0.5 border border-white/10" />
+            ) : (
+              <div className="p-2 bg-white/10 rounded-xl border border-white/20 shadow-inner flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="h-5 w-5 text-white" />
+              </div>
+            )}
+            <span className="text-md font-extrabold tracking-wide font-sans truncate" title={schoolName || 'IHASS'}>
+              {schoolName || 'IHASS'}
+            </span>
           </div>
           <span className="text-xs text-slate-300 font-medium tracking-wide mt-2">
             {subtitle}
