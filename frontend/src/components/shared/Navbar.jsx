@@ -1,25 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Bell, HelpCircle, LogOut, Menu, Sun, Moon, Monitor } from 'lucide-react';
+import { Search, Bell, HelpCircle, LogOut, Menu, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvatar = "", onToggleSidebar, onLogoutClick }) => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
-  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-  const themeMenuRef = useRef(null);
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target)) {
-        setIsThemeMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleLogout = () => {
     if (onLogoutClick) {
@@ -57,13 +44,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
   const avatarBg = colors[colorIndex];
   const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
-  const themeOptions = [
-    { value: 'light', label: 'Light', icon: Sun },
-    { value: 'dark', label: 'Dark', icon: Moon },
-    { value: 'system', label: 'System Default', icon: Monitor }
-  ];
 
-  const ActiveThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
 
   return (
     <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 right-0 z-30 w-full transition-colors duration-200">
@@ -108,42 +89,18 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-600 border border-white dark:border-slate-900"></span>
         </button>
 
-        {/* Theme Selector */}
-        <div className="relative" ref={themeMenuRef}>
-          <button
-            onClick={() => setIsThemeMenuOpen(prev => !prev)}
-            title="Toggle Theme"
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none flex items-center justify-center"
-          >
-            <ActiveThemeIcon className="h-5 w-5 transition-transform duration-300 hover:rotate-12" />
-          </button>
-
-          {isThemeMenuOpen && (
-            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-xl py-2 z-50 animate-modal-zoom">
-              {themeOptions.map((opt) => {
-                const Icon = opt.icon;
-                const isSelected = theme === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      setTheme(opt.value);
-                      setIsThemeMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center space-x-2.5 px-3.5 py-2 text-xs font-semibold transition-all duration-150 text-left ${
-                      isSelected
-                        ? 'bg-navy-50 text-[#00215E] dark:bg-sky-950/40 dark:text-sky-400 font-bold'
-                        : 'text-gray-600 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-slate-700/50'
-                    }`}
-                  >
-                    <Icon className={`h-4 w-4 ${isSelected ? 'text-[#00215E] dark:text-sky-400' : 'text-gray-400'}`} />
-                    <span>{opt.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none flex items-center justify-center"
+        >
+          {theme === 'light' ? (
+            <Sun className="h-5 w-5 transition-transform duration-300 hover:rotate-12" />
+          ) : (
+            <Moon className="h-5 w-5 transition-transform duration-300 hover:rotate-12" />
           )}
-        </div>
+        </button>
 
         {/* Logout Button */}
         <button

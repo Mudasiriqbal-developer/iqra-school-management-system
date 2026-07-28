@@ -4,7 +4,8 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setThemeState] = useState(() => {
-    return localStorage.getItem('theme') || 'system';
+    const saved = localStorage.getItem('theme');
+    return (saved === 'dark' || saved === 'light') ? saved : 'light';
   });
   
   const [isDark, setIsDark] = useState(false);
@@ -16,28 +17,13 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const applyTheme = () => {
-      const activeTheme = theme === 'system' 
-        ? (mediaQuery.matches ? 'dark' : 'light') 
-        : theme;
-
-      if (activeTheme === 'dark') {
-        root.classList.add('dark');
-        setIsDark(true);
-      } else {
-        root.classList.remove('dark');
-        setIsDark(false);
-      }
-    };
-
-    applyTheme();
-
-    if (theme === 'system') {
-      const listener = () => applyTheme();
-      mediaQuery.addEventListener('change', listener);
-      return () => mediaQuery.removeEventListener('change', listener);
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      setIsDark(true);
+    } else {
+      root.classList.remove('dark');
+      setIsDark(false);
     }
   }, [theme]);
 
