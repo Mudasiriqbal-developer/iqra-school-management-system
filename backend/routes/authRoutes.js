@@ -1,5 +1,5 @@
 const express = require('express');
-const { check, param, validationResult } = require('express-validator');
+const { check, param } = require('express-validator');
 const {
   registerUser,
   loginUser,
@@ -11,24 +11,9 @@ const {
   resetPassword,
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/authMiddleware');
+const { validateRequest } = require('../middleware/validationMiddleware');
 
 const router = express.Router();
-
-/**
- * Validation result handler middleware.
- * If validation fails, returns 400 Bad Request with standardized response shape.
- */
-const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      data: errors.array(),
-      message: 'Validation failed: ' + errors.array().map(e => e.msg).join('; '),
-    });
-  }
-  next();
-};
 
 /**
  * @route   POST /api/auth/register

@@ -1,6 +1,6 @@
 const Teacher = require('../models/Teacher');
-const Assignment = require('../models/Assignment');
 const Section = require('../models/Section');
+const checkTeacherStudentAccess = require('./checkTeacherStudentAccess');
 
 /**
  * Reusable middleware to verify that a teacher is assigned to a specific class, section, and subject.
@@ -17,17 +17,7 @@ const verifyTeacherAssignment = async (req, res, next) => {
       });
     }
 
-    // 2. Fetch the teacher profile associated with req.user.id
-    const teacher = await Teacher.findOne({ userId: req.user.id });
-    if (!teacher) {
-      return res.status(403).json({
-        success: false,
-        data: null,
-        message: 'Forbidden: Current user is not registered as a teacher',
-      });
-    }
-
-    // 3. Read classId, sectionId, and subjectId from req.body (for POST) or req.query (for GET)
+    // 2. Read classId, sectionId, and subjectId from req.body (for POST) or req.query (for GET)
     const classId = req.body.classId || req.query.classId;
     const sectionId = req.body.sectionId || req.query.sectionId;
     const subjectId = req.body.subjectId || req.query.subjectId;
@@ -40,15 +30,23 @@ const verifyTeacherAssignment = async (req, res, next) => {
       });
     }
 
-    // 4. Query assignment
-    const assignment = await Assignment.findOne({
-      teacherId: teacher._id,
+    // 3. Verify teacher assignment using the shared helper
+    const { hasAccess, teacher, assignment } = await checkTeacherStudentAccess(
+      req.user.id,
       classId,
       sectionId,
-      subjectId,
-    });
+      subjectId
+    );
 
-    if (!assignment) {
+    if (!teacher) {
+      return res.status(403).json({
+        success: false,
+        data: null,
+        message: 'Forbidden: Current user is not registered as a teacher',
+      });
+    }
+
+    if (!hasAccess || !assignment) {
       return res.status(403).json({
         success: false,
         data: null,
@@ -56,7 +54,7 @@ const verifyTeacherAssignment = async (req, res, next) => {
       });
     }
 
-    // 5. Attach assignment and proceed
+    // 4. Attach assignment and proceed
     req.assignment = assignment;
     next();
   } catch (error) {

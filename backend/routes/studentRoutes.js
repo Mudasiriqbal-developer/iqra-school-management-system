@@ -4,17 +4,23 @@ const {
   createStudent,
   getAllStudents,
   getStudentById,
+  updateStudent,
+  deleteStudent,
+  resetStudentPassword,
+} = require('../controllers/studentController');
+const {
+  generateAdmissionReceiptPDF,
+} = require('../controllers/studentPdfController');
+const {
+  setMonthlyFeeAmount,
+  getFeeSummaryByClass,
+} = require('../controllers/studentFeeController');
+const {
   getMyProfile,
   getMyAttendance,
   getMySubjects,
   getMyFeeHistory,
-  updateStudent,
-  deleteStudent,
-  setMonthlyFeeAmount,
-  getFeeSummaryByClass,
-  generateAdmissionReceiptPDF,
-  resetStudentPassword,
-} = require('../controllers/studentController');
+} = require('../controllers/studentPortalController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
 
