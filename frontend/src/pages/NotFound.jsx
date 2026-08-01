@@ -19,7 +19,7 @@ const NotFound = () => {
           } else if (user.role === 'teacher') {
             navigate('/teacher-dashboard');
             return;
-          } else if (user.role === 'student' || user.role === 'parent') {
+          } else if (user.role === 'student') {
             navigate('/student-dashboard');
             return;
           }

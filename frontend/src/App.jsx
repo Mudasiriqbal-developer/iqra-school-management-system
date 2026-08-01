@@ -168,7 +168,7 @@ function App() {
         <Route
           path="/student-dashboard"
           element={
-            <ProtectedRoute allowedRoles={['student', 'parent']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentDashboard />
             </ProtectedRoute>
           }
@@ -176,7 +176,7 @@ function App() {
         <Route
           path="/student/fees"
           element={
-            <ProtectedRoute allowedRoles={['student', 'parent']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentFees />
             </ProtectedRoute>
           }
@@ -184,7 +184,7 @@ function App() {
         <Route
           path="/student/schedule"
           element={
-            <ProtectedRoute allowedRoles={['student', 'parent']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentSchedule />
             </ProtectedRoute>
           }
@@ -192,7 +192,7 @@ function App() {
         <Route
           path="/student/grades"
           element={
-            <ProtectedRoute allowedRoles={['student', 'parent']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentGrades />
             </ProtectedRoute>
           }
@@ -200,7 +200,7 @@ function App() {
         <Route
           path="/student/settings"
           element={
-            <ProtectedRoute allowedRoles={['student', 'parent']}>
+            <ProtectedRoute allowedRoles={['student']}>
               <StudentSettings />
             </ProtectedRoute>
           }
@@ -209,7 +209,7 @@ function App() {
         <Route
           path="/support"
           element={
-            <ProtectedRoute allowedRoles={['admin', 'teacher', 'student', 'parent']}>
+            <ProtectedRoute allowedRoles={['admin', 'teacher', 'student']}>
               <Support />
             </ProtectedRoute>
           }

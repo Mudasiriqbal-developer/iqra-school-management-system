@@ -28,8 +28,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ['admin', 'teacher', 'student', 'parent'],
-        message: 'Role must be admin, teacher, student, or parent',
+        values: ['admin', 'teacher', 'student'],
+        message: 'Role must be admin, teacher, or student',
       },
       required: [true, 'Please specify a user role'],
     },

@@ -53,9 +53,9 @@ router.post(
         yahoo_remove_subaddress: false,
         icloud_remove_subaddress: false
       }),
-    check('role', 'Role must be admin, teacher, student, or parent')
+    check('role', 'Role must be admin, teacher, or student')
       .trim()
-      .isIn(['admin', 'teacher', 'student', 'parent']),
+      .isIn(['admin', 'teacher', 'student']),
   ],
   validateRequest,
   registerUser

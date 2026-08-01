@@ -48,7 +48,7 @@ const Support = () => {
       ? adminNavItems 
       : (user?.role === 'teacher' 
         ? teacherNavItems 
-        : (user?.role === 'student' || user?.role === 'parent' 
+        : (user?.role === 'student' 
           ? studentNavItems 
           : [{ label: 'Dashboard', icon: LayoutDashboard, path: '/' }]));
 
@@ -243,8 +243,8 @@ const Support = () => {
     let text = "Hello IHASS Support, I need assistance.";
     if (user?.role === 'teacher') {
       text = "Hello IHASS Support, I am a teacher and need assistance.";
-    } else if (user?.role === 'student' || user?.role === 'parent') {
-      text = "Hello IHASS Support, I am a student/parent and need assistance with the portal.";
+    } else if (user?.role === 'student') {
+      text = "Hello IHASS Support, I am a student and need assistance with the portal.";
     }
     return `${baseUrl}?text=${encodeURIComponent(text)}`;
   };
@@ -272,14 +272,14 @@ const Support = () => {
           ? 'Administrator' 
           : (user?.role === 'teacher' 
             ? 'Teacher' 
-            : (user?.role === 'student' ? 'Student' : 'Parent'))
+            : 'Student')
       }
       subtitle={
         user?.role === 'admin' 
           ? 'Administrative Suite' 
           : (user?.role === 'teacher' 
             ? 'Teacher Suite' 
-            : (user?.role === 'parent' ? 'Parent Portal' : 'Student Portal'))
+            : 'Student Portal')
       }
     >
       <div className="space-y-8 max-w-7xl mx-auto">
@@ -683,7 +683,7 @@ const Support = () => {
       </div>
 
       {/* Floating WhatsApp Contact Button */}
-      {(user?.role === 'teacher' || user?.role === 'student' || user?.role === 'parent') && (
+      {(user?.role === 'teacher' || user?.role === 'student') && (
         <a
           href={getWhatsappUrl()}
           target="_blank"

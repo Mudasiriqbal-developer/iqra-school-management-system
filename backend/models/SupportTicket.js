@@ -14,7 +14,7 @@ const supportTicketSchema = new mongoose.Schema(
     userRole: {
       type: String,
       required: true,
-      enum: ['admin', 'teacher', 'student', 'parent'],
+      enum: ['admin', 'teacher', 'student'],
     },
     category: {
       type: String,

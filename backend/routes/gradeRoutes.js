@@ -49,10 +49,10 @@ router.get('/student/:studentId', authorize('admin', 'teacher'), getStudentGrade
 
 /**
  * @route   GET /api/grades/me
- * @desc    Get logged-in student's or parent's child's grades
- * @access  Private (Student, Parent)
+ * @desc    Get logged-in student's grades
+ * @access  Private (Student)
  */
-router.get('/me', authorize('student', 'parent'), getMyGrades);
+router.get('/me', authorize('student'), getMyGrades);
 
 /**
  * @route   GET /api/grades/class-section

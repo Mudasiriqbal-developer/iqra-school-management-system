@@ -153,16 +153,6 @@ const getMyGrades = async (req, res, next) => {
 
     if (req.user.role === 'student') {
       student = await Student.findOne({ registrationNumber: req.user.registrationNumber });
-    } else if (req.user.role === 'parent') {
-      // Find any student linked to this parent email
-      student = await Student.findOne({ parentEmail: req.user.email });
-      if (!student) {
-        // Fallback: check if they specified a studentId query param (for parent child switching)
-        const { studentId } = req.query;
-        if (studentId) {
-          student = await Student.findById(studentId);
-        }
-      }
     }
 
     if (!student) {

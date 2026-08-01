@@ -27,8 +27,6 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
     ? 'Faculty Member'
     : role === 'student'
     ? 'Student'
-    : role === 'parent'
-    ? 'Parent'
     : role;
 
   // Generate color palette index based on length

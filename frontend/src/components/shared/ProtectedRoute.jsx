@@ -6,7 +6,6 @@ const roleDashboardMap = {
   admin: '/admin-dashboard',
   teacher: '/teacher-dashboard',
   student: '/student-dashboard',
-  parent: '/student-dashboard', // Parents share student view
 };
 
 /**

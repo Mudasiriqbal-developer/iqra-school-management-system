@@ -24,7 +24,7 @@ const Login = () => {
         navigate('/admin-dashboard');
       } else if (user.role === 'teacher') {
         navigate('/teacher-dashboard');
-      } else if (user.role === 'student' || user.role === 'parent') {
+      } else if (user.role === 'student') {
         navigate('/student-dashboard');
       } else {
         toast.error('Unknown role assignment.');
