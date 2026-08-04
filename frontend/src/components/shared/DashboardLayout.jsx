@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, Loader2 } from 'lucide-react';
 import api from '../../services/api';
+import { DEFAULT_NAV_ITEMS } from '../../utils/navConstants';
 
 const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -36,6 +37,19 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
     }, 450);
   };
 
+  // Compute ordered nav items if user is admin
+  let displayNavItems = navItems;
+  if (user && user.role === 'admin') {
+    const userNavOrder = user.navOrder || [];
+    if (userNavOrder.length > 0) {
+      displayNavItems = userNavOrder
+        .map(key => DEFAULT_NAV_ITEMS.find(item => item.key === key))
+        .filter(Boolean);
+    } else {
+      displayNavItems = DEFAULT_NAV_ITEMS;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Backdrop overlay for mobile */}
@@ -49,7 +63,7 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
       {/* Sidebar Component */}
       <Sidebar 
         subtitle={subtitle} 
-        navItems={navItems} 
+        navItems={displayNavItems} 
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onLogoutClick={() => setIsLogoutConfirmOpen(true)} 

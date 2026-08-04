@@ -33,6 +33,15 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  const updateUser = (updatedFields) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const updatedUser = { ...prevUser, ...updatedFields };
+      localStorage.setItem('ihass_user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
@@ -68,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, setSession }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, setSession, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

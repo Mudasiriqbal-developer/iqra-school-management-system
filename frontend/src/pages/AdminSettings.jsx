@@ -2,11 +2,90 @@ import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Users, Award, BookOpen, Wallet, TrendingUp, DollarSign, 
   CalendarCheck, BarChart3, Settings, School, Calendar, Clock, CreditCard, 
-  Save, Plus, Trash2, Phone, Mail, Loader2, Key, Eye, EyeOff
+  Save, Plus, Trash2, Phone, Mail, Loader2, Key, Eye, EyeOff, GripVertical
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
 import DashboardLayout from '../components/shared/DashboardLayout';
+import { useAuth } from '../context/AuthContext';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { DEFAULT_NAV_ITEMS } from '../utils/navConstants';
+
+// Draggable Navigation Item component
+const SortableNavItem = ({ id, item, index }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto',
+  };
+
+  const IconComponent = item.icon;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl transition-all duration-150 select-none ${
+        isDragging 
+          ? 'shadow-lg border-[#00215E]/40 dark:border-sky-500/40 bg-slate-50 dark:bg-slate-900/50 scale-[1.01]' 
+          : 'hover:border-gray-300 dark:hover:border-gray-700'
+      }`}
+    >
+      <div className="flex items-center space-x-3">
+        {/* Grab Handle */}
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          className="p-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing hover:bg-slate-100 rounded transition-colors focus:outline-none flex items-center justify-center"
+          title="Drag to reorder"
+        >
+          <GripVertical className="h-4.5 w-4.5" />
+        </button>
+
+        {/* Icon */}
+        <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40 flex-shrink-0 flex items-center justify-center">
+          <IconComponent className="h-4 w-4" />
+        </div>
+
+        {/* Labels */}
+        <div>
+          <span className="text-xs font-bold text-navy-950 block">{item.label}</span>
+          <span className="text-[10px] text-gray-400 font-medium font-mono">{item.path}</span>
+        </div>
+      </div>
+
+      {/* Position Badge */}
+      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#00215E]/5 text-[#00215E] border border-[#00215E]/10 dark:bg-sky-400/10 dark:text-sky-400 dark:border-sky-400/20">
+        #{index + 1}
+      </span>
+    </div>
+  );
+};
 
 const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -20,6 +99,23 @@ const AdminSettings = () => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
+
+  // Navigation order preferences
+  const { updateUser } = useAuth();
+  const [navOrderKeys, setNavOrderKeys] = useState([]);
+  const [navLoading, setNavLoading] = useState(true);
+  const [navSaving, setNavSaving] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Form states
   const [schoolName, setSchoolName] = useState('');
@@ -83,6 +179,74 @@ const AdminSettings = () => {
     fetchSettings();
   }, []);
 
+  // Fetch navigation order on mount
+  useEffect(() => {
+    const fetchNavOrder = async () => {
+      try {
+        setNavLoading(true);
+        const response = await api.get('/admin/settings/nav-order');
+        if (response.data.success) {
+          setNavOrderKeys(response.data.order);
+        }
+      } catch (error) {
+        console.error('Error fetching navigation order:', error);
+        toast.error('Failed to load navigation order');
+      } finally {
+        setNavLoading(false);
+      }
+    };
+
+    fetchNavOrder();
+  }, []);
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active && over && active.id !== over.id) {
+      setNavOrderKeys((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const handleSaveNavOrder = async () => {
+    try {
+      setNavSaving(true);
+      const response = await api.put('/admin/settings/nav-order', { order: navOrderKeys });
+      if (response.data.success) {
+        toast.success('Sidebar navigation order saved successfully!');
+        updateUser({ navOrder: response.data.order });
+      } else {
+        toast.error(response.data.message || 'Failed to save navigation order');
+      }
+    } catch (error) {
+      console.error('Error saving navigation order:', error);
+      toast.error(error.response?.data?.message || 'Error saving navigation order');
+    } finally {
+      setNavSaving(false);
+    }
+  };
+
+  const handleResetNavOrder = async () => {
+    try {
+      setNavSaving(true);
+      const response = await api.put('/admin/settings/nav-order', { order: [] });
+      if (response.data.success) {
+        toast.success('Sidebar navigation order reset to default!');
+        updateUser({ navOrder: [] });
+        setNavOrderKeys(response.data.order);
+      } else {
+        toast.error(response.data.message || 'Failed to reset navigation order');
+      }
+    } catch (error) {
+      console.error('Error resetting navigation order:', error);
+      toast.error(error.response?.data?.message || 'Error resetting navigation order');
+    } finally {
+      setNavSaving(false);
+    }
+  };
+
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
 
@@ -121,6 +285,22 @@ const AdminSettings = () => {
       toast.error(error.response?.data?.message || 'Error updating password');
     } finally {
       setPasswordSaving(false);
+    }
+  };
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const navbarHeight = 90; // estimate navbar height + padding
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -238,9 +418,34 @@ const AdminSettings = () => {
           </div>
         </div>
 
+        {/* Quick Navigation Keys */}
+        <div className="flex flex-wrap gap-2 p-1.5 bg-slate-50 border border-gray-200/60 rounded-2xl dark:bg-slate-900/50 dark:border-slate-800">
+          {[
+            { id: 'school-profile', label: 'School Profile', icon: School },
+            { id: 'academic-session', label: 'Academic Settings', icon: Calendar },
+            { id: 'attendance-settings', label: 'Attendance', icon: Clock },
+            { id: 'fee-configuration', label: 'Fee Configuration', icon: CreditCard },
+            { id: 'update-password', label: 'Update Password', icon: Key },
+            { id: 'navigation-order', label: 'Navigation Order', icon: GripVertical },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => scrollToSection(tab.id)}
+                className="px-3.5 py-2 bg-white border border-gray-200 text-slate-700 hover:text-[#00215E] dark:text-slate-300 dark:hover:text-sky-400 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2 hover:bg-slate-50 dark:bg-slate-800 dark:border-[#334155] dark:hover:bg-slate-900"
+              >
+                <Icon className="h-3.5 w-3.5 text-gray-400 dark:text-slate-500" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Card: School Profile */}
-          <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
+          <div id="school-profile" className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
             <div className="bg-slate-50 border-b border-gray-100 p-5 flex items-center space-x-3">
               <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40">
                 <School className="h-5 w-5" />
@@ -335,7 +540,7 @@ const AdminSettings = () => {
           </div>
 
           {/* Card: Academic Session */}
-          <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
+          <div id="academic-session" className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
             <div className="bg-slate-50 border-b border-gray-100 p-5 flex items-center space-x-3">
               <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40">
                 <Calendar className="h-5 w-5" />
@@ -363,7 +568,7 @@ const AdminSettings = () => {
           </div>
 
           {/* Card: Attendance Days */}
-          <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
+          <div id="attendance-settings" className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
             <div className="bg-slate-50 border-b border-gray-100 p-5 flex items-center space-x-3">
               <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40">
                 <Clock className="h-5 w-5" />
@@ -403,7 +608,7 @@ const AdminSettings = () => {
           </div>
 
           {/* Card: Fee Configuration */}
-          <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
+          <div id="fee-configuration" className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
             <div className="bg-slate-50 border-b border-gray-100 p-5 flex items-center space-x-3">
               <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40">
                 <CreditCard className="h-5 w-5" />
@@ -516,7 +721,7 @@ const AdminSettings = () => {
         </form>
 
         {/* Card: Update Password */}
-        <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden mt-8">
+        <div id="update-password" className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden mt-8">
           <div className="bg-slate-50 border-b border-gray-100 p-5 flex items-center space-x-3">
             <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40">
               <Key className="h-5 w-5" />
@@ -617,6 +822,90 @@ const AdminSettings = () => {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Card: Sidebar Navigation Order */}
+        <div id="navigation-order" className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden mt-8">
+          <div className="bg-slate-50 border-b border-gray-100 p-5 flex items-center space-x-3">
+            <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40">
+              <GripVertical className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-md font-bold text-navy-950">Sidebar Navigation Order</h2>
+              <p className="text-xxs text-gray-400 font-bold uppercase tracking-wider mt-0.5">Drag-and-drop to reorder your sidebar links</p>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {navLoading ? (
+              <div className="py-12 text-center flex flex-col items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-[#00215E] mb-2" />
+                <p className="text-xs text-gray-500 font-semibold">Loading navigation order...</p>
+              </div>
+            ) : (
+              <div className="space-y-6 max-w-2xl">
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Personalize your workspace by arranging the main navigation items below. Drag the items using the grab handles, then save to apply the new order instantly.
+                </p>
+
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={navOrderKeys}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-3">
+                      {navOrderKeys.map((key, index) => {
+                        const item = DEFAULT_NAV_ITEMS.find((nav) => nav.key === key);
+                        if (!item) return null;
+                        return (
+                          <SortableNavItem
+                            key={key}
+                            id={key}
+                            item={item}
+                            index={index}
+                          />
+                        );
+                      })}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+
+                {/* Form Actions */}
+                <div className="flex items-center space-x-3 pt-4 border-t border-gray-100">
+                  <button
+                    type="button"
+                    disabled={navSaving}
+                    onClick={handleResetNavOrder}
+                    className="px-5 py-3 border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs disabled:opacity-50"
+                  >
+                    Reset to Default
+                  </button>
+                  <button
+                    type="button"
+                    disabled={navSaving}
+                    onClick={handleSaveNavOrder}
+                    className="flex-grow sm:flex-grow-0 px-6 py-3 bg-[#00215E] text-white font-bold hover:opacity-90 rounded-xl transition-all shadow-md text-xs flex items-center justify-center space-x-2 disabled:opacity-50"
+                  >
+                    {navSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" />
+                        <span>Save Order</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </DashboardLayout>

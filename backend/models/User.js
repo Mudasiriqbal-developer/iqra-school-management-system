@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema(
       },
       required: [true, 'Please specify a user role'],
     },
+    navOrder: {
+      type: [String],
+      default: [],
+    },
     phone: {
       type: String,
       trim: true,
