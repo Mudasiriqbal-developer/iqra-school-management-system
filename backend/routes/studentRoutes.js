@@ -16,6 +16,30 @@ const {
   getFeeSummaryByClass,
 } = require('../controllers/studentFeeController');
 const {
+  getImportTemplate,
+  validateImport,
+  commitImport,
+} = require('../controllers/studentImportController');
+const multer = require('multer');
+
+// Configure multer memory storage for file imports (max 5MB, .csv, .xlsx, .xls)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedExtensions = ['.csv', '.xlsx', '.xls'];
+    const originalName = (file.originalname || '').toLowerCase();
+    const hasValidExt = allowedExtensions.some(ext => originalName.endsWith(ext));
+    if (hasValidExt) {
+      cb(null, true);
+    } else {
+      const err = new Error('Invalid file format. Only .csv, .xlsx, and .xls files are allowed.');
+      err.statusCode = 400;
+      cb(err, false);
+    }
+  },
+});
+const {
   getMyProfile,
   getMyAttendance,
   getMySubjects,
@@ -27,6 +51,50 @@ const { validateRequest } = require('../middleware/validationMiddleware');
 const router = express.Router();
 
 router.use(protect);
+
+/**
+ * @route   GET /api/students/import/template
+ * @desc    Download Excel template for bulk student import
+ * @access  Private (Admin Only)
+ */
+router.get('/import/template', authorize('admin'), getImportTemplate);
+
+/**
+ * @route   POST /api/students/import/validate
+ * @desc    Upload and validate student spreadsheet
+ * @access  Private (Admin Only)
+ */
+router.post(
+  '/import/validate',
+  authorize('admin'),
+  (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({
+            success: false,
+            data: null,
+            message: 'File size exceeds maximum allowed limit (5MB)',
+          });
+        }
+        return res.status(err.statusCode || 400).json({
+          success: false,
+          data: null,
+          message: err.message || 'File upload error',
+        });
+      }
+      next();
+    });
+  },
+  validateImport
+);
+
+/**
+ * @route   POST /api/students/import/commit
+ * @desc    Commit validated student records to database
+ * @access  Private (Admin Only)
+ */
+router.post('/import/commit', authorize('admin'), commitImport);
 
 /**
  * @route   GET /api/students

@@ -93,3 +93,52 @@ export const resetStudentPassword = async (id, password) => {
   const response = await api.put(`/students/${id}/reset-password`, { password });
   return response.data;
 };
+
+/**
+ * Download the Excel template for bulk student import.
+ */
+export const downloadImportTemplate = async () => {
+  const response = await api.get('/students/import/template', {
+    responseType: 'blob',
+  });
+
+  const blob = new Blob([response.data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'student-import-template.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+/**
+ * Upload and validate a student spreadsheet (.csv, .xlsx, .xls) without saving to DB.
+ * @param {File} file - The spreadsheet file to validate
+ * @param {Function} onUploadProgress - Axios upload progress callback
+ */
+export const validateStudentImport = async (file, onUploadProgress) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await api.post('/students/import/validate', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress,
+  });
+  return response.data;
+};
+
+/**
+ * Commit validated student rows to database in a transactional batch.
+ * @param {Array} rows - Array of validated student objects
+ */
+export const commitStudentImport = async (rows) => {
+  const response = await api.post('/students/import/commit', { rows });
+  return response.data;
+};
+

@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { 
   Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, Key, MoreVertical, Settings
+  AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, Key, MoreVertical, Settings,
+  FileSpreadsheet
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -14,6 +15,7 @@ import StatusBadge from '../components/shared/StatusBadge';
 import { getStudents, deleteStudent, getClasses, getSectionsByClass, downloadAdmissionReceipt, resetStudentPassword } from '../features/students/studentService';
 import StudentFormModal from '../features/students/StudentFormModal';
 import StudentViewDrawer from '../features/students/StudentViewDrawer';
+import BulkStudentImportModal from '../features/students/BulkStudentImportModal';
 
 const AdminStudents = () => {
   // Navigation items for the Sidebar
@@ -74,6 +76,7 @@ const AdminStudents = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
   // Deactivation confirmation modal states
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -324,13 +327,22 @@ const AdminStudents = () => {
             <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Student Management</h1>
             <p className="text-sm text-gray-500 mt-1">Manage and monitor student records across the school.</p>
           </div>
-          <button
-            onClick={handleOpenAdd}
-            className="bg-navy-900 text-white font-bold py-2.5 px-4 rounded-xl flex items-center space-x-2 hover:bg-navy-800 transition-colors shadow-sm text-sm"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Student</span>
-          </button>
+          <div className="flex items-center space-x-3 w-full sm:w-auto">
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="flex-1 sm:flex-none bg-white text-navy-900 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-xs text-sm"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-navy-700" />
+              <span>Import from CSV/Excel</span>
+            </button>
+            <button
+              onClick={handleOpenAdd}
+              className="flex-1 sm:flex-none bg-navy-900 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-navy-800 transition-colors shadow-sm text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Student</span>
+            </button>
+          </div>
         </div>
 
         {/* Filter Bar */}
@@ -824,6 +836,13 @@ const AdminStudents = () => {
 
       {/* Modals & Popups */}
       
+      {/* Bulk Student Import Modal */}
+      <BulkStudentImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => fetchStudentsList()}
+      />
+
       {/* Student Form Modal (Add / Edit) */}
       <StudentFormModal
         isOpen={isFormOpen}
