@@ -193,6 +193,7 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     }
 
     const { payments, m, y } = await getMonthlyPayments(month, year);
+    const settings = await Settings.findOne({ schoolId: 'default' }).catch(() => null);
 
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -209,8 +210,6 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
       bufferPages: true
     });
     doc.pipe(res);
-
-    const settings = await Settings.findOne({ schoolId: 'default' });
 
     const title = 'Monthly Collections Report';
 
@@ -411,6 +410,8 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
       ? `Class: ${classLabel} ${sectionId ? `| Section: ${sectionLabel}` : ''}`
       : 'All Classes and Sections';
 
+    const settings = await Settings.findOne({ schoolId: 'default' }).catch(() => null);
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="fee-defaulters-report.pdf"');
 
@@ -419,8 +420,6 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
       bufferPages: true
     });
     doc.pipe(res);
-
-    const settings = await Settings.findOne({ schoolId: 'default' });
 
     const title = 'Fee Defaulters Report';
 
