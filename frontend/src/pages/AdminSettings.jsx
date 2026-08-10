@@ -464,27 +464,29 @@ const AdminSettings = () => {
                   </div>
 
                   <div className="space-y-1.5 col-span-1 md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">School Logo URL</label>
+                    <div className="flex justify-between items-center">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">School Logo URL</label>
+                      <span className="text-[11px] text-slate-400 font-medium">Default: /ihass-logo.png</span>
+                    </div>
                     <div className="flex space-x-4 items-center">
                       <input
                         type="text"
-                        placeholder="https://example.com/logo.png"
+                        placeholder="e.g. /ihass-logo.png or https://example.com/logo.png"
                         value={logoUrl}
                         onChange={(e) => setLogoUrl(e.target.value)}
                         className="flex-grow px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#00215E]/20 focus:border-[#00215E] transition-all"
                       />
-                      {logoUrl && (
-                        <div className="h-11 w-11 rounded-xl bg-slate-50 border border-gray-200 overflow-hidden flex items-center justify-center p-1 flex-shrink-0">
-                          <img 
-                            src={logoUrl} 
-                            alt="Preview" 
-                            className="h-full w-full object-contain" 
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
+                      <div className="h-11 w-11 rounded-xl bg-slate-50 border border-gray-200 overflow-hidden flex items-center justify-center p-1 flex-shrink-0 shadow-xs" title="Logo Preview">
+                        <img 
+                          src={logoUrl || '/ihass-logo.png'} 
+                          alt="Logo Preview" 
+                          className="h-full w-full object-contain" 
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/ihass-logo.png';
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 

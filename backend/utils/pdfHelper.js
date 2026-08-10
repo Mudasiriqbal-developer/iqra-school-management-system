@@ -1,7 +1,7 @@
-/**
- * PDF Helper for IQRA SCHOOL MANAGEMENT SYSTEM (IHASS)
- * Provides standardized, high-quality, branded styling for all exported PDF documents.
- */
+const path = require('path');
+const fs = require('fs');
+
+const DEFAULT_LOGO_PATH = path.join(__dirname, '../assets/logo.png');
 
 /**
  * Draws a professional header banner with the IHASS logo and school brand identity.
@@ -17,16 +17,38 @@ const drawBrandedHeader = (doc, title, subtitle = '', settings = null) => {
   // 1. Navy Blue Background Banner (#00215E)
   doc.rect(0, 0, pageWidth, 100).fill('#00215E');
   
-  // 2. School Logo Icon (Vector Graphic Graduation Cap or settings logo)
+  // 2. School Logo Icon (IHASS Logo or settings logo)
   let logoDrawn = false;
-  if (settings && settings.logoUrl) {
+  let validLogoPath = null;
+
+  if (settings && settings.logoUrl && typeof settings.logoUrl === 'string' && settings.logoUrl.trim()) {
+    const trimmed = settings.logoUrl.trim();
+    if (trimmed.startsWith('data:image/')) {
+      try {
+        const base64Data = trimmed.split(',')[1];
+        if (base64Data) {
+          validLogoPath = Buffer.from(base64Data, 'base64');
+        }
+      } catch (e) {
+        validLogoPath = null;
+      }
+    } else if (fs.existsSync(trimmed)) {
+      validLogoPath = trimmed;
+    }
+  }
+
+  // Default to bundled IHASS logo asset if custom logo isn't a direct file/buffer
+  if (!validLogoPath && fs.existsSync(DEFAULT_LOGO_PATH)) {
+    validLogoPath = DEFAULT_LOGO_PATH;
+  }
+
+  if (validLogoPath) {
     try {
-      // PDFKit supports base64 data URIs or local file paths.
-      // If it fails (e.g. invalid format or remote HTTP URL not fetched), catch and fallback.
-      doc.image(settings.logoUrl, 30, 28, { width: 40, height: 40 });
+      doc.roundedRect(26, 22, 46, 46, 6).fill('#FFFFFF');
+      doc.image(validLogoPath, 28, 24, { fit: [42, 42], align: 'center', valign: 'center' });
       logoDrawn = true;
     } catch (err) {
-      // Fallback
+      logoDrawn = false;
     }
   }
 

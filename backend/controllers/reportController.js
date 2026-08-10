@@ -275,60 +275,68 @@ const exportMonthlyCollectionsPDF = async (req, res, next) => {
     let yPosition = currentY + 28;
     const maxAllowedY = 670;
 
-    payments.forEach((payment, index) => {
-      // Safe manual page break check before drawing the row (24pt height)
-      if (yPosition + 24 > maxAllowedY) {
-        doc.addPage();
-        yPosition = 125; // starts after top margin
-
-        // Draw Table Header again at top of new page
-        doc.save();
-        doc.rect(50, yPosition, 512, 22).fill('#00215E');
-        doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8.5);
-        doc.text('Student Details', studentColX + 5, yPosition + 7, { width: colWidths.student - 5 });
-        doc.text('Class/Section', classColX, yPosition + 7, { width: colWidths.class });
-        doc.text('Method', methodColX, yPosition + 7, { width: colWidths.method });
-        doc.text('Date Paid', dateColX, yPosition + 7, { width: colWidths.date });
-        doc.text('Amount Received', amountColX, yPosition + 7, { width: colWidths.amount, align: 'right' });
-        doc.restore();
-
-        yPosition += 28;
-      }
-
-      // Alternating row backgrounds
-      if (index % 2 === 0) {
-        doc.save();
-        doc.rect(50, yPosition - 4, 512, 20).fill('#F8FAFC');
-        doc.restore();
-      }
-
-      // Row styling
+    if (payments.length === 0) {
       doc.save();
-      doc.fillColor('#1E293B').font('Helvetica').fontSize(8.5);
-
-      // Student name and Reg No
-      doc.font('Helvetica-Bold').text(payment.studentName, studentColX + 5, yPosition + 1, { width: colWidths.student - 5, lineBreak: false });
-      doc.font('Helvetica').fillColor('#64748B').fontSize(7.5).text(`Reg: ${payment.registrationNumber}`, studentColX + 5, yPosition + 10, { width: colWidths.student - 5 });
-
-      // Class/Section
-      const classSectionStr = `${payment.className} / ${payment.sectionName}`;
-      doc.fillColor('#1E293B').fontSize(8.5).text(classSectionStr, classColX, yPosition + 4, { width: colWidths.class, lineBreak: false });
-
-      // Method
-      doc.text(payment.method.toUpperCase(), methodColX, yPosition + 4, { width: colWidths.method, lineBreak: false });
-
-      // Date
-      doc.text(payment.paidOn, dateColX, yPosition + 4, { width: colWidths.date, lineBreak: false });
-
-      // Amount
-      doc.font('Helvetica-Bold').fillColor('#16A34A').text(`Rs. ${payment.amount.toFixed(2)}`, amountColX, yPosition + 4, { width: colWidths.amount, align: 'right', lineBreak: false });
-
+      doc.fillColor('#64748B').font('Helvetica-Oblique').fontSize(9);
+      doc.text('No fee collection transactions recorded for this period.', 50, yPosition + 8, { align: 'center', width: 512 });
       doc.restore();
+      yPosition += 36;
+    } else {
+      payments.forEach((payment, index) => {
+        // Safe manual page break check before drawing the row (24pt height)
+        if (yPosition + 24 > maxAllowedY) {
+          doc.addPage();
+          yPosition = 125; // starts after top margin
 
-      // Divider line
-      doc.moveTo(50, yPosition + 20).lineTo(562, yPosition + 20).strokeColor('#E2E8F0').lineWidth(0.5).stroke();
-      yPosition += 24;
-    });
+          // Draw Table Header again at top of new page
+          doc.save();
+          doc.rect(50, yPosition, 512, 22).fill('#00215E');
+          doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8.5);
+          doc.text('Student Details', studentColX + 5, yPosition + 7, { width: colWidths.student - 5 });
+          doc.text('Class/Section', classColX, yPosition + 7, { width: colWidths.class });
+          doc.text('Method', methodColX, yPosition + 7, { width: colWidths.method });
+          doc.text('Date Paid', dateColX, yPosition + 7, { width: colWidths.date });
+          doc.text('Amount Received', amountColX, yPosition + 7, { width: colWidths.amount, align: 'right' });
+          doc.restore();
+
+          yPosition += 28;
+        }
+
+        // Alternating row backgrounds
+        if (index % 2 === 0) {
+          doc.save();
+          doc.rect(50, yPosition - 4, 512, 20).fill('#F8FAFC');
+          doc.restore();
+        }
+
+        // Row styling
+        doc.save();
+        doc.fillColor('#1E293B').font('Helvetica').fontSize(8.5);
+
+        // Student name and Reg No
+        doc.font('Helvetica-Bold').text(payment.studentName || 'Student', studentColX + 5, yPosition + 1, { width: colWidths.student - 5, lineBreak: false });
+        doc.font('Helvetica').fillColor('#64748B').fontSize(7.5).text(`Reg: ${payment.registrationNumber || 'N/A'}`, studentColX + 5, yPosition + 10, { width: colWidths.student - 5 });
+
+        // Class/Section
+        const classSectionStr = `${payment.className || 'N/A'} / ${payment.sectionName || 'N/A'}`;
+        doc.fillColor('#1E293B').fontSize(8.5).text(classSectionStr, classColX, yPosition + 4, { width: colWidths.class, lineBreak: false });
+
+        // Method
+        doc.text((payment.method || 'cash').toUpperCase(), methodColX, yPosition + 4, { width: colWidths.method, lineBreak: false });
+
+        // Date
+        doc.text(payment.paidOn || 'N/A', dateColX, yPosition + 4, { width: colWidths.date, lineBreak: false });
+
+        // Amount
+        doc.font('Helvetica-Bold').fillColor('#16A34A').text(`Rs. ${(payment.amount || 0).toFixed(2)}`, amountColX, yPosition + 4, { width: colWidths.amount, align: 'right', lineBreak: false });
+
+        doc.restore();
+
+        // Divider line
+        doc.moveTo(50, yPosition + 20).lineTo(562, yPosition + 20).strokeColor('#E2E8F0').lineWidth(0.5).stroke();
+        yPosition += 24;
+      });
+    }
 
     // Single unified check for Report Summary + Signature block (requires ~95pt height)
     const requiredFooterHeight = 95;
@@ -480,61 +488,69 @@ const exportFeeDefaultersPDF = async (req, res, next) => {
     let yPosition = currentY + 28;
     const maxAllowedY = 670; // Safe threshold well before bottom margin boundary (732pt)
 
-    defaulters.forEach((row, index) => {
-      // Safe manual page break check before drawing the row (26pt height)
-      if (yPosition + 26 > maxAllowedY) {
-        doc.addPage();
-        yPosition = 125; // starts after top header margin
-
-        // Draw Table Header again at top of new page
-        doc.save();
-        doc.rect(50, yPosition, 512, 22).fill('#00215E');
-        doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8);
-        doc.text('Student Details', nameColX + 5, yPosition + 7, { width: colWidths.name - 5 });
-        doc.text('Class/Section', classColX, yPosition + 7, { width: colWidths.class });
-        doc.text("Father's Details", contactColX, yPosition + 7, { width: colWidths.contact });
-        doc.text('Amt Due', dueColX, yPosition + 7, { width: colWidths.due, align: 'right' });
-        doc.text('Amt Paid', paidColX, yPosition + 7, { width: colWidths.paid, align: 'right' });
-        doc.text('Outstanding', outstandingColX, yPosition + 7, { width: colWidths.outstanding, align: 'right' });
-        doc.restore();
-
-        yPosition += 28;
-      }
-
-      // Alternating row backgrounds
-      if (index % 2 === 0) {
-        doc.save();
-        doc.rect(50, yPosition - 4, 512, 22).fill('#F8FAFC');
-        doc.restore();
-      }
-
-      // Row styling
+    if (defaulters.length === 0) {
       doc.save();
-      doc.fillColor('#1E293B').font('Helvetica').fontSize(8);
-
-      // Student name and Reg No
-      doc.font('Helvetica-Bold').text(row.fullName, nameColX + 5, yPosition, { width: colWidths.name - 5, lineBreak: false });
-      doc.font('Helvetica').fillColor('#64748B').fontSize(7).text(`Reg: ${row.registrationNumber}`, nameColX + 5, yPosition + 10, { width: colWidths.name - 5 });
-
-      // Class/Section
-      const classSectionStr = `${row.classId?.name || 'N/A'} / ${row.sectionId?.name || 'N/A'}`;
-      doc.fillColor('#1E293B').fontSize(8).text(classSectionStr, classColX, yPosition + 4, { width: colWidths.class, lineBreak: false });
-
-      // Father details
-      doc.text(row.fatherName || 'N/A', contactColX, yPosition, { width: colWidths.contact, lineBreak: false });
-      doc.fillColor('#64748B').fontSize(7.5).text(row.fatherContact || 'N/A', contactColX, yPosition + 10, { width: colWidths.contact });
-
-      // Financials
-      doc.fillColor('#1E293B').fontSize(8).text(row.amountDue.toFixed(2), dueColX, yPosition + 4, { width: colWidths.due, align: 'right', lineBreak: false });
-      doc.text(row.amountPaid.toFixed(2), paidColX, yPosition + 4, { width: colWidths.paid, align: 'right', lineBreak: false });
-      doc.font('Helvetica-Bold').fillColor('#DC2626').text(row.outstandingAmount.toFixed(2), outstandingColX, yPosition + 4, { width: colWidths.outstanding, align: 'right', lineBreak: false });
-
+      doc.fillColor('#16A34A').font('Helvetica-Bold').fontSize(9);
+      doc.text('No fee defaulters found. All student dues for this selection are cleared!', 50, yPosition + 8, { align: 'center', width: 512 });
       doc.restore();
+      yPosition += 36;
+    } else {
+      defaulters.forEach((row, index) => {
+        // Safe manual page break check before drawing the row (26pt height)
+        if (yPosition + 26 > maxAllowedY) {
+          doc.addPage();
+          yPosition = 125; // starts after top header margin
 
-      // Divider line
-      doc.moveTo(50, yPosition + 22).lineTo(562, yPosition + 22).strokeColor('#E2E8F0').lineWidth(0.5).stroke();
-      yPosition += 26;
-    });
+          // Draw Table Header again at top of new page
+          doc.save();
+          doc.rect(50, yPosition, 512, 22).fill('#00215E');
+          doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8);
+          doc.text('Student Details', nameColX + 5, yPosition + 7, { width: colWidths.name - 5 });
+          doc.text('Class/Section', classColX, yPosition + 7, { width: colWidths.class });
+          doc.text("Father's Details", contactColX, yPosition + 7, { width: colWidths.contact });
+          doc.text('Amt Due', dueColX, yPosition + 7, { width: colWidths.due, align: 'right' });
+          doc.text('Amt Paid', paidColX, yPosition + 7, { width: colWidths.paid, align: 'right' });
+          doc.text('Outstanding', outstandingColX, yPosition + 7, { width: colWidths.outstanding, align: 'right' });
+          doc.restore();
+
+          yPosition += 28;
+        }
+
+        // Alternating row backgrounds
+        if (index % 2 === 0) {
+          doc.save();
+          doc.rect(50, yPosition - 4, 512, 22).fill('#F8FAFC');
+          doc.restore();
+        }
+
+        // Row styling
+        doc.save();
+        doc.fillColor('#1E293B').font('Helvetica').fontSize(8);
+
+        // Student name and Reg No
+        doc.font('Helvetica-Bold').text(row.fullName || 'Student', nameColX + 5, yPosition, { width: colWidths.name - 5, lineBreak: false });
+        doc.font('Helvetica').fillColor('#64748B').fontSize(7).text(`Reg: ${row.registrationNumber || 'N/A'}`, nameColX + 5, yPosition + 10, { width: colWidths.name - 5 });
+
+        // Class/Section
+        const classSectionStr = `${row.classId?.name || 'N/A'} / ${row.sectionId?.name || 'N/A'}`;
+        doc.fillColor('#1E293B').fontSize(8).text(classSectionStr, classColX, yPosition + 4, { width: colWidths.class, lineBreak: false });
+
+        // Father details
+        doc.text(row.fatherName || 'N/A', contactColX, yPosition, { width: colWidths.contact, lineBreak: false });
+        doc.fillColor('#64748B').fontSize(7.5).text(row.fatherContact || 'N/A', contactColX, yPosition + 10, { width: colWidths.contact });
+
+        // Financials
+        doc.fillColor('#1E293B').fontSize(8).text((row.amountDue || 0).toFixed(2), dueColX, yPosition + 4, { width: colWidths.due, align: 'right', lineBreak: false });
+        doc.text((row.amountPaid || 0).toFixed(2), paidColX, yPosition + 4, { width: colWidths.paid, align: 'right', lineBreak: false });
+        doc.font('Helvetica-Bold').fillColor('#DC2626').text((row.outstandingAmount || 0).toFixed(2), outstandingColX, yPosition + 4, { width: colWidths.outstanding, align: 'right', lineBreak: false });
+
+        doc.restore();
+
+        // Divider line
+        doc.moveTo(50, yPosition + 22).lineTo(562, yPosition + 22).strokeColor('#E2E8F0').lineWidth(0.5).stroke();
+        yPosition += 26;
+      });
+    }
 
     // Single unified check for Report Summary + Signature block (requires ~95pt height)
     const requiredFooterHeight = 95;

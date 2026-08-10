@@ -47,24 +47,24 @@ const Login = () => {
 
         {/* Top Brand Logo */}
         <div className="flex items-center space-x-3 z-10">
-          <GraduationCap className="h-10 w-10 text-white" />
-          <span className="text-2xl font-bold tracking-wider">IHASS</span>
+          <div className="h-11 w-11 rounded-xl bg-white/95 p-1 shadow-md border border-white/20 flex items-center justify-center">
+            <img src="/ihass-logo.png" alt="IHASS Logo" className="h-full w-full object-contain" />
+          </div>
+          <div>
+            <span className="text-2xl font-black tracking-wider block leading-tight">IHASS</span>
+            <span className="text-[10px] text-sky-200 tracking-wider font-semibold uppercase">School Management System</span>
+          </div>
         </div>
 
         {/* Center Graphic */}
         <div className="flex flex-col items-center justify-center flex-grow z-10 my-8">
-          <div className="relative w-64 h-64 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl mb-8">
-            <div className="absolute text-white/20 transform -translate-x-12 -translate-y-8 scale-90">
-              <School className="h-28 w-28 stroke-[1]" />
-            </div>
-            <div className="absolute text-white/10 transform translate-x-12 translate-y-8 scale-75">
-              <GraduationCap className="h-28 w-28 stroke-[1]" />
-            </div>
-            <div className="bg-navy-800 p-6 rounded-xl shadow-xl border border-white/10 flex items-center justify-center transform -rotate-6 hover:rotate-0 transition-transform duration-300">
-              <School className="h-16 w-16 text-white" />
-            </div>
-            <div className="absolute bg-navy-750 p-4 rounded-xl shadow-lg border border-white/10 flex items-center justify-center transform translate-x-12 -translate-y-12 rotate-12 hover:rotate-0 transition-transform duration-300">
-              <GraduationCap className="h-12 w-12 text-white" />
+          <div className="relative w-64 h-64 bg-white/5 border border-white/15 rounded-3xl flex items-center justify-center shadow-2xl mb-8 backdrop-blur-sm p-6 group">
+            {/* Glowing Backdrop Ring */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
+            
+            {/* Main Center Logo Card */}
+            <div className="relative z-10 bg-white rounded-2xl p-6 shadow-2xl border border-white/30 flex flex-col items-center justify-center transform group-hover:scale-105 transition-all duration-300">
+              <img src="/ihass-logo.png" alt="IHASS Logo" className="h-28 w-28 object-contain drop-shadow-md" />
             </div>
           </div>
           
@@ -77,8 +77,8 @@ const Login = () => {
         </div>
 
         {/* School Full Name Subtitle */}
-        <div className="text-navy-300 text-xs z-10 font-medium">
-          Iqra Hadiqa Tul Atfal School
+        <div className="text-navy-300 text-xs z-10 font-medium tracking-wide">
+          Iqra Hadiqa Tul Atfal School System
         </div>
       </div>
 
@@ -91,12 +91,13 @@ const Login = () => {
         <div className="max-w-md w-full mx-auto my-auto">
           {/* Brand Header */}
           <div className="flex flex-col items-center mb-8">
-            <div className="p-3 bg-navy-50 dark:bg-sky-950/40 rounded-2xl border border-navy-100 dark:border-sky-900/40 mb-4 shadow-sm">
-              <GraduationCap className="h-10 w-10 text-navy-900 dark:text-sky-400" />
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 mb-3 shadow-md flex items-center justify-center">
+              <img src="/ihass-logo.png" alt="IHASS Logo" className="h-14 w-14 object-contain" />
             </div>
-            <span className="text-3xl font-black tracking-wider text-navy-950 dark:text-slate-50">IHASS</span>
-            <h1 className="text-2xl font-extrabold text-navy-950 dark:text-slate-50 mt-4 tracking-tight">Portal Login</h1>
-            <p className="text-gray-500 dark:text-slate-400 text-sm mt-1.5 text-center font-medium">
+            <span className="text-2xl font-black tracking-wider text-navy-950 dark:text-slate-50">IHASS</span>
+            <span className="text-xs text-gray-500 font-semibold tracking-wider uppercase mt-0.5">Iqra Hadiqa Tul Atfal School</span>
+            <h1 className="text-xl font-extrabold text-navy-950 dark:text-slate-50 mt-4 tracking-tight">Portal Login</h1>
+            <p className="text-gray-500 dark:text-slate-400 text-xs mt-1 text-center font-medium">
               Welcome back. Please sign in to access your portal.
             </p>
           </div>
