@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { 
   Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
@@ -18,6 +19,9 @@ import StudentViewDrawer from '../features/students/StudentViewDrawer';
 import BulkStudentImportModal from '../features/students/BulkStudentImportModal';
 
 const AdminStudents = () => {
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+
   // Navigation items for the Sidebar
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
@@ -41,11 +45,20 @@ const AdminStudents = () => {
   const [sectionsList, setSectionsList] = useState([]);
 
   // Filters State
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
   const [status, setStatus] = useState('');
+
+  // Sync search input whenever URL query changes (e.g. from Navbar search navigation)
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q !== null) {
+      setSearchTerm(q);
+      setDebouncedSearch(q);
+    }
+  }, [searchParams]);
 
   // Pagination State
   const [page, setPage] = useState(1);
