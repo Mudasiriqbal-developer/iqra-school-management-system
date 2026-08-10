@@ -235,12 +235,8 @@ const AdminDashboard = () => {
           <div className="p-6 border-b border-gray-100 flex justify-between items-center">
             <div>
               <h2 className="text-lg font-bold text-navy-950">Recent Registrations</h2>
-              <p className="text-xs text-gray-400 mt-0.5">List of newly registered students and faculty pending validation.</p>
+              <p className="text-xs text-gray-500 mt-0.5">List of newly registered students and faculty pending validation.</p>
             </div>
-            <button className="text-xs font-bold text-navy-800 hover:text-navy-700 transition-colors flex items-center space-x-1">
-              <span>View All</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
           </div>
 
           <div>

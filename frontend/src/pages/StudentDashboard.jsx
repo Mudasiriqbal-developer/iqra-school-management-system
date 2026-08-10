@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LayoutDashboard, Calendar, Award, CreditCard, ArrowRight, Settings, FileText } from 'lucide-react';
+import { LayoutDashboard, Calendar, Award, CreditCard, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
-import StatusBadge from '../components/shared/StatusBadge';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -19,13 +18,6 @@ const StudentDashboard = () => {
     { label: 'Grades', icon: Award, path: '/student/grades' },
     { label: 'Fees', icon: CreditCard, path: '/student/fees' },
     { label: 'Settings', icon: Settings, path: '/student/settings' },
-  ];
-
-  const upcomingAssessments = [
-    { id: 'ASM201', subject: 'Mathematics', type: 'Quiz 5 (Geometry)', date: 'Today, 11:30 AM', status: 'pending', label: 'Not Started' },
-    { id: 'ASM202', subject: 'Physics', type: 'Lab Report 2 Submission', date: 'July 05, 2026', status: 'info', label: 'Draft Saved' },
-    { id: 'ASM203', subject: 'English Literature', type: 'Book Review Presentation', date: 'July 08, 2026', status: 'active', label: 'Prepared' },
-    { id: 'ASM204', subject: 'Chemistry', type: 'Monthly Unit Test', date: 'July 10, 2026', status: 'pending', label: 'Not Started' },
   ];
 
   useEffect(() => {
@@ -106,12 +98,12 @@ const StudentDashboard = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
             <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Student Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">Check grades, attend classes, manage fees, and complete assessments.</p>
+            <p className="text-sm text-gray-600 mt-1">Review academic summary, attendance record, class schedules, and fee details.</p>
           </div>
         </div>
 
-        {/* 3 StatCards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {/* Dynamic StatCards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <StatCard
             icon={Award}
             label="Overall Percentage"
@@ -127,54 +119,6 @@ const StudentDashboard = () => {
             trend={attendance ? `${attendance.absentDays} Absent Days` : 'N/A'}
             trendColor={attendance?.absentDays > 0 ? 'danger' : 'active'}
           />
-          <StatCard
-            icon={FileText}
-            label="Enrolled Courses"
-            value="6"
-            trend="Core Curriculum"
-            trendColor="info"
-          />
-        </div>
-
-        {/* Sample Table Block */}
-        <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-bold text-navy-950">Upcoming Assessments</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Tasks and test events scheduled for the next 7 days.</p>
-            </div>
-            <button className="text-xs font-bold text-navy-800 hover:text-navy-700 transition-colors flex items-center space-x-1">
-              <span>View Full Calendar</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Subject</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Assessment Type</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Due / Scheduled Date</th>
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {upcomingAssessments.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-600">{row.id}</td>
-                    <td className="py-4 px-6 text-sm font-bold text-navy-950">{row.subject}</td>
-                    <td className="py-4 px-6 text-sm text-gray-600 font-medium">{row.type}</td>
-                    <td className="py-4 px-6 text-sm text-gray-500">{row.date}</td>
-                    <td className="py-4 px-6 text-sm">
-                      <StatusBadge status={row.status} label={row.label} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </DashboardLayout>
@@ -182,4 +126,5 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
+
 

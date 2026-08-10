@@ -555,12 +555,12 @@ const AdminFees = () => {
                                 <button
                                   onClick={() => handleOpenPaymentModal(item)}
                                   title="Record Payment"
-                                  className="p-2 text-success hover:text-success/90 hover:bg-success/10 rounded-btn transition-all"
+                                  className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-success hover:text-success/90 hover:bg-success/10 rounded-xl transition-all"
                                 >
                                   <CreditCard className="h-4.5 w-4.5" />
                                 </button>
                               ) : (
-                                <div className="p-2 text-text-secondary/30 cursor-not-allowed">
+                                <div className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-text-secondary/30 cursor-not-allowed">
                                   <CreditCard className="h-4.5 w-4.5" />
                                 </div>
                               )}
@@ -568,7 +568,7 @@ const AdminFees = () => {
                               <button
                                 onClick={() => handleOpenLedger(item)}
                                 title="View Ledger"
-                                className="p-2 text-primary hover:bg-background rounded-btn transition-all"
+                                className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-primary hover:bg-background rounded-xl transition-all"
                               >
                                 <Eye className="h-4.5 w-4.5" />
                               </button>
@@ -577,7 +577,7 @@ const AdminFees = () => {
                                 onClick={() => handleDownloadReceipt(item)}
                                 title="Download PDF Receipt"
                                 disabled={isDownloading}
-                                className="p-2 text-text-secondary hover:text-primary hover:bg-background rounded-btn transition-all disabled:opacity-40"
+                                className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-text-secondary hover:text-primary hover:bg-background rounded-xl transition-all disabled:opacity-40"
                               >
                                 {isDownloading ? (
                                   <Loader2 className="h-4.5 w-4.5 animate-spin" />

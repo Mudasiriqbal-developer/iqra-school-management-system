@@ -18,6 +18,8 @@ import {
   Check,
   X,
   GripVertical,
+  ChevronUp,
+  ChevronDown,
   Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -179,6 +181,64 @@ const AdminAcademics = () => {
           fetchDetailsForClass(selectedClass._id);
         }
       }
+    }
+  };
+
+  // Touch-Friendly Directional Reordering Handlers (Mobile & Touch Devices)
+  const handleMoveClass = async (e, index, direction) => {
+    e.stopPropagation();
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= classes.length) return;
+
+    const updated = [...classes];
+    const [removed] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, removed);
+    setClasses(updated);
+
+    try {
+      await reorderClasses(updated.map(c => c._id));
+      toast.success('Class order updated');
+    } catch (_err) {
+      toast.error('Failed to save class order');
+      fetchClasses();
+    }
+  };
+
+  const handleMoveSection = async (e, index, direction) => {
+    e.stopPropagation();
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= sections.length) return;
+
+    const updated = [...sections];
+    const [removed] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, removed);
+    setSections(updated);
+
+    try {
+      await reorderSections(updated.map(s => s._id));
+      toast.success('Section order updated');
+    } catch (_err) {
+      toast.error('Failed to save section order');
+      if (selectedClass) fetchDetailsForClass(selectedClass._id);
+    }
+  };
+
+  const handleMoveSubject = async (e, index, direction) => {
+    e.stopPropagation();
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= subjects.length) return;
+
+    const updated = [...subjects];
+    const [removed] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, removed);
+    setSubjects(updated);
+
+    try {
+      await reorderSubjects(updated.map(s => s._id));
+      toast.success('Subject order updated');
+    } catch (_err) {
+      toast.error('Failed to save subject order');
+      if (selectedClass) fetchDetailsForClass(selectedClass._id);
     }
   };
 
@@ -725,20 +785,40 @@ const AdminAcademics = () => {
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center flex-grow truncate pr-2">
-                              <GripVertical className="h-4 w-4 text-gray-400 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
-                              <span className="text-sm font-semibold text-gray-800 mr-2">{formatClassName(cls.name)}</span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
-                                cls.gender === 'male'
-                                  ? 'bg-sky-50 text-sky-600 border-sky-100/50'
-                                  : cls.gender === 'female'
-                                  ? 'bg-rose-50 text-rose-600 border-rose-100/50'
-                                  : 'bg-slate-50 text-gray-500 border-gray-100'
-                              }`}>
-                                {cls.gender || 'mixed'}
-                              </span>
-                            </div>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center flex-grow truncate pr-2">
+                                <GripVertical className="h-4 w-4 text-gray-500 mr-1 cursor-grab active:cursor-grabbing flex-shrink-0 hidden sm:block" />
+                                <div className="flex items-center space-x-1 mr-2">
+                                  <button
+                                    type="button"
+                                    disabled={originalIndex === 0}
+                                    onClick={(e) => handleMoveClass(e, originalIndex, 'up')}
+                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                    title="Move Up"
+                                  >
+                                    <ChevronUp className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={originalIndex === classes.length - 1}
+                                    onClick={(e) => handleMoveClass(e, originalIndex, 'down')}
+                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                    title="Move Down"
+                                  >
+                                    <ChevronDown className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                                <span className="text-sm font-semibold text-gray-800 mr-2">{formatClassName(cls.name)}</span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
+                                  cls.gender === 'male'
+                                    ? 'bg-sky-50 text-sky-600 border-sky-100/50'
+                                    : cls.gender === 'female'
+                                    ? 'bg-rose-50 text-rose-600 border-rose-100/50'
+                                    : 'bg-slate-50 text-gray-500 border-gray-100'
+                                }`}>
+                                  {cls.gender || 'mixed'}
+                                </span>
+                              </div>
                             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={(e) => {
@@ -895,21 +975,41 @@ const AdminAcademics = () => {
                                   handleUpdateSection(sec._id, editSectionValue);
                                   setEditingSectionId(null);
                                 }}
-                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 text-green-600 hover:bg-green-50 rounded-lg"
                               >
-                                <Check className="h-3.5 w-3.5" />
+                                <Check className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => setEditingSectionId(null)}
-                                className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                                className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 text-gray-500 hover:bg-gray-100 rounded-lg"
                               >
-                                <X className="h-3.5 w-3.5" />
+                                <X className="h-4 w-4" />
                               </button>
                             </div>
                           ) : (
                             <>
                               <div className="flex items-center flex-grow truncate pr-2">
-                                <GripVertical className="h-4 w-4 text-gray-400 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
+                                <GripVertical className="h-4 w-4 text-gray-500 mr-1 cursor-grab active:cursor-grabbing flex-shrink-0 hidden sm:block" />
+                                <div className="flex items-center space-x-1 mr-2">
+                                  <button
+                                    type="button"
+                                    disabled={index === 0}
+                                    onClick={(e) => handleMoveSection(e, index, 'up')}
+                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                    title="Move Up"
+                                  >
+                                    <ChevronUp className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={index === sections.length - 1}
+                                    onClick={(e) => handleMoveSection(e, index, 'down')}
+                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                    title="Move Down"
+                                  >
+                                    <ChevronDown className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
                                 <span className="text-sm font-semibold text-gray-700">Section {sec.name}</span>
                               </div>
                               <div className="flex items-center space-x-1">
@@ -918,17 +1018,17 @@ const AdminAcademics = () => {
                                     setEditingSectionId(sec._id);
                                     setEditSectionValue(sec.name);
                                   }}
-                                  className="p-1 text-gray-400 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                                  className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-gray-500 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
                                   title="Edit Section Name"
                                 >
-                                  <Pencil className="h-3 w-3" />
+                                  <Pencil className="h-4 w-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteSection(sec._id)}
-                                  className="p-1 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded transition-colors"
+                                  className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
                                   title="Delete Section"
                                 >
-                                  <Trash2 className="h-3 w-3" />
+                                  <Trash2 className="h-4 w-4" />
                                 </button>
                               </div>
                             </>
@@ -1104,6 +1204,10 @@ const AdminAcademics = () => {
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, index, 'subject')}
                         dragOver={dragOverInfo?.type === 'subject' && dragOverInfo?.index === index}
+                        onMoveUp={(e) => handleMoveSubject(e, index, 'up')}
+                        onMoveDown={(e) => handleMoveSubject(e, index, 'down')}
+                        isFirst={index === 0}
+                        isLast={index === subjects.length - 1}
                       />
                     ))
                   )}

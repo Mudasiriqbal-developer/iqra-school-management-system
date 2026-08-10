@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Pencil, Trash2, Check, X, GripVertical } from 'lucide-react';
+import { Pencil, Trash2, Check, X, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 
 const InlineEditableRow = ({
   label,
@@ -13,7 +13,11 @@ const InlineEditableRow = ({
   onDragEnd,
   onDragLeave,
   onDrop,
-  dragOver = false
+  dragOver = false,
+  onMoveUp,
+  onMoveDown,
+  isFirst = false,
+  isLast = false
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(label);
@@ -22,7 +26,6 @@ const InlineEditableRow = ({
   useEffect(() => {
     if (isEditing) {
       setEditValue(label);
-      // Wait for DOM to render the input before focusing
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
@@ -95,14 +98,14 @@ const InlineEditableRow = ({
           />
           <button
             onClick={handleSave}
-            className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/50 rounded-lg transition-colors"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/50 rounded-lg transition-colors"
             title="Save"
           >
             <Check className="h-4 w-4" />
           </button>
           <button
             onClick={handleCancel}
-            className="p-1.5 text-gray-500 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1.5 text-gray-500 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-slate-700 rounded-lg transition-colors"
             title="Cancel"
           >
             <X className="h-4 w-4" />
@@ -112,24 +115,46 @@ const InlineEditableRow = ({
         <>
           <div className="flex items-center flex-grow truncate pr-2">
             {draggable && (
-              <GripVertical className="h-4 w-4 text-gray-400 dark:text-slate-500 mr-2 cursor-grab active:cursor-grabbing flex-shrink-0" />
+              <GripVertical className="h-4 w-4 text-gray-500 dark:text-slate-500 mr-1 cursor-grab active:cursor-grabbing flex-shrink-0 hidden sm:block" />
             )}
-            <span className="text-sm truncate flex-grow font-medium">{label}</span>
+            {(onMoveUp || onMoveDown) && (
+              <div className="flex items-center space-x-1 mr-2">
+                <button
+                  type="button"
+                  disabled={isFirst}
+                  onClick={onMoveUp}
+                  className="p-1 min-w-[32px] min-h-[32px] text-gray-500 hover:text-navy-950 dark:text-slate-400 dark:hover:text-sky-300 disabled:opacity-30 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center"
+                  title="Move Up"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  disabled={isLast}
+                  onClick={onMoveDown}
+                  className="p-1 min-w-[32px] min-h-[32px] text-gray-500 hover:text-navy-950 dark:text-slate-400 dark:hover:text-sky-300 disabled:opacity-30 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center"
+                  title="Move Down"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+            <span className="text-sm truncate flex-grow font-medium text-gray-800 dark:text-slate-100">{label}</span>
           </div>
-          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center space-x-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={startEditing}
-              className="p-1.5 text-gray-500 dark:text-slate-400 hover:text-navy-900 dark:hover:text-sky-300 hover:bg-slate-200/80 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-gray-500 dark:text-slate-400 hover:text-navy-900 dark:hover:text-sky-300 hover:bg-slate-200/80 dark:hover:bg-slate-700 rounded-xl transition-colors"
               title="Edit"
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="h-4 w-4" />
             </button>
             <button
               onClick={handleDelete}
-              className="p-1.5 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100/80 dark:hover:bg-rose-950/50 rounded-lg transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100/80 dark:hover:bg-rose-950/50 rounded-xl transition-colors"
               title="Delete"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
             </button>
           </div>
         </>
@@ -139,3 +164,4 @@ const InlineEditableRow = ({
 };
 
 export default InlineEditableRow;
+

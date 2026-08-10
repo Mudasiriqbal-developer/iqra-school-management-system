@@ -356,12 +356,8 @@ const ActivateAccount = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-gray-400 mt-8 pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-          <span>© 2026 IHASS. All rights reserved.</span>
-          <div className="flex space-x-4">
-            <a href="#" className="hover:text-gray-600 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-gray-600 transition-colors">Terms of Service</a>
-          </div>
+        <div className="text-center text-xs text-gray-500 mt-8 pt-8 border-t border-gray-100 flex items-center justify-center">
+          <span>© 2026 IQRA School Management System. All rights reserved.</span>
         </div>
       </div>
     </div>

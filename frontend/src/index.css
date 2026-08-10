@@ -103,7 +103,12 @@
 }
 
 .dark .text-gray-400 {
-  color: #94a3b8 !important; /* slate-400 */
+  color: #cbd5e1 !important; /* slate-300 for crisp dark mode legibility */
+}
+
+/* Accessibility contrast enhancement for light mode secondary text */
+:not(.dark) .text-gray-400 {
+  color: #4b5563; /* slate-600 for >7:1 WCAG AA contrast on white */
 }
 
 .dark .text-navy-900 {
