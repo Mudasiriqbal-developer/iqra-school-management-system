@@ -23,11 +23,11 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
       <div className="p-6 border-b border-white/10 flex items-center justify-between">
         <div className="flex flex-col">
           <div className="flex items-center space-x-3 max-w-[210px] overflow-hidden">
-            <div className="h-10 w-10 rounded-xl bg-white/95 p-1 shadow-md border border-white/20 flex items-center justify-center flex-shrink-0">
+            <div className="h-12 w-12 flex items-center justify-center flex-shrink-0">
               <img 
                 src={logoUrl || '/ihass-logo.png'} 
                 alt="IHASS Logo" 
-                className="h-full w-full object-contain"
+                className="h-full w-full object-contain drop-shadow-md"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = '/ihass-logo.png';

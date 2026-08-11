@@ -44,8 +44,7 @@ const drawBrandedHeader = (doc, title, subtitle = '', settings = null) => {
 
   if (validLogoPath) {
     try {
-      doc.roundedRect(26, 22, 46, 46, 6).fill('#FFFFFF');
-      doc.image(validLogoPath, 28, 24, { fit: [42, 42], align: 'center', valign: 'center' });
+      doc.image(validLogoPath, 20, 16, { fit: [68, 68], align: 'center', valign: 'center' });
       logoDrawn = true;
     } catch (err) {
       logoDrawn = false;
@@ -99,12 +98,12 @@ const drawBrandedHeader = (doc, title, subtitle = '', settings = null) => {
     subLabelFontSize = 7;
   }
   
-  // Left branding block constrained to X: 80-310 (width: 230)
+  // Left branding block constrained to X: 98-315 (width: 215)
   // Start slightly higher at Y: 24 to give wrapping text more space
   doc.fillColor('#FFFFFF')
      .font('Helvetica-Bold')
      .fontSize(nameFontSize)
-     .text(schoolName.toUpperCase(), 80, 24, { width: 230, characterSpacing: 0.5 });
+     .text(schoolName.toUpperCase(), 98, 24, { width: 215, characterSpacing: 0.5 });
      
   // Place the address dynamically below the school name to prevent vertical overlaps
   const nextY = Math.max(doc.y + 2, 46);
@@ -112,7 +111,7 @@ const drawBrandedHeader = (doc, title, subtitle = '', settings = null) => {
   doc.fontSize(subLabelFontSize)
      .font('Helvetica-Bold')
      .fillColor('#93C5FD') // Brighter cyan/blue for contrast
-     .text(subLabel.toUpperCase(), 80, nextY, { width: 230 });
+     .text(subLabel.toUpperCase(), 98, nextY, { width: 215 });
      
   // 4. Report Title (Right-aligned, constrained to X: 320 to pageWidth - 30)
   doc.fillColor('#FFFFFF')

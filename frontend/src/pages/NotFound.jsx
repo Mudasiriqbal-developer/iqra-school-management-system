@@ -35,8 +35,8 @@ const NotFound = () => {
     <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center p-6 select-none">
       {/* Small IHASS logo above the content */}
       <div className="flex items-center space-x-3 mb-10">
-        <div className="h-10 w-10 rounded-xl bg-white p-1 shadow-sm border border-gray-200 flex items-center justify-center">
-          <img src="/ihass-logo.png" alt="IHASS Logo" className="h-full w-full object-contain" />
+        <div className="h-12 w-12 flex items-center justify-center">
+          <img src="/ihass-logo.png" alt="IHASS Logo" className="h-full w-full object-contain drop-shadow-md" />
         </div>
         <div className="text-left">
           <span className="text-xl font-black tracking-wider text-navy-950 block leading-tight">IHASS</span>

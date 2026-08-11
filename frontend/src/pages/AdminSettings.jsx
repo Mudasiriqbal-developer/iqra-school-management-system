@@ -476,7 +476,7 @@ const AdminSettings = () => {
                         onChange={(e) => setLogoUrl(e.target.value)}
                         className="flex-grow px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#00215E]/20 focus:border-[#00215E] transition-all"
                       />
-                      <div className="h-11 w-11 rounded-xl bg-slate-50 border border-gray-200 overflow-hidden flex items-center justify-center p-1 flex-shrink-0 shadow-xs" title="Logo Preview">
+                      <div className="h-14 w-14 flex items-center justify-center p-0.5 flex-shrink-0 drop-shadow-sm" title="Logo Preview">
                         <img 
                           src={logoUrl || '/ihass-logo.png'} 
                           alt="Logo Preview" 

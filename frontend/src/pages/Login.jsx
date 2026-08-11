@@ -47,8 +47,8 @@ const Login = () => {
 
         {/* Top Brand Logo */}
         <div className="flex items-center space-x-3 z-10">
-          <div className="h-11 w-11 rounded-xl bg-white/95 p-1 shadow-md border border-white/20 flex items-center justify-center">
-            <img src="/ihass-logo.png" alt="IHASS Logo" className="h-full w-full object-contain" />
+          <div className="h-12 w-12 flex items-center justify-center">
+            <img src="/ihass-logo.png" alt="IHASS Logo" className="h-full w-full object-contain drop-shadow-md" />
           </div>
           <div>
             <span className="text-2xl font-black tracking-wider block leading-tight">IHASS</span>
@@ -58,13 +58,13 @@ const Login = () => {
 
         {/* Center Graphic */}
         <div className="flex flex-col items-center justify-center flex-grow z-10 my-8">
-          <div className="relative w-64 h-64 bg-white/5 border border-white/15 rounded-3xl flex items-center justify-center shadow-2xl mb-8 backdrop-blur-sm p-6 group">
+          <div className="relative flex items-center justify-center mb-8 group">
             {/* Glowing Backdrop Ring */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/20 to-indigo-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/20 via-sky-500/20 to-indigo-500/30 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 transform scale-125"></div>
             
-            {/* Main Center Logo Card */}
-            <div className="relative z-10 bg-white rounded-2xl p-6 shadow-2xl border border-white/30 flex flex-col items-center justify-center transform group-hover:scale-105 transition-all duration-300">
-              <img src="/ihass-logo.png" alt="IHASS Logo" className="h-28 w-28 object-contain drop-shadow-md" />
+            {/* Main Center Circular Logo */}
+            <div className="relative z-10 flex flex-col items-center justify-center transform group-hover:scale-105 transition-all duration-300">
+              <img src="/ihass-logo.png" alt="IHASS Logo" className="h-44 w-44 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]" />
             </div>
           </div>
           
@@ -91,8 +91,8 @@ const Login = () => {
         <div className="max-w-md w-full mx-auto my-auto">
           {/* Brand Header */}
           <div className="flex flex-col items-center mb-8">
-            <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200/80 dark:border-slate-700 mb-3 shadow-md flex items-center justify-center">
-              <img src="/ihass-logo.png" alt="IHASS Logo" className="h-14 w-14 object-contain" />
+            <div className="mb-2 flex items-center justify-center">
+              <img src="/ihass-logo.png" alt="IHASS Logo" className="h-20 w-20 object-contain drop-shadow-lg" />
             </div>
             <span className="text-2xl font-black tracking-wider text-navy-950 dark:text-slate-50">IHASS</span>
             <span className="text-xs text-gray-500 font-semibold tracking-wider uppercase mt-0.5">Iqra Hadiqa Tul Atfal School</span>
