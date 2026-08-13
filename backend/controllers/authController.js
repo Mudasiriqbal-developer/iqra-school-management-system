@@ -6,10 +6,15 @@ const crypto = require('crypto');
 
 /**
  * Generate a JWT token containing user ID and role.
+ * Supports configurable rememberMe expiration (90d if rememberMe is true, 7d otherwise).
  */
-const generateToken = (id, role) => {
+const generateToken = (id, role, rememberMe = false) => {
+  const expiresIn = rememberMe
+    ? (process.env.JWT_REMEMBER_EXPIRES_IN || '90d')
+    : (process.env.JWT_EXPIRES_IN || '7d');
+
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    expiresIn,
   });
 };
 
@@ -82,7 +87,7 @@ const registerUser = async (req, res, next) => {
  */
 const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     // Determine query based on whether input is email or registration number
     let user;
@@ -128,7 +133,7 @@ const loginUser = async (req, res, next) => {
       });
     }
 
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id, user.role, Boolean(rememberMe));
 
     return res.status(200).json({
       success: true,

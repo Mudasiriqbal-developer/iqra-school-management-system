@@ -8,6 +8,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,7 +17,7 @@ const Login = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const user = await login(email, password);
+      const user = await login(email, password, rememberMe);
       toast.success(`Welcome back, ${user.name}!`);
       
       // Redirect based on role
@@ -157,6 +158,8 @@ const Login = () => {
                 <input
                   id="remember-me"
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-navy-800 border-gray-300 rounded focus:ring-navy-700 cursor-pointer"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600 dark:text-slate-400 cursor-pointer select-none">
