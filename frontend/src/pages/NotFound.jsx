@@ -34,9 +34,14 @@ const NotFound = () => {
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center p-6 select-none">
       {/* Small IHASS logo above the content */}
-      <div className="flex items-center space-x-2.5 mb-12">
-        <GraduationCap className="h-6 w-6 text-navy-900" />
-        <span className="text-xl font-bold tracking-wider text-navy-950">IHASS</span>
+      <div className="flex items-center space-x-3 mb-10">
+        <div className="h-12 w-12 flex items-center justify-center">
+          <img src="/ihass-logo.png" alt="IHASS Logo" className="h-full w-full object-contain drop-shadow-md" />
+        </div>
+        <div className="text-left">
+          <span className="text-xl font-black tracking-wider text-navy-950 block leading-tight">IHASS</span>
+          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Iqra Hadiqa Tul Atfal School</span>
+        </div>
       </div>
 
       <div className="flex flex-col items-center text-center max-w-md">

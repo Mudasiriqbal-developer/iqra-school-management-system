@@ -124,24 +124,21 @@ const ActivateAccount = () => {
 
         {/* Top Brand Logo */}
         <div className="flex items-center space-x-3 z-10">
-          <GraduationCap className="h-10 w-10 text-white" />
-          <span className="text-2xl font-bold tracking-wider">IHASS</span>
+          <div className="h-12 w-12 flex items-center justify-center">
+            <img src="/ihass-logo.png" alt="IHASS Logo" className="h-full w-full object-contain drop-shadow-md" />
+          </div>
+          <div>
+            <span className="text-2xl font-black tracking-wider block leading-tight">IHASS</span>
+            <span className="text-[10px] text-sky-200 tracking-wider font-semibold uppercase">School Management System</span>
+          </div>
         </div>
 
         {/* Center Graphic */}
         <div className="flex flex-col items-center justify-center flex-grow z-10 my-8">
-          <div className="relative w-64 h-64 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl mb-8">
-            <div className="absolute text-white/20 transform -translate-x-12 -translate-y-8 scale-90">
-              <School className="h-28 w-28 stroke-[1]" />
-            </div>
-            <div className="absolute text-white/10 transform translate-x-12 translate-y-8 scale-75">
-              <GraduationCap className="h-28 w-28 stroke-[1]" />
-            </div>
-            <div className="bg-navy-800 p-6 rounded-xl shadow-xl border border-white/10 flex items-center justify-center transform -rotate-6 hover:rotate-0 transition-transform duration-300">
-              <School className="h-16 w-16 text-white" />
-            </div>
-            <div className="absolute bg-navy-750 p-4 rounded-xl shadow-lg border border-white/10 flex items-center justify-center transform translate-x-12 -translate-y-12 rotate-12 hover:rotate-0 transition-transform duration-300">
-              <GraduationCap className="h-12 w-12 text-white" />
+          <div className="relative flex items-center justify-center mb-8 group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/20 via-sky-500/20 to-indigo-500/30 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 transform scale-125"></div>
+            <div className="relative z-10 flex flex-col items-center justify-center transform group-hover:scale-105 transition-all duration-300">
+              <img src="/ihass-logo.png" alt="IHASS Logo" className="h-44 w-44 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]" />
             </div>
           </div>
 
@@ -169,8 +166,8 @@ const ActivateAccount = () => {
         </div>
 
         {/* School Full Name Subtitle */}
-        <div className="text-navy-300 text-xs z-10 font-medium">
-          Iqra Hadiqa Tul Atfal School
+        <div className="text-navy-300 text-xs z-10 font-medium tracking-wide">
+          Iqra Hadiqa Tul Atfal School System
         </div>
       </div>
 
@@ -213,11 +210,12 @@ const ActivateAccount = () => {
             <div>
               {/* Brand Header */}
               <div className="flex flex-col items-center mb-8">
-                <div className="flex items-center space-x-2.5">
-                  <GraduationCap className="h-10 w-10 text-navy-900" />
-                  <span className="text-3xl font-black tracking-wider text-navy-950">IHASS</span>
+                <div className="mb-2 flex items-center justify-center">
+                  <img src="/ihass-logo.png" alt="IHASS Logo" className="h-20 w-20 object-contain drop-shadow-lg" />
                 </div>
-                <h1 className="text-2xl font-extrabold text-navy-950 mt-6 tracking-tight">
+                <span className="text-2xl font-black tracking-wider text-navy-950 dark:text-slate-50">IHASS</span>
+                <span className="text-xs text-gray-500 font-semibold tracking-wider uppercase mt-0.5">Iqra Hadiqa Tul Atfal School</span>
+                <h1 className="text-xl font-extrabold text-navy-950 mt-4 tracking-tight">
                   Activate Your Account
                 </h1>
                 <p className="text-gray-500 text-xs mt-2 text-center bg-gray-50 border border-gray-100 py-1.5 px-3 rounded-lg font-medium">

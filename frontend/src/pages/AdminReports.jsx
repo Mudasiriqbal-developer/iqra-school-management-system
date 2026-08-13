@@ -179,7 +179,7 @@ const AdminReports = () => {
       toast.success('CSV report downloaded successfully');
     } catch (err) {
       console.error('CSV Export Error:', err);
-      toast.error(err.response?.data?.message || 'Failed to download CSV report');
+      toast.error(err.message || err.response?.data?.message || 'Failed to download CSV report');
     } finally {
       setDownloadingCSV(false);
     }
@@ -193,7 +193,7 @@ const AdminReports = () => {
       toast.success('PDF report downloaded successfully');
     } catch (err) {
       console.error('PDF Export Error:', err);
-      toast.error(err.response?.data?.message || 'Failed to download PDF report');
+      toast.error(err.message || err.response?.data?.message || 'Failed to download PDF report');
     } finally {
       setDownloadingPDF(false);
     }
@@ -207,7 +207,7 @@ const AdminReports = () => {
       toast.success('Defaulters PDF downloaded successfully');
     } catch (err) {
       console.error('Defaulters PDF Export Error:', err);
-      toast.error(err.response?.data?.message || 'Failed to download Defaulters PDF');
+      toast.error(err.message || err.response?.data?.message || 'Failed to download Defaulters PDF');
     } finally {
       setDownloadingDefaultersPDF(false);
     }

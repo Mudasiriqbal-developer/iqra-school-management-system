@@ -22,15 +22,19 @@ const Sidebar = ({ subtitle = "Administrative Suite", navItems = [], isOpen = fa
       {/* Brand Header */}
       <div className="p-6 border-b border-white/10 flex items-center justify-between">
         <div className="flex flex-col">
-          <div className="flex items-center space-x-2.5 max-w-[210px] overflow-hidden">
-            {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="h-8 w-8 object-contain rounded-lg flex-shrink-0 bg-white/10 p-0.5 border border-white/10" />
-            ) : (
-              <div className="p-2 bg-white/10 rounded-xl border border-white/20 shadow-inner flex items-center justify-center flex-shrink-0">
-                <GraduationCap className="h-5 w-5 text-white" />
-              </div>
-            )}
-            <span className="text-md font-extrabold tracking-wide font-sans truncate" title={schoolName || 'IHASS'}>
+          <div className="flex items-center space-x-3 max-w-[210px] overflow-hidden">
+            <div className="h-12 w-12 flex items-center justify-center flex-shrink-0">
+              <img 
+                src={logoUrl || '/ihass-logo.png'} 
+                alt="IHASS Logo" 
+                className="h-full w-full object-contain drop-shadow-md"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/ihass-logo.png';
+                }}
+              />
+            </div>
+            <span className="text-base font-black tracking-wider font-sans truncate text-white" title={schoolName || 'IHASS'}>
               {schoolName || 'IHASS'}
             </span>
           </div>
