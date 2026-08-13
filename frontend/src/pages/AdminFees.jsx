@@ -480,7 +480,9 @@ const AdminFees = () => {
               </div>
 
               {/* Table for Desktop */}
-              <div className="hidden sm:block overflow-x-auto">
+              <div className="hidden sm:block relative">
+                <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 lg:hidden" />
+                <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-background border-b border-border">
@@ -592,6 +594,7 @@ const AdminFees = () => {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           ) : (

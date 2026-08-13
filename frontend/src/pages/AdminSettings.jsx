@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Users, Award, BookOpen, Wallet, TrendingUp, DollarSign, 
   CalendarCheck, BarChart3, Settings, School, Calendar, Clock, CreditCard, 
-  Save, Plus, Trash2, Phone, Mail, Loader2, Key, Eye, EyeOff, GripVertical
+  Save, Plus, Trash2, Phone, Mail, Loader2, Key, Eye, EyeOff, GripVertical,
+  ChevronUp, ChevronDown
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../services/api';
@@ -27,7 +28,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { DEFAULT_NAV_ITEMS } from '../utils/navConstants';
 
 // Draggable Navigation Item component
-const SortableNavItem = ({ id, item, index }) => {
+const SortableNavItem = ({ id, item, index, totalItems, onMoveUp, onMoveDown }) => {
   const {
     attributes,
     listeners,
@@ -55,17 +56,39 @@ const SortableNavItem = ({ id, item, index }) => {
           : 'hover:border-gray-300 dark:hover:border-gray-700'
       }`}
     >
-      <div className="flex items-center space-x-3">
-        {/* Grab Handle */}
+      <div className="flex items-center space-x-2 sm:space-x-3">
+        {/* Grab Handle (desktop only) */}
         <button
           type="button"
           {...attributes}
           {...listeners}
-          className="p-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing hover:bg-slate-100 rounded transition-colors focus:outline-none flex items-center justify-center"
+          className="p-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing hover:bg-slate-100 rounded transition-colors focus:outline-none hidden sm:flex items-center justify-center"
           title="Drag to reorder"
         >
           <GripVertical className="h-4.5 w-4.5" />
         </button>
+
+        {/* Touch-friendly Up/Down buttons */}
+        <div className="flex flex-col space-y-0.5 sm:hidden">
+          <button
+            type="button"
+            disabled={index === 0}
+            onClick={() => onMoveUp(index)}
+            className="min-w-[32px] min-h-[32px] flex items-center justify-center text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-100 transition-colors"
+            title="Move Up"
+          >
+            <ChevronUp className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            disabled={index === totalItems - 1}
+            onClick={() => onMoveDown(index)}
+            className="min-w-[32px] min-h-[32px] flex items-center justify-center text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-100 transition-colors"
+            title="Move Down"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        </div>
 
         {/* Icon */}
         <div className="p-2 bg-navy-50 text-[#00215E] dark:text-sky-400 rounded-xl border border-navy-100/50 dark:border-sky-900/40 flex-shrink-0 flex items-center justify-center">
@@ -209,6 +232,13 @@ const AdminSettings = () => {
         return arrayMove(items, oldIndex, newIndex);
       });
     }
+  };
+
+  // Touch-friendly directional move handler for navigation order
+  const handleMoveNavItem = (index, direction) => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= navOrderKeys.length) return;
+    setNavOrderKeys((items) => arrayMove(items, index, targetIndex));
   };
 
   const handleSaveNavOrder = async () => {
@@ -404,7 +434,7 @@ const AdminSettings = () => {
         </div>
 
         {/* Quick Navigation Keys */}
-        <div className="flex flex-wrap gap-2 p-1.5 bg-slate-50 border border-gray-200/60 rounded-2xl dark:bg-slate-900/50 dark:border-slate-800">
+        <div className="flex overflow-x-auto no-scrollbar whitespace-nowrap snap-x py-1.5 px-1.5 gap-2 bg-slate-50 border border-gray-200/60 rounded-2xl dark:bg-slate-900/50 dark:border-slate-800">
           {[
             { id: 'school-profile', label: 'School Profile', icon: School },
             { id: 'academic-session', label: 'Academic Settings', icon: Calendar },
@@ -420,7 +450,7 @@ const AdminSettings = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3.5 py-2 border rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2 ${
+                className={`flex-shrink-0 snap-start px-3.5 py-2 border rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2 ${
                   isActive
                     ? 'bg-[#00215E] text-white border-[#00215E] dark:bg-sky-500 dark:text-slate-950 dark:border-sky-500'
                     : 'bg-white border-gray-200 text-slate-700 hover:text-[#00215E] dark:text-slate-300 dark:hover:text-sky-400 hover:bg-slate-50 dark:bg-slate-800 dark:border-[#334155] dark:hover:bg-slate-900'
@@ -468,13 +498,13 @@ const AdminSettings = () => {
                       <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">School Logo URL</label>
                       <span className="text-[11px] text-slate-400 font-medium">Default: /ihass-logo.png</span>
                     </div>
-                    <div className="flex space-x-4 items-center">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
                       <input
                         type="text"
                         placeholder="e.g. /ihass-logo.png or https://example.com/logo.png"
                         value={logoUrl}
                         onChange={(e) => setLogoUrl(e.target.value)}
-                        className="flex-grow px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#00215E]/20 focus:border-[#00215E] transition-all"
+                        className="w-full sm:flex-grow px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#00215E]/20 focus:border-[#00215E] transition-all"
                       />
                       <div className="h-14 w-14 flex items-center justify-center p-0.5 flex-shrink-0 drop-shadow-sm" title="Logo Preview">
                         <img 
@@ -579,7 +609,7 @@ const AdminSettings = () => {
 
                 <div className="p-6">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Working Days (Checked = Attendance Required)</label>
-                  <div className="flex flex-wrap gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-7 gap-2 sm:gap-3">
                     {daysOfWeek.map((day) => {
                       const isChecked = workingDays.includes(day);
                       return (
@@ -699,7 +729,7 @@ const AdminSettings = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-[#00215E] text-white font-bold py-3 px-6 rounded-xl flex items-center space-x-2.5 hover:opacity-90 transition-opacity shadow-md text-sm disabled:opacity-50"
+                className="w-full sm:w-auto bg-[#00215E] text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center space-x-2.5 hover:opacity-90 transition-opacity shadow-md text-sm disabled:opacity-50"
               >
                 {saving ? (
                   <>
@@ -803,7 +833,7 @@ const AdminSettings = () => {
                 <button
                   type="submit"
                   disabled={passwordSaving}
-                  className="bg-[#00215E] hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl transition-all duration-150 text-sm shadow-sm flex items-center justify-center space-x-2 disabled:opacity-50"
+                  className="w-full sm:w-auto bg-[#00215E] hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl transition-all duration-150 text-sm shadow-sm flex items-center justify-center space-x-2 disabled:opacity-50"
                 >
                   {passwordSaving ? (
                     <>
@@ -862,6 +892,9 @@ const AdminSettings = () => {
                               id={key}
                               item={item}
                               index={index}
+                              totalItems={navOrderKeys.length}
+                              onMoveUp={(i) => handleMoveNavItem(i, 'up')}
+                              onMoveDown={(i) => handleMoveNavItem(i, 'down')}
                             />
                           );
                         })}
