@@ -314,9 +314,93 @@ const AdminTeachers = () => {
         {/* Teacher Records Table */}
         <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
           {loading ? (
-            <div className="py-24 flex flex-col items-center justify-center space-y-3">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-navy-900"></div>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Loading faculty records...</span>
+            <div>
+              {/* Stacked Cards Skeleton for Mobile */}
+              <div className="block sm:hidden divide-y divide-border animate-pulse">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="p-4 space-y-3 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-gray-200 rounded-full" />
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-28" />
+                          <div className="h-3 bg-gray-200 rounded w-20" />
+                        </div>
+                      </div>
+                      <div className="h-6 bg-gray-200 rounded-full w-8" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="col-span-2 space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-16" />
+                        <div className="h-4 bg-gray-200 rounded w-48" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-20" />
+                        <div className="h-4 bg-gray-200 rounded w-24" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-24" />
+                        <div className="flex space-x-1 mt-0.5">
+                          <div className="h-4 bg-gray-200 rounded w-10" />
+                          <div className="h-4 bg-gray-200 rounded w-10" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                      <div className="h-3 bg-gray-200 rounded w-12" />
+                      <div className="h-6 bg-gray-200 rounded-full w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Table Skeleton for Desktop */}
+              <div className="hidden sm:block overflow-x-auto animate-pulse">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background border-b border-border">
+                      <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Teacher</th>
+                      <th className="hidden md:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Email</th>
+                      <th className="hidden lg:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Qualification</th>
+                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Assigned Classes</th>
+                      <th className="hidden sm:table-cell py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Status</th>
+                      <th className="py-3.5 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {[...Array(8)].map((_, i) => (
+                      <tr key={i}>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center space-x-3.5">
+                            <div className="h-10 w-10 bg-gray-200 rounded-full flex-shrink-0" />
+                            <div className="space-y-2">
+                              <div className="h-4 bg-gray-200 rounded w-32" />
+                              <div className="h-3 bg-gray-200 rounded w-24" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="hidden md:table-cell py-4 px-6">
+                          <div className="h-4 bg-gray-200 rounded w-40" />
+                        </td>
+                        <td className="hidden lg:table-cell py-4 px-6">
+                          <div className="h-4 bg-gray-200 rounded w-28" />
+                        </td>
+                        <td className="hidden sm:table-cell py-4 px-6">
+                          <div className="flex space-x-1.5">
+                            <div className="h-5 bg-gray-200 rounded-md w-12" />
+                            <div className="h-5 bg-gray-200 rounded-md w-12" />
+                          </div>
+                        </td>
+                        <td className="hidden sm:table-cell py-4 px-6">
+                          <div className="h-6 bg-gray-200 rounded-full w-20" />
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <div className="inline-block h-8 bg-gray-200 rounded-lg w-8" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : paginatedTeachers.length === 0 ? (
             <div className="py-20 text-center">

@@ -407,9 +407,84 @@ const AdminExpenses = () => {
         {/* Expenses List Table */}
         <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
           {loading && expenses.length === 0 ? (
-            <div className="py-24 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#00215E] border-t-transparent"></div>
-              <p className="text-sm font-bold text-navy-950 mt-4">Loading ledger transactions...</p>
+            <div>
+              {/* Stacked Cards Skeleton for Mobile */}
+              <div className="block sm:hidden divide-y divide-border animate-pulse">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="p-4 space-y-3 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-36" />
+                        <div className="h-3 bg-gray-200 rounded w-28" />
+                      </div>
+                      <div className="h-6 bg-gray-200 rounded-full w-16" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-16" />
+                        <div className="h-4 bg-gray-200 rounded w-20" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-20" />
+                        <div className="h-4 bg-gray-200 rounded w-24" />
+                      </div>
+                      <div className="col-span-2 space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-28" />
+                        <div className="h-4 bg-gray-200 rounded w-36" />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+                      <div className="h-8 bg-gray-200 rounded-lg w-8" />
+                      <div className="h-8 bg-gray-200 rounded-lg w-8" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Table Skeleton for Desktop */}
+              <div className="hidden sm:block overflow-x-auto animate-pulse">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background border-b border-border">
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Expense Details</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Category</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Amount</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Date Logged</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Recipient / Paid To</th>
+                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {[...Array(8)].map((_, i) => (
+                      <tr key={i}>
+                        <td className="py-4 px-6">
+                          <div className="space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-36" />
+                            <div className="h-3 bg-gray-200 rounded w-24" />
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="h-6 bg-gray-200 rounded-full w-20" />
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <div className="inline-block h-4 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="h-4 bg-gray-200 rounded w-24" />
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="h-4 bg-gray-200 rounded w-28" />
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <div className="inline-flex space-x-2">
+                            <div className="h-8 bg-gray-200 rounded-lg w-8" />
+                            <div className="h-8 bg-gray-200 rounded-lg w-8" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : expenses.length > 0 ? (
             <div>

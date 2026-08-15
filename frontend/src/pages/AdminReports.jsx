@@ -430,9 +430,97 @@ const AdminReports = () => {
                 </div>
               )}
               {loading ? (
-                <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
-                  <Loader2 className="h-8 w-8 text-navy-900 animate-spin" />
-                  <span className="text-sm font-semibold text-gray-500">Loading defaulters list...</span>
+                <div>
+                  {/* Stacked Cards Skeleton for Mobile */}
+                  <div className="block sm:hidden divide-y divide-border animate-pulse">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="p-4 space-y-3 bg-white">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-32" />
+                            <div className="h-3 bg-gray-200 rounded w-20" />
+                          </div>
+                          <div className="h-6 bg-gray-200 rounded-full w-16" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-16" />
+                            <div className="h-4 bg-gray-200 rounded w-24" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-20" />
+                            <div className="h-4 bg-gray-200 rounded w-20" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-16" />
+                            <div className="h-4 bg-gray-200 rounded w-20" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-16" />
+                            <div className="h-4 bg-gray-200 rounded w-20" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-12" />
+                            <div className="h-4 bg-gray-200 rounded w-24" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-20" />
+                            <div className="h-4 bg-gray-200 rounded w-28" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Table Skeleton for Desktop */}
+                  <div className="hidden sm:block overflow-x-auto animate-pulse">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-background border-b border-border">
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Student</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Class/Section</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Father's Contact</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Amount Due</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Amount Paid</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Outstanding</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Due Date</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {[...Array(5)].map((_, i) => (
+                          <tr key={i}>
+                            <td className="py-3.5 px-6">
+                              <div className="space-y-2">
+                                <div className="h-4 bg-gray-200 rounded w-32" />
+                                <div className="h-3 bg-gray-200 rounded w-20" />
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-24" />
+                            </td>
+                            <td className="py-3.5 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-28" />
+                            </td>
+                            <td className="py-3.5 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-20" />
+                            </td>
+                            <td className="py-3.5 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-20" />
+                            </td>
+                            <td className="py-3.5 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-20" />
+                            </td>
+                            <td className="py-3.5 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-24" />
+                            </td>
+                            <td className="py-3.5 px-6 text-center">
+                              <div className="inline-block h-6 bg-gray-200 rounded-full w-20" />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : defaultersData.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center p-12">
@@ -599,9 +687,66 @@ const AdminReports = () => {
             {/* Attendance Table */}
             <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
               {loading ? (
-                <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
-                  <Loader2 className="h-8 w-8 text-navy-900 animate-spin" />
-                  <span className="text-sm font-semibold text-gray-500">Loading attendance data...</span>
+                <div>
+                  {/* Stacked Cards Skeleton for Mobile */}
+                  <div className="block sm:hidden divide-y divide-border animate-pulse">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="p-4 space-y-3 bg-white">
+                        <div className="flex items-center justify-between">
+                          <div className="h-4 bg-gray-200 rounded w-28" />
+                          <div className="h-4 bg-gray-200 rounded w-16" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-16" />
+                            <div className="h-4 bg-gray-200 rounded w-12" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-gray-200 rounded w-20" />
+                            <div className="h-4 bg-gray-200 rounded w-12" />
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-gray-100 flex flex-col space-y-1.5">
+                          <div className="h-3 bg-gray-200 rounded w-12" />
+                          <div className="w-full bg-gray-200 h-2 rounded-full" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Table Skeleton for Desktop */}
+                  <div className="hidden sm:block overflow-x-auto animate-pulse">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-background border-b border-border">
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Class / Section</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Total Days Recorded</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Total Individual Records</th>
+                          <th className="py-3 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">Average Attendance %</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {[...Array(6)].map((_, i) => (
+                          <tr key={i}>
+                            <td className="py-4 px-6 text-sm font-bold">
+                              <div className="h-4 bg-gray-200 rounded w-28" />
+                            </td>
+                            <td className="py-4 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-16" />
+                            </td>
+                            <td className="py-4 px-6">
+                              <div className="h-4 bg-gray-200 rounded w-12" />
+                            </td>
+                            <td className="py-4 px-6">
+                              <div className="flex items-center space-x-3">
+                                <div className="h-4 bg-gray-200 rounded w-10" />
+                                <div className="w-32 bg-gray-200 h-2 rounded-full" />
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : attendanceData.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center p-12">

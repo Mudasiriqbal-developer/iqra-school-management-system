@@ -863,9 +863,40 @@ const AdminSettings = () => {
 
             <div className="p-6">
               {navLoading ? (
-                <div className="py-12 text-center flex flex-col items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-[#00215E] mb-2" />
-                  <p className="text-xs text-gray-500 font-semibold">Loading navigation order...</p>
+                <div className="space-y-6 max-w-2xl animate-pulse">
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-full" />
+                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  </div>
+
+                  <div className="space-y-3">
+                    {[...Array(10)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl"
+                      >
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                          {/* Grab Handle skeleton */}
+                          <div className="h-5.5 w-4.5 bg-gray-200 rounded hidden sm:block" />
+                          {/* Icon skeleton */}
+                          <div className="h-8 w-8 bg-gray-200 rounded-xl flex-shrink-0" />
+                          {/* Labels skeleton */}
+                          <div className="space-y-1.5">
+                            <div className="h-4 bg-gray-200 rounded w-24" />
+                            <div className="h-3 bg-gray-100 rounded w-32 font-mono" />
+                          </div>
+                        </div>
+                        {/* Position Badge skeleton */}
+                        <div className="h-5 bg-gray-200 rounded-md w-8" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Form Actions skeleton */}
+                  <div className="flex items-center space-x-3 pt-4 border-t border-gray-100">
+                    <div className="h-10 bg-gray-200 rounded-xl w-32" />
+                    <div className="h-10 bg-gray-200 rounded-xl w-36" />
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-6 max-w-2xl">
