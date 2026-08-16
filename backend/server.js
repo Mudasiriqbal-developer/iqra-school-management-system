@@ -29,21 +29,24 @@ const PORT = process.env.PORT || 5000;
 // Connect to Database
 connectDB();
 
+// Health check endpoint (placed before logging, CORS, and other global middlewares)
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Middlewares
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true
 }));
-app.use(morgan('dev'));
+app.use(morgan('dev', {
+  skip: (req) => req.originalUrl === '/api/health' || req.path === '/api/health'
+}));
 app.use(express.json());
-
-// Routes
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "API running"
-  });
-});
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
