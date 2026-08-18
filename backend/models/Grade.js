@@ -40,6 +40,10 @@ const gradeSchema = new mongoose.Schema(
       required: [true, 'Total marks is required'],
       min: [1, 'Total marks must be at least 1'],
     },
+    academicYear: {
+      type: String,
+      default: '',
+    },
     comments: {
       type: String,
       trim: true,
@@ -56,7 +60,7 @@ const gradeSchema = new mongoose.Schema(
   }
 );
 
-// Prevent duplicate grade entries for same student, subject, examType
-gradeSchema.index({ studentId: 1, subjectId: 1, examType: 1 }, { unique: true });
+// Prevent duplicate grade entries for same student, subject, examType, academicYear
+gradeSchema.index({ studentId: 1, subjectId: 1, examType: 1, academicYear: 1 }, { unique: true });
 
 module.exports = mongoose.model('Grade', gradeSchema);

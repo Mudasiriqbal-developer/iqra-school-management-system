@@ -1,4 +1,5 @@
 const Grade = require('../models/Grade');
+const Settings = require('../models/Settings');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
@@ -39,6 +40,9 @@ const uploadGrades = async (body, user) => {
   }
 
   // 2. Perform bulk upsert operations
+  const settings = await Settings.findOne({ schoolId: 'default' });
+  const academicYear = settings?.currentSession || '';
+
   const savedGrades = [];
   for (const record of grades) {
     const { studentId, marksObtained, totalMarks, comments } = record;
@@ -54,12 +58,13 @@ const uploadGrades = async (body, user) => {
     }
 
     const updatedGrade = await Grade.findOneAndUpdate(
-      { studentId, subjectId, examType },
+      { studentId, subjectId, examType, academicYear },
       {
         classId,
         sectionId,
         marksObtained,
         totalMarks,
+        academicYear,
         comments: comments || '',
         gradedBy: user._id || user.id,
       },

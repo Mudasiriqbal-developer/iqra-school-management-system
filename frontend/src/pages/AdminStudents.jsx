@@ -279,6 +279,8 @@ const AdminStudents = () => {
         return { status: 'pending', label: 'On Leave' };
       case 'suspended':
         return { status: 'danger', label: 'Suspended' };
+      case 'graduated':
+        return { status: 'info', label: 'Graduated' };
       default:
         return { status: 'default', label: studentStatus || 'Unknown' };
     }
@@ -425,6 +427,7 @@ const AdminStudents = () => {
               <option value="active">Active</option>
               <option value="on_leave">On Leave</option>
               <option value="suspended">Suspended</option>
+              <option value="graduated">Graduated</option>
             </select>
           </div>
         </div>

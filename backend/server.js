@@ -20,8 +20,8 @@ const gradeRoutes = require('./routes/gradeRoutes');
 const supportRoutes = require('./routes/supportRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const promotionRoutes = require('./routes/promotionRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -66,6 +66,7 @@ app.use('/api/grades', gradeRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/promotion', promotionRoutes);
 
 // Centralized Error Handler Middleware (Must be after routes)
 app.use(errorHandler);

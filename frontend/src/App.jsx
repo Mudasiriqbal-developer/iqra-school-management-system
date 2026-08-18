@@ -23,6 +23,7 @@ import StudentSettings from './pages/StudentSettings';
 import AdminReports from './pages/AdminReports';
 import AdminAttendance from './pages/AdminAttendance';
 import AdminSettings from './pages/AdminSettings';
+import AdminPromotion from './pages/AdminPromotion';
 import TeacherSettings from './pages/TeacherSettings';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Support from './pages/Support';
@@ -127,6 +128,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/promotion"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminPromotion />
             </ProtectedRoute>
           }
         />

@@ -45,6 +45,9 @@ const getFeeSummaryByClass = async (query) => {
     filter.sectionId = sectionId;
   }
 
+  // Exclude graduated students from fee calculations
+  filter.status = { $ne: 'graduated' };
+
   // Fetch matching students
   const students = await Student.find(filter);
 

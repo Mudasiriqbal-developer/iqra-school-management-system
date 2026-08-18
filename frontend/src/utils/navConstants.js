@@ -8,7 +8,8 @@ import {
   DollarSign,
   CalendarCheck,
   BarChart3,
-  Settings
+  Settings,
+  GraduationCap
 } from 'lucide-react';
 
 export const DEFAULT_NAV_ITEMS = [
@@ -21,5 +22,6 @@ export const DEFAULT_NAV_ITEMS = [
   { key: 'payroll', label: 'Salary Payroll', path: '/admin/payroll', icon: DollarSign },
   { key: 'attendance', label: 'Attendance', path: '/admin/attendance', icon: CalendarCheck },
   { key: 'reports', label: 'Reports', path: '/admin/reports', icon: BarChart3 },
+  { key: 'promotion', label: 'Promotion', path: '/admin/promotion', icon: GraduationCap },
   { key: 'settings', label: 'Settings', path: '/admin/settings', icon: Settings }
 ];

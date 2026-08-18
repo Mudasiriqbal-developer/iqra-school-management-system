@@ -1,4 +1,5 @@
 const Attendance = require('../models/Attendance');
+const Settings = require('../models/Settings');
 const Student = require('../models/Student');
 const Teacher = require('../models/Teacher');
 const Section = require('../models/Section');
@@ -40,6 +41,9 @@ const markAttendance = async (req, res, next) => {
     const parsedDate = new Date(date);
     parsedDate.setUTCHours(0, 0, 0, 0);
 
+    const settings = await Settings.findOne({ schoolId: 'default' });
+    const academicYear = settings?.currentSession || '';
+
     // 3. findOneAndUpdate with upsert:true on { classId, sectionId, date }
     const updatedAttendance = await Attendance.findOneAndUpdate(
       { classId, sectionId, date: parsedDate },
@@ -49,6 +53,7 @@ const markAttendance = async (req, res, next) => {
         teacherId: req.teacher._id, // populated in verifyClassTeacher middleware
         date: parsedDate,
         records,
+        academicYear,
       },
       { new: true, upsert: true, runValidators: true }
     );

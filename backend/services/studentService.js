@@ -210,9 +210,11 @@ const getAllStudents = async (query, user) => {
 
   const filter = {};
 
-  // Apply status filter if provided
+  // Apply status filter — default excludes graduated students from normal views
   if (status) {
     filter.status = status;
+  } else {
+    filter.status = { $ne: 'graduated' };
   }
 
   // Apply search filter on fullName, registrationNumber, or fatherName

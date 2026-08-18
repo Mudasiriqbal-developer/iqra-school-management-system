@@ -21,6 +21,10 @@ const attendanceSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    academicYear: {
+      type: String,
+      default: '',
+    },
     records: [
       {
         studentId: {
