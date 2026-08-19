@@ -51,20 +51,42 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
 
   // Map fee status to StatusBadge type
   const getFeeBadgeProps = (feeStatus) => {
-    switch (feeStatus) {
+    if (!feeStatus) return { status: 'default', label: 'Unpaid' };
+    const normalized = feeStatus.toLowerCase();
+    switch (normalized) {
       case 'paid':
         return { status: 'active', label: 'Paid' };
       case 'pending':
-        return { status: 'pending', label: 'Pending' };
+      case 'unpaid':
+        return { status: 'default', label: 'Unpaid' };
+      case 'partial':
+        return { status: 'pending', label: 'Partial' };
       case 'overdue':
         return { status: 'danger', label: 'Overdue' };
       default:
-        return { status: 'default', label: feeStatus || 'Unpaid' };
+        return { status: 'default', label: feeStatus };
     }
   };
 
+  // Derive flat history of individual payments from fee records
+  const paymentsList = [];
+  if (student.feeSummary?.paymentHistory) {
+    student.feeSummary.paymentHistory.forEach(record => {
+      if (record.payments && record.payments.length > 0) {
+        record.payments.forEach(p => {
+          paymentsList.push({
+            paidOn: p.paidOn,
+            amount: p.amount,
+            method: p.method
+          });
+        });
+      }
+    });
+  }
+  paymentsList.sort((a, b) => new Date(b.paidOn) - new Date(a.paidOn));
+
   const statusProps = getStatusBadgeProps(student.status);
-  const feeStatusProps = getFeeBadgeProps(student.feeInfo?.status);
+  const feeStatusProps = getFeeBadgeProps(student.feeSummary?.currentFeeStatus);
 
   // Generate color palette index based on student name length
   const colors = [
@@ -216,7 +238,7 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
                 <span className="text-gray-500 font-medium">Due Date:</span>
                 <span className="font-bold text-navy-900 flex items-center">
                   <CalendarCheck className="h-4 w-4 text-gray-400 mr-1.5" />
-                  {formatDate(student.feeInfo?.dueDate)}
+                  {formatDate(student.feeSummary?.dueDate)}
                 </span>
               </div>
             </div>
@@ -224,7 +246,7 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
             {/* Payment History */}
             <div>
               <span className="text-xs font-bold text-navy-950 uppercase tracking-wider block mb-2">Payment History</span>
-              {student.feeInfo?.history && student.feeInfo.history.length > 0 ? (
+              {paymentsList.length > 0 ? (
                 <div className="overflow-hidden border border-gray-100 rounded-lg">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
@@ -235,7 +257,7 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {student.feeInfo.history.map((pay, index) => (
+                      {paymentsList.map((pay, index) => (
                         <tr key={index} className="hover:bg-slate-50/50">
                           <td className="py-2 px-3 text-gray-600">{formatDate(pay.paidOn)}</td>
                           <td className="py-2 px-3 font-bold text-navy-950">Rs. {pay.amount}</td>

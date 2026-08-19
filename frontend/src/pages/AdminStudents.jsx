@@ -13,7 +13,7 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getStudents, deleteStudent, getClasses, getSectionsByClass, downloadAdmissionReceipt, resetStudentPassword } from '../features/students/studentService';
+import { getStudents, getStudentById, deleteStudent, getClasses, getSectionsByClass, downloadAdmissionReceipt, resetStudentPassword } from '../features/students/studentService';
 import StudentFormModal from '../features/students/StudentFormModal';
 import StudentViewDrawer from '../features/students/StudentViewDrawer';
 import BulkStudentImportModal from '../features/students/BulkStudentImportModal';
@@ -194,9 +194,21 @@ const AdminStudents = () => {
     setIsFormOpen(true);
   };
 
-  const handleOpenView = (student) => {
-    setSelectedStudent(student);
-    setIsViewOpen(true);
+  const handleOpenView = async (student) => {
+    const toastId = toast.loading('Loading student details...');
+    try {
+      const res = await getStudentById(student._id);
+      if (res.success) {
+        toast.dismiss(toastId);
+        setSelectedStudent(res.data);
+        setIsViewOpen(true);
+      } else {
+        toast.error(res.message || 'Failed to load student details', { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load student details', { id: toastId });
+    }
   };
 
   const handleOpenDeleteConfirm = (student) => {

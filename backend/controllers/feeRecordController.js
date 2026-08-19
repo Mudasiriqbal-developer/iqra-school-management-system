@@ -4,33 +4,9 @@ const Student = require('../models/Student');
 const Settings = require('../models/Settings');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
+const studentFeeService = require('../services/studentFeeService');
 
-
-/**
- * Helper: Given a studentId, get or create the current month's FeeRecord
- */
-const getOrCreateCurrentMonthRecord = async (studentId) => {
-  const now = new Date();
-  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-  let record = await FeeRecord.findOne({ studentId, month, type: 'monthly' });
-  if (!record) {
-    const student = await Student.findById(studentId);
-    if (!student) {
-      throw new Error('Student not found');
-    }
-    record = await FeeRecord.create({
-      studentId,
-      month,
-      amountDue: student.monthlyFeeAmount || 0,
-      amountPaid: 0,
-      status: 'pending',
-      payments: [],
-      type: 'monthly'
-    });
-  }
-  return record;
-};
+const { getOrCreateCurrentMonthRecord } = studentFeeService;
 
 /**
  * @desc    Get all fee records for a student (ledger)
@@ -49,25 +25,11 @@ const getStudentLedger = async (req, res, next) => {
       });
     }
 
-    const records = await FeeRecord.find({ studentId }).sort({ month: -1 });
-
-    let totalBilled = 0;
-    let totalPaid = 0;
-    records.forEach(r => {
-      totalBilled += r.amountDue;
-      totalPaid += r.amountPaid;
-    });
+    const data = await studentFeeService.getStudentLedgerData(studentId);
 
     return res.status(200).json({
       success: true,
-      data: {
-        records,
-        summary: {
-          totalBilled,
-          totalPaid,
-          totalOutstanding: totalBilled - totalPaid
-        }
-      },
+      data,
       message: 'Student fee ledger retrieved successfully'
     });
   } catch (error) {

@@ -7,6 +7,7 @@ const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
 const FeeRecord = require('../models/FeeRecord');
 const checkTeacherStudentAccess = require('../middleware/checkTeacherStudentAccess');
+const studentFeeService = require('./studentFeeService');
 
 /**
  * Business logic for creating a new student.
@@ -317,9 +318,40 @@ const getAllStudents = async (query, user) => {
 
   const pages = Math.ceil(total / limitVal);
 
+  // Compute live feeInfo for stats/display
+  const now = new Date();
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  const studentIds = students.map(s => s._id);
+  const currentRecords = await FeeRecord.find({
+    studentId: { $in: studentIds },
+    month: currentMonthStr,
+    type: 'monthly'
+  });
+
+  const recordsMap = new Map();
+  currentRecords.forEach(r => {
+    recordsMap.set(r.studentId.toString(), r.status);
+  });
+
+  const studentsWithFees = students.map(s => {
+    const sObj = s.toObject();
+    const status = recordsMap.get(s._id.toString()) || 'pending';
+    let feeStatus = 'unpaid';
+    if (status === 'paid') feeStatus = 'paid';
+    else if (status === 'partial') feeStatus = 'partial';
+    else feeStatus = 'pending';
+
+    sObj.feeInfo = {
+      status: feeStatus,
+      dueDate: null
+    };
+    return sObj;
+  });
+
   return {
     data: {
-      students,
+      students: studentsWithFees,
       total,
       page: pageVal,
       pages,
@@ -363,7 +395,35 @@ const getStudentById = async (id, user) => {
     }
   }
 
-  return student;
+  // Compute live feeSummary from student's ledger
+  const ledgerData = await studentFeeService.getStudentLedgerData(student._id);
+  const records = ledgerData.records;
+
+  const now = new Date();
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  const currentRecord = records.find(r => r.month === currentMonthStr && r.type === 'monthly') || records[0];
+
+  let currentFeeStatus = 'Unpaid';
+  let dueDate = null;
+
+  if (currentRecord) {
+    if (currentRecord.status === 'paid') {
+      currentFeeStatus = 'Paid';
+    } else if (currentRecord.status === 'partial') {
+      currentFeeStatus = 'Partial';
+    }
+    dueDate = currentRecord.dueDate || null;
+  }
+
+  const studentObj = student.toObject();
+  studentObj.feeSummary = {
+    currentFeeStatus,
+    dueDate,
+    paymentHistory: records,
+  };
+
+  return studentObj;
 };
 
 /**

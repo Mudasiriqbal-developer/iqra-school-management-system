@@ -1,6 +1,55 @@
 const mongoose = require('mongoose');
 const Student = require('../models/Student');
-const { getOrCreateCurrentMonthRecord } = require('../controllers/feeRecordController');
+const FeeRecord = require('../models/FeeRecord');
+
+/**
+ * Helper: Given a studentId, get or create the current month's FeeRecord
+ */
+const getOrCreateCurrentMonthRecord = async (studentId) => {
+  const now = new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  let record = await FeeRecord.findOne({ studentId, month, type: 'monthly' });
+  if (!record) {
+    const student = await Student.findById(studentId);
+    if (!student) {
+      throw new Error('Student not found');
+    }
+    record = await FeeRecord.create({
+      studentId,
+      month,
+      amountDue: student.monthlyFeeAmount || 0,
+      amountPaid: 0,
+      status: 'pending',
+      payments: [],
+      type: 'monthly'
+    });
+  }
+  return record;
+};
+
+/**
+ * Retrieves all fee records for a student and computes summaries.
+ */
+const getStudentLedgerData = async (studentId) => {
+  const records = await FeeRecord.find({ studentId }).sort({ month: -1 });
+
+  let totalBilled = 0;
+  let totalPaid = 0;
+  records.forEach(r => {
+    totalBilled += r.amountDue;
+    totalPaid += r.amountPaid;
+  });
+
+  return {
+    records,
+    summary: {
+      totalBilled,
+      totalPaid,
+      totalOutstanding: totalBilled - totalPaid
+    }
+  };
+};
 
 /**
  * Updates the monthly fee amount for a student.
@@ -89,4 +138,6 @@ const getFeeSummaryByClass = async (query) => {
 module.exports = {
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
+  getOrCreateCurrentMonthRecord,
+  getStudentLedgerData,
 };

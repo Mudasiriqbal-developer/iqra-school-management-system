@@ -29,7 +29,7 @@ const fetchDefaultersData = async (classId, sectionId) => {
     .populate('classId', 'name')
     .populate('sectionId', 'name');
 
-  const { getOrCreateCurrentMonthRecord } = require('./feeRecordController');
+  const { getOrCreateCurrentMonthRecord } = require('../services/studentFeeService');
   const defaulters = [];
 
   for (const student of students) {
