@@ -274,7 +274,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                   ? 'bg-emerald-600 text-white' 
                   : currentStep === 1 
                     ? 'bg-navy-900 text-white' 
-                    : 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-200 text-slate-800'
               }`}>
                 {currentStep > 1 ? <Check className="h-4 w-4" /> : '1'}
               </div>
@@ -294,7 +294,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                   ? 'bg-emerald-600 text-white' 
                   : currentStep === 2 
                     ? 'bg-navy-900 text-white' 
-                    : 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-200 text-slate-800'
               }`}>
                 {currentStep > 2 ? <Check className="h-4 w-4" /> : '2'}
               </div>
@@ -314,7 +314,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                   ? 'bg-emerald-600 text-white' 
                   : currentStep === 3 
                     ? 'bg-navy-900 text-white' 
-                    : 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-200 text-slate-800'
               }`}>
                 {currentStep > 3 ? <Check className="h-4 w-4" /> : '3'}
               </div>
@@ -332,7 +332,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
               <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                 currentStep === 4 
                   ? 'bg-navy-900 text-white' 
-                  : 'bg-gray-200 text-gray-500'
+                  : 'bg-gray-200 text-slate-800'
               }`}>
                 4
               </div>
@@ -416,7 +416,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                         <td className="py-2 px-4 font-bold text-navy-900">Registration Number</td>
                         <td className="py-2 px-4"><span className="text-red-600 font-bold">Yes *</span></td>
                         <td className="py-2 px-4">Unique alphanumeric string</td>
-                        <td className="py-2 px-4 font-mono text-gray-500">REG-2026-001</td>
+                        <td className="py-2 px-4 font-mono text-gray-500">26001</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 font-bold text-navy-900">Full Name</td>

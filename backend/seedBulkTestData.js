@@ -241,7 +241,7 @@ const seedBulkData = async () => {
     let studentRegNumCounter = 101;
 
     for (let i = 0; i < TOTAL_TARGET_STUDENTS; i++) {
-      const regNo = `reg-2026-${studentRegNumCounter}`;
+      const regNo = `26${studentRegNumCounter}`;
       studentRegNumCounter++;
 
       // Check if student already exists by regNo

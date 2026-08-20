@@ -394,7 +394,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
                 name="registrationNumber"
                 value={formData.registrationNumber}
                 onChange={handleChange}
-                placeholder="e.g. REG-1002"
+                placeholder="e.g. 26001"
                 className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
                   errors.registrationNumber ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
                 }`}

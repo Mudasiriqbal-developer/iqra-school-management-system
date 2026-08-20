@@ -184,7 +184,7 @@ const generateImportTemplate = async () => {
 
   const sampleRows = [
     [
-      'REG-2026-001',
+      '26001',
       'Muhammad Hamza',
       'Tariq Mahmood',
       'male',
@@ -197,7 +197,7 @@ const generateImportTemplate = async () => {
       'active',
     ],
     [
-      'REG-2026-002',
+      '26002',
       'Fatima Zahra',
       'Usman Ghani',
       'female',
@@ -255,7 +255,7 @@ const generateImportTemplate = async () => {
     ['Bulk Student Import Instructions'],
     [''],
     ['Field Name', 'Required', 'Accepted Values / Format', 'Description'],
-    ['Registration Number', 'Yes', 'Unique alphanumeric string (e.g. REG-1001)', 'Student roll/admission number. Must be unique in system.'],
+    ['Registration Number', 'Yes', 'Unique alphanumeric string (e.g. 26001)', 'Student roll/admission number. Must be unique in system.'],
     ['Full Name', 'Yes', 'Text (e.g. Abdullah Khan)', 'Student legal name.'],
     ['Father Name', 'Yes', 'Text (e.g. Imran Khan)', "Father's / Guardian's name."],
     ['Gender', 'Yes', 'male / female / other', 'Case-insensitive gender value.'],
