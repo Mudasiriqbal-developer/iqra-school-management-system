@@ -27,23 +27,23 @@ const createTicket = async (req, res, next) => {
       message,
     });
 
-    // Send email notification to Admin
-    try {
-      // Find all admin emails in the system
-      const admins = await User.find({ role: 'admin' }).select('email');
-      let adminEmails = admins.map(admin => admin.email).filter(Boolean);
-
-      if (adminEmails.length === 0 && process.env.EMAIL_USER) {
-        adminEmails = [process.env.EMAIL_USER];
-      }
-
-      if (adminEmails.length > 0) {
-        await sendSupportTicketNotificationEmail(adminEmails, ticket, req.user);
-      }
-    } catch (emailErr) {
-      // Log email failure but don't crash/fail the HTTP response
-      console.error('Failed to send admin notification email:', emailErr);
-    }
+    // Find all admin emails in the system and send notification email asynchronously
+    User.find({ role: 'admin' }).select('email')
+      .then((admins) => {
+        let adminEmails = admins.map(admin => admin.email).filter(Boolean);
+        if (adminEmails.length === 0 && process.env.EMAIL_USER) {
+          adminEmails = [process.env.EMAIL_USER];
+        }
+        if (adminEmails.length > 0) {
+          sendSupportTicketNotificationEmail(adminEmails, ticket, req.user)
+            .catch((emailErr) => {
+              console.error('Failed to send admin notification email asynchronously:', emailErr);
+            });
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch admin emails for notification:', err);
+      });
 
     res.status(201).json({
       success: true,

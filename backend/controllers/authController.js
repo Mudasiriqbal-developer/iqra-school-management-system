@@ -57,11 +57,11 @@ const registerUser = async (req, res, next) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
     
-    try {
-      await sendInvitationEmail(email, name, role.charAt(0).toUpperCase() + role.slice(1), activationLink);
-    } catch (mailErr) {
-      console.error('Failed to send invitation email:', mailErr);
-    }
+    // Fire-and-forget invitation email asynchronously so we do not block the HTTP response
+    sendInvitationEmail(email, name, role.charAt(0).toUpperCase() + role.slice(1), activationLink)
+      .catch((mailErr) => {
+        console.error('Failed to send invitation email asynchronously:', mailErr);
+      });
 
     return res.status(201).json({
       success: true,
@@ -253,11 +253,11 @@ const activateAccount = async (req, res, next) => {
     await user.save();
 
     // Send confirmation email
-    try {
-      await sendActivationConfirmationEmail(user.email, user.name);
-    } catch (mailErr) {
-      console.error('Failed to send activation confirmation email:', mailErr);
-    }
+    // Fire-and-forget confirmation email asynchronously
+    sendActivationConfirmationEmail(user.email, user.name)
+      .catch((mailErr) => {
+        console.error('Failed to send activation confirmation email asynchronously:', mailErr);
+      });
 
     // Generate JWT for automatic login
     const token = generateToken(user._id, user.role);

@@ -62,23 +62,15 @@ const createTeacher = async (req, res, next) => {
         baseSalary: baseSalary || 0,
       });
 
-      // 6. Build activation link & send invitation email (wrapped in separate try/catch)
+      // 6. Build activation link & send invitation email
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
       const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
-      let emailSent = false;
-      let emailError = null;
 
-      try {
-        await sendTeacherInvitationEmail(email, name, activationLink);
-        emailSent = true;
-      } catch (mailErr) {
-        emailError = mailErr.message || mailErr;
-        console.error('Failed to send teacher invitation email:', mailErr);
-      }
-
-      const responseMessage = emailSent
-        ? 'Teacher and user login created successfully, and invitation email sent'
-        : 'Teacher and user login created successfully, but the invitation email failed to send. Use Resend Invitation to retry.';
+      // Send teacher invitation email asynchronously
+      sendTeacherInvitationEmail(email, name, activationLink)
+        .catch((mailErr) => {
+          console.error('Failed to send teacher invitation email asynchronously:', mailErr);
+        });
 
       return res.status(201).json({
         success: true,
@@ -93,7 +85,7 @@ const createTeacher = async (req, res, next) => {
             isActivated: createdUser.isActivated,
           },
         },
-        message: responseMessage,
+        message: 'Teacher and user login created successfully, and invitation email is being sent',
       });
     } catch (err) {
       // Rollback: delete the created User if Teacher profile creation fails
@@ -318,21 +310,16 @@ const resendInvitation = async (req, res, next) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
     
-    try {
-      await sendTeacherInvitationEmail(user.email, user.name, activationLink);
-    } catch (mailErr) {
-      console.error('Failed to send teacher invitation email during resend:', mailErr);
-      return res.status(500).json({
-        success: false,
-        data: null,
-        message: 'Teacher record updated but invitation email failed to send. Try again.',
+    // Send teacher invitation email asynchronously
+    sendTeacherInvitationEmail(user.email, user.name, activationLink)
+      .catch((mailErr) => {
+        console.error('Failed to send teacher invitation email during resend asynchronously:', mailErr);
       });
-    }
 
     return res.status(200).json({
       success: true,
       data: null,
-      message: 'Invitation email resent successfully',
+      message: 'Invitation email is being resent',
     });
   } catch (error) {
     next(error);
