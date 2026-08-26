@@ -42,9 +42,12 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
   if (user && user.role === 'admin') {
     const userNavOrder = user.navOrder || [];
     if (userNavOrder.length > 0) {
-      displayNavItems = userNavOrder
+      const ordered = userNavOrder
         .map(key => DEFAULT_NAV_ITEMS.find(item => item.key === key))
         .filter(Boolean);
+      // Append any newly introduced keys that are not yet saved in userNavOrder
+      const missing = DEFAULT_NAV_ITEMS.filter(item => !userNavOrder.includes(item.key));
+      displayNavItems = [...ordered, ...missing];
     } else {
       displayNavItems = DEFAULT_NAV_ITEMS;
     }

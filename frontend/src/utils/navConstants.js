@@ -15,6 +15,7 @@ import {
 export const DEFAULT_NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', path: '/admin-dashboard', icon: LayoutDashboard },
   { key: 'students', label: 'Students', path: '/admin/students', icon: Users },
+  { key: 'family-tree', label: 'Family Tree', path: '/admin/family', icon: Users },
   { key: 'faculty', label: 'Faculty', path: '/admin/teachers', icon: Award },
   { key: 'academics', label: 'Academic Structure', path: '/admin/academics', icon: BookOpen },
   { key: 'fees', label: 'Fee Management', path: '/admin/fees', icon: Wallet },

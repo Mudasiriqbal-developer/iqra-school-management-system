@@ -312,6 +312,7 @@ const getAllStudents = async (query, user) => {
   const students = await Student.find(filter)
     .populate('classId', 'name')
     .populate('sectionId', 'name')
+    .populate('familyId', 'familyName')
     .skip(skipVal)
     .limit(limitVal)
     .sort({ createdAt: -1 });
@@ -366,7 +367,8 @@ const getAllStudents = async (query, user) => {
 const getStudentById = async (id, user) => {
   const student = await Student.findById(id)
     .populate('classId', 'name')
-    .populate('sectionId', 'name');
+    .populate('sectionId', 'name')
+    .populate('familyId', 'familyName');
 
   if (!student) {
     const error = new Error('Student not found');

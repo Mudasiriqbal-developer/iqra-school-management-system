@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { X, User, MapPin, Phone, BookOpen, Shield, DollarSign, CalendarCheck, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import StatusBadge from '../../components/shared/StatusBadge';
@@ -179,8 +180,23 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
                 </div>
               </div>
             </div>
-
           </div>
+
+          {student.familyId && (
+            <div className="bg-sky-50/50 p-3 rounded-xl border border-sky-100 flex items-center justify-between text-xs sm:text-sm">
+              <span className="text-gray-600 font-bold flex items-center">
+                <User className="h-4 w-4 mr-2 text-sky-700" />
+                Part of family: <span className="ml-1.5 text-navy-950 font-extrabold">{student.familyId.familyName}</span>
+              </span>
+              <Link 
+                to={`/admin/family/${student.familyId._id || student.familyId}`}
+                onClick={onClose}
+                className="text-sky-700 hover:text-sky-900 font-extrabold flex items-center transition-colors hover:underline"
+              >
+                View Family Profile →
+              </Link>
+            </div>
+          )}
 
           {/* Contact & Guardian Details */}
           <div className="border border-gray-100 p-4 rounded-xl">

@@ -24,6 +24,8 @@ import AdminReports from './pages/AdminReports';
 import AdminAttendance from './pages/AdminAttendance';
 import AdminSettings from './pages/AdminSettings';
 import AdminPromotion from './pages/AdminPromotion';
+import AdminFamilyList from './pages/AdminFamilyList';
+import AdminFamilyDetail from './pages/AdminFamilyDetail';
 import TeacherSettings from './pages/TeacherSettings';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Support from './pages/Support';
@@ -136,6 +138,22 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminPromotion />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/family"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminFamilyList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/family/:id"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminFamilyDetail />
             </ProtectedRoute>
           }
         />

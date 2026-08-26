@@ -16,9 +16,16 @@ const getNavOrder = async (req, res, next) => {
       });
     }
 
-    const order = admin.navOrder && admin.navOrder.length > 0
+    const defaultKeys = defaultNavOrder.map(item => item.key);
+    let order = admin.navOrder && admin.navOrder.length > 0
       ? admin.navOrder
-      : defaultNavOrder.map(item => item.key);
+      : defaultKeys;
+
+    // Merge any newly introduced keys to default/custom list so they don't break validation
+    const missingKeys = defaultKeys.filter(k => !order.includes(k));
+    if (missingKeys.length > 0) {
+      order = [...order, ...missingKeys];
+    }
 
     return res.status(200).json({
       success: true,

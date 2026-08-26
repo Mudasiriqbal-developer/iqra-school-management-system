@@ -97,6 +97,12 @@ const studentSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    familyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Family',
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,
