@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
-import { getDashboardSummary } from '../features/dashboard/dashboardService';
+import { getDashboardSummary, getFeesSummary } from '../features/dashboard/dashboardService';
 import AttendanceTrendChart from '../features/dashboard/AttendanceTrendChart';
 import AdminFormModal from '../features/dashboard/AdminFormModal';
+import FeeDetailsModal from '../features/dashboard/FeeDetailsModal';
 
 // Skeletons for smooth loading visual state
 const StatCardSkeleton = () => (
@@ -37,19 +38,27 @@ const ChartSkeleton = () => (
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
+  const [feeSummaryData, setFeeSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [feeModalType, setFeeModalType] = useState(null); // 'collected' or 'partial'
+  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await getDashboardSummary();
-      if (res.success) {
-        setDashboardData(res.data);
+      const [summaryRes, feeRes] = await Promise.all([
+        getDashboardSummary(),
+        getFeesSummary()
+      ]);
+      
+      if (summaryRes.success && feeRes.success) {
+        setDashboardData(summaryRes.data);
+        setFeeSummaryData(feeRes.data);
       } else {
-        throw new Error(res.message || 'Failed to fetch summary data');
+        throw new Error(summaryRes.message || feeRes.message || 'Failed to fetch summary data');
       }
     } catch (err) {
       console.error('Error fetching dashboard summary:', err);
@@ -138,9 +147,9 @@ const AdminDashboard = () => {
           ) : error ? (
             <>
               <StatCard icon={Users} label="Total Students" value="--" />
-              <StatCard icon={GraduationCap} label="Total Faculty" value="--" />
+              <StatCard icon={Wallet} label="Total Fee Expected" value="--" />
               <StatCard icon={DollarSign} label="Fees Collected" value="--" />
-              <StatCard icon={Calendar} label="Attendance Today" value="--" />
+              <StatCard icon={RefreshCw} label="Partial Payments Dues" value="--" />
               <StatCard icon={TrendingUp} label="Net P&L" value="--" />
             </>
           ) : (
@@ -149,14 +158,14 @@ const AdminDashboard = () => {
               <StatCard
                 icon={Users}
                 label="Total Students"
-                value={dashboardData?.totalStudents?.toLocaleString() || '0'}
+                value={feeSummaryData?.totalStudents?.toLocaleString() || '0'}
               />
 
-              {/* 2. Total Faculty */}
+              {/* 2. Total Fee Expected */}
               <StatCard
-                icon={GraduationCap}
-                label="Total Faculty"
-                value={dashboardData?.totalTeachers?.toLocaleString() || '0'}
+                icon={Wallet}
+                label="Total Fee Expected"
+                value={`Rs. ${(feeSummaryData?.totalFeeExpected || 0).toLocaleString()}`}
               />
 
               {/* 3. Fees Collected */}
@@ -164,56 +173,51 @@ const AdminDashboard = () => {
                 icon={DollarSign}
                 label={
                   <span className="space-y-2 mt-2 block">
-                    <span className="text-sm font-medium text-gray-500 block">Fees Collected</span>
+                    <span className="text-sm font-medium text-gray-500 block">Collected Fee</span>
                     <span className="w-full bg-navy-50 h-1.5 rounded-full overflow-hidden border border-navy-100/30 block">
                       <span
                         className="bg-[#00215E] h-full rounded-full transition-all duration-500 block"
-                        style={{ width: `${dashboardData?.feesSummary?.collectionPercentage || 0}%` }}
+                        style={{
+                          width: `${
+                            feeSummaryData?.totalFeeExpected > 0
+                              ? Math.min(100, Math.round((feeSummaryData.totalCollected / feeSummaryData.totalFeeExpected) * 100))
+                              : 0
+                          }%`
+                        }}
                       />
                     </span>
                   </span>
                 }
-                value={`Rs. ${(dashboardData?.feesSummary?.totalCollected || 0).toLocaleString()} / Rs. ${((dashboardData?.feesSummary?.totalCollected || 0) + (dashboardData?.feesSummary?.totalOutstanding || 0)).toLocaleString()}`}
+                value={`Rs. ${(feeSummaryData?.totalCollected || 0).toLocaleString()}`}
+                onClick={() => {
+                  setFeeModalType('collected');
+                  setIsFeeModalOpen(true);
+                }}
               />
 
-              {/* 4. Attendance Today */}
+              {/* 4. Partial Payments */}
               <StatCard
-                icon={Calendar}
-                label="Attendance Today"
+                icon={RefreshCw}
+                label="Partial Payments Dues"
                 value={
-                  dashboardData?.attendanceToday?.noDataYet ? (
-                    <span className="text-xl font-bold text-gray-400">Not marked yet</span>
-                  ) : (
-                    `${dashboardData?.attendanceToday?.presentPercentage || 0}%`
-                  )
+                  <div className="flex items-baseline gap-1.5 flex-wrap">
+                    <span>Rs. {(feeSummaryData?.partialAmount || 0).toLocaleString()}</span>
+                    <span className="text-xs font-semibold text-gray-400">({feeSummaryData?.partialCount || 0} students)</span>
+                  </div>
                 }
-                trend={
-                  dashboardData?.attendanceToday?.noDataYet
-                    ? null
-                    : (dashboardData?.attendanceToday?.presentPercentage || 0) > 90
-                      ? 'High Engagement'
-                      : (dashboardData?.attendanceToday?.presentPercentage || 0) < 75
-                        ? 'Needs Attention'
-                        : null
-                }
-                trendColor={
-                  dashboardData?.attendanceToday?.noDataYet
-                    ? null
-                    : (dashboardData?.attendanceToday?.presentPercentage || 0) > 90
-                      ? 'active'
-                      : (dashboardData?.attendanceToday?.presentPercentage || 0) < 75
-                        ? 'pending'
-                        : null
-                }
+                onClick={() => {
+                  setFeeModalType('partial');
+                  setIsFeeModalOpen(true);
+                }}
               />
 
               {/* 5. Profit & Loss Margin */}
               <StatCard
                 icon={TrendingUp}
                 label="Net P&L (Profit/Loss)"
-                value={`Rs. ${(dashboardData?.financialSummary?.netProfit || 0).toLocaleString()}`}
-                trend={`Spent: Rs. ${(dashboardData?.financialSummary?.totalExpenses || 0).toLocaleString()} (${dashboardData?.financialSummary?.profitMargin || 0}% margin)`}
-                trendColor={(dashboardData?.financialSummary?.netProfit || 0) >= 0 ? 'active' : 'danger'}
+                value={`Rs. ${(feeSummaryData?.netPL || 0).toLocaleString()}`}
+                trend={`Spent: Rs. ${(dashboardData?.financialSummary?.totalExpenses || 0).toLocaleString()}`}
+                trendColor={(feeSummaryData?.netPL || 0) >= 0 ? 'active' : 'danger'}
               />
             </>
           )}
@@ -333,6 +337,11 @@ const AdminDashboard = () => {
       <AdminFormModal 
         isOpen={isAdminModalOpen} 
         onClose={() => setIsAdminModalOpen(false)} 
+      />
+      <FeeDetailsModal
+        isOpen={isFeeModalOpen}
+        type={feeModalType}
+        onClose={() => setIsFeeModalOpen(false)}
       />
     </DashboardLayout>
   );

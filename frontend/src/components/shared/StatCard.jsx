@@ -1,6 +1,6 @@
 import React from 'react';
 
-const StatCard = ({ icon: Icon, label, value, trend, trendColor }) => {
+const StatCard = ({ icon: Icon, label, value, trend, trendColor, onClick }) => {
   // Determine trend color styling classes
   let badgeClass = 'text-green-600 bg-green-50 border-green-150 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30';
   if (trendColor === 'danger') {
@@ -21,7 +21,14 @@ const StatCard = ({ icon: Icon, label, value, trend, trendColor }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-gray-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 min-h-[160px] group">
+    <div 
+      onClick={onClick}
+      className={`bg-white dark:bg-slate-800/90 p-5 rounded-2xl border border-gray-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-all duration-300 min-h-[160px] group ${
+        onClick 
+          ? 'cursor-pointer hover:shadow-md hover:-translate-y-0.5' 
+          : 'shadow-sm'
+      }`}
+    >
       <div className="flex-1 flex flex-col justify-between">
         <div className="flex justify-between items-start">
           {/* Icon in soft colored circle/square */}

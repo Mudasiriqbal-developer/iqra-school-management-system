@@ -15,15 +15,24 @@ const getOrCreateCurrentMonthRecord = async (studentId) => {
     if (!student) {
       throw new Error('Student not found');
     }
-    record = await FeeRecord.create({
-      studentId,
-      month,
-      amountDue: student.monthlyFeeAmount || 0,
-      amountPaid: 0,
-      status: 'pending',
-      payments: [],
-      type: 'monthly'
-    });
+    try {
+      record = await FeeRecord.create({
+        studentId,
+        month,
+        amountDue: student.monthlyFeeAmount || 0,
+        amountPaid: 0,
+        status: 'pending',
+        payments: [],
+        type: 'monthly'
+      });
+    } catch (err) {
+      if (err.code === 11000) {
+        // Concurrent load created it in the meantime, fetch it
+        record = await FeeRecord.findOne({ studentId, month, type: 'monthly' });
+      } else {
+        throw err;
+      }
+    }
   }
   return record;
 };
