@@ -10,7 +10,8 @@ const {
   getFamilyFeeSummary,
   getFamilyBooksSummary,
   payFamilyFees,
-  generateFamilyVoucherPDF
+  generateFamilyVoucherPDF,
+  createFamilyWithEnrollment
 } = require('../controllers/familyController');
 
 const router = express.Router();
@@ -19,6 +20,7 @@ const router = express.Router();
 router.use(protect);
 router.use(authorize('admin'));
 
+router.post('/create-with-enrollment', createFamilyWithEnrollment);
 router.post('/', createFamily);
 router.get('/', getFamilies);
 router.get('/:id', getFamilyById);

@@ -629,15 +629,6 @@ const commitImport = async (rows) => {
     if (u.registrationNumber) existingRegNumbers.add(u.registrationNumber.trim().toLowerCase());
   });
 
-  const existingFingerprints = new Set();
-  existingStudents.forEach(s => {
-    if (s.fullName && s.dateOfBirth && s.fatherContact) {
-      const dobStr = new Date(s.dateOfBirth).toISOString().split('T')[0];
-      const contactClean = s.fatherContact.toString().replace(/\D/g, '');
-      existingFingerprints.add(`${s.fullName.trim().toLowerCase()}_${dobStr}_${contactClean}`);
-    }
-  });
-
   // Track within-batch items to prevent intra-payload collisions
   const batchRegNumbers = new Set();
   const batchFingerprints = new Set();
@@ -673,10 +664,15 @@ const commitImport = async (rows) => {
       const contactClean = row.fatherContact.toString().replace(/\D/g, '');
       const fingerprint = `${row.fullName.trim().toLowerCase()}_${dobStr}_${contactClean}`;
 
-      if (batchFingerprints.has(fingerprint) || existingFingerprints.has(fingerprint)) {
-        errors.push(`Student "${row.fullName}" already exists in the system (duplicate name, DOB, and contact).`);
+      if (batchFingerprints.has(fingerprint)) {
+        errors.push(`Student "${row.fullName}" appears multiple times in this import payload.`);
       } else {
         batchFingerprints.add(fingerprint);
+      }
+
+      const isDbDuplicate = await checkDuplicateStudent(row.fullName, row.dateOfBirth, row.fatherContact, session, existingStudents);
+      if (isDbDuplicate) {
+        errors.push(`Student "${row.fullName}" already exists in the system (duplicate name, DOB, and contact).`);
       }
     }
 
@@ -787,8 +783,45 @@ const commitImport = async (rows) => {
   };
 };
 
+/**
+ * Helper to check if a student with the same Name, DOB, and Contact exists in the database.
+ * Reuses the duplicate detection logic from the bulk-import module.
+ */
+const checkDuplicateStudent = async (fullName, dateOfBirth, fatherContact, session = undefined, candidates = null) => {
+  if (!fullName || !dateOfBirth || !fatherContact) return false;
+  
+  // Standardize values
+  const parsedDob = parseDateValue(dateOfBirth);
+  if (!parsedDob) return false;
+  const dobIsoStr = parsedDob.toISOString().split('T')[0];
+  const contactClean = fatherContact.toString().replace(/\D/g, '');
+  const studentFingerprint = `${fullName.trim().toLowerCase()}_${dobIsoStr}_${contactClean}`;
+
+  let list = candidates;
+  if (!list) {
+    const matchQuery = {
+      fullName: { $regex: new RegExp(`^${fullName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+    };
+
+    let query = Student.find(matchQuery, 'fullName dateOfBirth fatherContact');
+    if (session) {
+      query = query.session(session);
+    }
+    list = await query;
+  }
+
+  return list.some(cand => {
+    if (!cand.fullName || !cand.dateOfBirth || !cand.fatherContact) return false;
+    const candDob = new Date(cand.dateOfBirth).toISOString().split('T')[0];
+    const candContact = cand.fatherContact.toString().replace(/\D/g, '');
+    const candFingerprint = `${cand.fullName.trim().toLowerCase()}_${candDob}_${candContact}`;
+    return candFingerprint === studentFingerprint;
+  });
+};
+
 module.exports = {
   generateImportTemplate,
   validateImportFile,
   commitImport,
+  checkDuplicateStudent,
 };

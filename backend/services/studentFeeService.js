@@ -5,30 +5,56 @@ const FeeRecord = require('../models/FeeRecord');
 /**
  * Helper: Given a studentId, get or create the current month's FeeRecord
  */
-const getOrCreateCurrentMonthRecord = async (studentId) => {
+const getOrCreateCurrentMonthRecord = async (studentId, session = undefined) => {
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-  let record = await FeeRecord.findOne({ studentId, month, type: 'monthly' });
+  let query = FeeRecord.findOne({ studentId, month, type: 'monthly' });
+  if (session) {
+    query = query.session(session);
+  }
+  let record = await query;
+
   if (!record) {
-    const student = await Student.findById(studentId);
+    let studentQuery = Student.findById(studentId);
+    if (session) {
+      studentQuery = studentQuery.session(session);
+    }
+    const student = await studentQuery;
     if (!student) {
       throw new Error('Student not found');
     }
     try {
-      record = await FeeRecord.create({
-        studentId,
-        month,
-        amountDue: student.monthlyFeeAmount || 0,
-        amountPaid: 0,
-        status: 'pending',
-        payments: [],
-        type: 'monthly'
-      });
+      if (session) {
+        const created = await FeeRecord.create([{
+          studentId,
+          month,
+          amountDue: student.monthlyFeeAmount || 0,
+          amountPaid: 0,
+          status: 'pending',
+          payments: [],
+          type: 'monthly'
+        }], { session });
+        record = created[0];
+      } else {
+        record = await FeeRecord.create({
+          studentId,
+          month,
+          amountDue: student.monthlyFeeAmount || 0,
+          amountPaid: 0,
+          status: 'pending',
+          payments: [],
+          type: 'monthly'
+        });
+      }
     } catch (err) {
       if (err.code === 11000) {
         // Concurrent load created it in the meantime, fetch it
-        record = await FeeRecord.findOne({ studentId, month, type: 'monthly' });
+        let fetchQuery = FeeRecord.findOne({ studentId, month, type: 'monthly' });
+        if (session) {
+          fetchQuery = fetchQuery.session(session);
+        }
+        record = await fetchQuery;
       } else {
         throw err;
       }

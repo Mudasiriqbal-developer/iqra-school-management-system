@@ -9,6 +9,11 @@ const Settings = require('../models/Settings');
 const studentFeeService = require('../services/studentFeeService');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
+const BookFee = require('../models/BookFee');
+const bcrypt = require('bcryptjs');
+const { checkDuplicateStudent } = require('../services/studentImportService');
+const Class = require('../models/Class');
+const Section = require('../models/Section');
 
 /**
  * Helper: Validates and links students to a family with transaction safety.
@@ -843,6 +848,389 @@ const generateFamilyVoucherPDF = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Create a family and enroll/create new students or link existing ones
+ * @route   POST /api/families/create-with-enrollment
+ * @access  Private (Admin Only)
+ */
+const createFamilyWithEnrollment = async (req, res, next) => {
+  const maxRetries = 3;
+  let attempt = 0;
+
+  while (true) {
+    attempt++;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const { familyName, address, contactInfo, members } = req.body;
+
+      // Top-level family validation
+      if (!familyName) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({
+          success: false,
+          message: 'Family name is required',
+        });
+      }
+
+      if (!contactInfo) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({
+          success: false,
+          message: 'Contact info is required',
+        });
+      }
+
+      if (!members || !Array.isArray(members) || members.length === 0) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({
+          success: false,
+          message: 'At least one family member is required',
+        });
+      }
+
+      const memberErrors = [];
+      const existingStudentIds = [];
+      const newStudentsToCreate = [];
+      
+      // First Pass: Structural and field validation for each member
+      for (let i = 0; i < members.length; i++) {
+        const member = members[i];
+        const errors = [];
+
+        if (!member || typeof member !== 'object') {
+          errors.push('Invalid member data');
+          memberErrors.push({ index: i, errors });
+          continue;
+        }
+
+        if (member.mode === 'existing') {
+          if (!member.studentId) {
+            errors.push('Student ID is required for existing student');
+          } else if (!mongoose.Types.ObjectId.isValid(member.studentId)) {
+            errors.push('Invalid student ID format');
+          } else {
+            // Check for duplicates in the request itself
+            if (existingStudentIds.includes(member.studentId.toString())) {
+              errors.push('Duplicate existing student in the same request');
+            } else {
+              existingStudentIds.push(member.studentId.toString());
+            }
+          }
+        } else if (member.mode === 'new') {
+          const { studentData, feeConfig } = member;
+
+          if (!studentData || typeof studentData !== 'object') {
+            errors.push('studentData is required for new student');
+          } else {
+            const name = studentData.name || studentData.fullName;
+            const parentName = studentData.parentName || studentData.fatherName;
+            const fatherContact = studentData.fatherContact || contactInfo;
+
+            if (!name) errors.push('Student name is required');
+            if (!studentData.dateOfBirth) {
+              errors.push('Date of birth is required');
+            } else {
+              const dobDate = new Date(studentData.dateOfBirth);
+              if (isNaN(dobDate.getTime())) {
+                errors.push('Invalid date of birth format');
+              } else if (dobDate >= new Date()) {
+                errors.push('Date of birth must be in the past');
+              }
+            }
+            if (!studentData.gender) {
+              errors.push('Gender is required');
+            } else if (!['male', 'female', 'other'].includes(studentData.gender)) {
+              errors.push('Gender must be male, female, or other');
+            }
+            if (!studentData.classId) {
+              errors.push('Class ID is required');
+            } else if (!mongoose.Types.ObjectId.isValid(studentData.classId)) {
+              errors.push('Invalid Class ID format');
+            }
+            if (!studentData.sectionId) {
+              errors.push('Section ID is required');
+            } else if (!mongoose.Types.ObjectId.isValid(studentData.sectionId)) {
+              errors.push('Invalid Section ID format');
+            }
+            if (!parentName) errors.push("Parent/Father's name is required");
+
+            // DB Validation for class and section (check existence)
+            if (studentData.classId && mongoose.Types.ObjectId.isValid(studentData.classId)) {
+              const classDoc = await Class.findById(studentData.classId).session(session);
+              if (!classDoc) {
+                errors.push(`Class with ID ${studentData.classId} not found`);
+              } else if (studentData.sectionId && mongoose.Types.ObjectId.isValid(studentData.sectionId)) {
+                const sectionDoc = await Section.findOne({
+                  _id: studentData.sectionId,
+                  classId: studentData.classId,
+                }).session(session);
+                if (!sectionDoc) {
+                  errors.push(`Section with ID ${studentData.sectionId} not found under Class ${classDoc.name}`);
+                }
+              }
+            }
+          }
+
+          if (!feeConfig || typeof feeConfig !== 'object') {
+            errors.push('feeConfig is required for new student');
+          } else {
+            if (feeConfig.monthlyFee === undefined || feeConfig.monthlyFee === null) {
+              errors.push('Monthly fee is required');
+            } else if (typeof feeConfig.monthlyFee !== 'number' || feeConfig.monthlyFee < 0) {
+              errors.push('Monthly fee must be a valid non-negative number');
+            }
+            if (feeConfig.bookFee !== undefined && feeConfig.bookFee !== null) {
+              if (typeof feeConfig.bookFee !== 'number' || feeConfig.bookFee < 0) {
+                errors.push('Book fee must be a valid non-negative number');
+              }
+              if (feeConfig.bookFee > 0 && !feeConfig.bookFeeDueDate) {
+                errors.push('Book fee due date is required when book fee is specified');
+              }
+            }
+          }
+        } else {
+          errors.push('Mode must be either "existing" or "new"');
+        }
+
+        if (errors.length > 0) {
+          memberErrors.push({ index: i, errors });
+        }
+      }
+
+      // Abort if first pass validations failed
+      if (memberErrors.length > 0) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: memberErrors,
+        });
+      }
+
+      // Second Pass: One-family-per-student and Duplicate checking
+      // Ensure all existing students are actually valid and check their family status
+      for (let i = 0; i < members.length; i++) {
+        const member = members[i];
+        const errors = [];
+
+        if (member.mode === 'existing') {
+          const student = await Student.findById(member.studentId).session(session);
+          if (!student) {
+            errors.push(`Student with ID ${member.studentId} not found`);
+          } else if (student.familyId) {
+            const oldFamily = await Family.findById(student.familyId).session(session);
+            const oldFamilyName = oldFamily ? oldFamily.familyName : 'Unknown Family';
+            errors.push(`Student ${student.fullName} is already linked to family "${oldFamilyName}"`);
+          }
+        } else if (member.mode === 'new') {
+          const { studentData, feeConfig } = member;
+          const name = studentData.name || studentData.fullName;
+          const parentName = studentData.parentName || studentData.fatherName;
+          const fatherContact = studentData.fatherContact || contactInfo;
+
+          // Check if student already exists in the system (reusing bulk import matcher)
+          const isDuplicate = await checkDuplicateStudent(name, studentData.dateOfBirth, fatherContact, session);
+          if (isDuplicate) {
+            errors.push(`Student "${name}" with matching Date of Birth and Father Contact already exists in the database`);
+          }
+
+          // Check within-request duplicates for new students
+          const dobStr = new Date(studentData.dateOfBirth).toISOString().split('T')[0];
+          const contactClean = fatherContact.toString().replace(/\D/g, '');
+          const fingerprint = `${name.trim().toLowerCase()}_${dobStr}_${contactClean}`;
+
+          const isIntraRequestDuplicate = newStudentsToCreate.some(other => {
+            const otherName = other.studentData.name || other.studentData.fullName;
+            const otherContact = other.studentData.fatherContact || contactInfo;
+            const otherDobStr = new Date(other.studentData.dateOfBirth).toISOString().split('T')[0];
+            const otherContactClean = otherContact.toString().replace(/\D/g, '');
+            const otherFingerprint = `${otherName.trim().toLowerCase()}_${otherDobStr}_${otherContactClean}`;
+            return otherFingerprint === fingerprint;
+          });
+
+          if (isIntraRequestDuplicate) {
+            errors.push(`Duplicate student "${name}" (same DOB and contact) appears multiple times in this request`);
+          } else {
+            newStudentsToCreate.push(member);
+          }
+        }
+
+        if (errors.length > 0) {
+          memberErrors.push({ index: i, errors });
+        }
+      }
+
+      // Abort if second pass validations failed
+      if (memberErrors.length > 0) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: memberErrors,
+        });
+      }
+
+      // Hash default password once outside student creation loop (reusing bulk import pattern)
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('student123', salt);
+
+      // Create empty family document
+      const family = new Family({
+        familyName,
+        guardianName: members.find(m => m.mode === 'new')?.studentData?.parentName || members.find(m => m.mode === 'new')?.studentData?.fatherName || '',
+        contactNumber: contactInfo,
+        address,
+        students: [],
+        createdBy: mongoose.Types.ObjectId.isValid(req.user?.id || req.user?._id) ? (req.user?.id || req.user?._id) : undefined,
+      });
+      await family.save({ session });
+
+      const createdStudentsResponse = [];
+      const combinedStudentIds = [...existingStudentIds];
+
+      // Create new students and set up associations
+      for (const member of newStudentsToCreate) {
+        const { studentData, feeConfig } = member;
+        const name = studentData.name || studentData.fullName;
+        const parentName = studentData.parentName || studentData.fatherName;
+        const fatherContact = studentData.fatherContact || contactInfo;
+
+        // RESERVING REGISTRATION NUMBER INSIDE THE TRANSACTION SESSION
+        // -------------------------------------------------------------
+        const counter = await Counter.findOneAndUpdate(
+          { id: 'student_registration' },
+          { $inc: { seq: 1 } },
+          { new: true, upsert: true, session }
+        );
+        // -------------------------------------------------------------
+        
+        const regNumber = String(26000 + counter.seq);
+
+        // Create student User account using same role/default password logic as single student path
+        await User.insertMany(
+          [
+            {
+              name: name.trim(),
+              registrationNumber: regNumber,
+              password: hashedPassword,
+              role: 'student',
+              phone: fatherContact.trim(),
+              isActivated: true,
+              isActive: true,
+            },
+          ],
+          { session }
+        );
+
+        // Insert Student document within transaction
+        const newStudent = new Student({
+          registrationNumber: regNumber,
+          fullName: name.trim(),
+          fatherName: parentName.trim(),
+          gender: studentData.gender,
+          dateOfBirth: new Date(studentData.dateOfBirth),
+          fatherContact: fatherContact.trim(),
+          address: studentData.address ? studentData.address.trim() : address ? address.trim() : '',
+          classId: studentData.classId,
+          sectionId: studentData.sectionId,
+          monthlyFeeAmount: feeConfig.monthlyFee || 0,
+          status: studentData.status || 'active',
+          photoUrl: studentData.photoUrl || '',
+          familyId: family._id,
+        });
+        await newStudent.save({ session });
+
+        // Create their initial FeeRecord via shared studentFeeService
+        await studentFeeService.getOrCreateCurrentMonthRecord(newStudent._id, session);
+
+        // Create BookFee record if bookFee > 0
+        if (feeConfig.bookFee && feeConfig.bookFee > 0) {
+          const bookFeeDoc = new BookFee({
+            student: newStudent._id,
+            amount: feeConfig.bookFee,
+            dueDate: feeConfig.bookFeeDueDate ? new Date(feeConfig.bookFeeDueDate) : undefined,
+            paid: false,
+          });
+          await bookFeeDoc.save({ session });
+        }
+
+        combinedStudentIds.push(newStudent._id.toString());
+        createdStudentsResponse.push({
+          studentId: newStudent._id,
+          regNumber,
+          name,
+        });
+      }
+
+      // Set familyIds on existing students and verify they are not already claimed
+      for (const studentId of existingStudentIds) {
+        const student = await Student.findById(studentId).session(session);
+        if (student.familyId && student.familyId.toString() !== family._id.toString()) {
+          throw new Error(`Student ${student.fullName} is already linked to another family`);
+        }
+        student.familyId = family._id;
+        await student.save({ session });
+      }
+
+      // Save student list back to family
+      family.students = combinedStudentIds;
+      if (!family.guardianName && existingStudentIds.length > 0) {
+        const firstExisting = await Student.findById(existingStudentIds[0]).session(session);
+        family.guardianName = firstExisting ? firstExisting.fatherName : '';
+      }
+      await family.save({ session });
+
+      // Commit Transaction
+      await session.commitTransaction();
+      session.endSession();
+
+      // Fetch final populated family for the response
+      const populatedFamily = await Family.findById(family._id).populate('students', 'fullName registrationNumber classId sectionId');
+
+      return res.status(201).json({
+        success: true,
+        family: populatedFamily,
+        createdStudents: createdStudentsResponse,
+      });
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+
+      const isTransient = error.errorLabels?.includes('TransientTransactionError') ||
+                          error.message?.includes('WriteConflict') ||
+                          error.message?.includes('retry your operation');
+
+      if (isTransient && attempt < maxRetries) {
+        console.log(`[TRANSACTION RETRY] Attempt ${attempt} failed due to write conflict / transient error. Retrying...`);
+        // Wait random backoff and retry
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 50 + 10));
+        continue;
+      }
+
+      // Send error message if standard Mongoose Validation or unique index error is raised
+      if (error.code === 11000) {
+        const pattern = Object.keys(error.keyPattern || {}).join(', ');
+        return res.status(400).json({
+          success: false,
+          message: `A unique constraint failed on field(s): ${pattern}. Request rolled back completely.`,
+        });
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: error.message || 'Failed to create family with enrollment',
+      });
+    }
+  }
+};
+
 module.exports = {
   createFamily,
   getFamilies,
@@ -853,5 +1241,6 @@ module.exports = {
   getFamilyFeeSummary,
   getFamilyBooksSummary,
   payFamilyFees,
-  generateFamilyVoucherPDF
+  generateFamilyVoucherPDF,
+  createFamilyWithEnrollment
 };
