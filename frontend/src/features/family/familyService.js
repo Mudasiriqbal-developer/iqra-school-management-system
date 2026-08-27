@@ -105,3 +105,13 @@ export const downloadFamilyVoucherPDF = async (familyId, voucherId, fileName) =>
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
 };
+
+/**
+ * Create a family and enroll/link siblings in an atomic transaction.
+ * @param {Object} data - { familyName, address, contactInfo, members }
+ */
+export const createFamilyWithEnrollment = async (data) => {
+  const response = await api.post('/families/create-with-enrollment', data);
+  return response.data;
+};
+

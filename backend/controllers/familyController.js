@@ -1113,6 +1113,18 @@ const createFamilyWithEnrollment = async (req, res, next) => {
         
         const regNumber = String(26000 + counter.seq);
 
+        // Defensive check: verify registration number is not already in use by any User or Student
+        const existingUser = await User.findOne({ registrationNumber: regNumber }).session(session);
+        const existingStudent = await Student.findOne({ registrationNumber: regNumber }).session(session);
+        if (existingUser || existingStudent) {
+          const conflictingName = existingStudent ? existingStudent.fullName : existingUser ? existingUser.name : 'Unknown';
+          throw new Error(
+            `registration number ${regNumber} is already assigned to an existing user account (${conflictingName}). ` +
+            `This likely means student data was deleted without cleaning up the associated user account, or the registration counter is out of sync — please resolve this before continuing.`
+          );
+        }
+
+
         // Create student User account using same role/default password logic as single student path
         await User.insertMany(
           [
@@ -1215,13 +1227,47 @@ const createFamilyWithEnrollment = async (req, res, next) => {
       }
 
       // Send error message if standard Mongoose Validation or unique index error is raised
-      if (error.code === 11000) {
-        const pattern = Object.keys(error.keyPattern || {}).join(', ');
+      if (error.code === 11000 || (error.writeErrors && error.writeErrors.some(e => e.code === 11000))) {
+        let fieldName = '';
+        let offendingValue = '';
+
+        if (error.keyPattern && error.keyValue) {
+          fieldName = Object.keys(error.keyPattern).join(', ');
+          offendingValue = Object.values(error.keyValue).join(', ');
+        } else if (error.writeErrors && error.writeErrors.length > 0) {
+          const firstErr = error.writeErrors.find(e => e.code === 11000) || error.writeErrors[0];
+          const nestedErr = firstErr.err || {};
+          if (nestedErr.keyPattern && nestedErr.keyValue) {
+            fieldName = Object.keys(nestedErr.keyPattern).join(', ');
+            offendingValue = Object.values(nestedErr.keyValue).join(', ');
+          } else if (firstErr.errmsg) {
+            // Extract from errmsg, e.g. dup key: { registrationNumber: "26001" }
+            const match = firstErr.errmsg.match(/index:\s+(\w+)_?\d*\s+dup key:\s+\{\s*([^:]+):\s*"?([^"}]+)"?\s*\}/);
+            if (match) {
+              fieldName = match[1];
+              offendingValue = match[3];
+            } else {
+              const simpleMatch = firstErr.errmsg.match(/dup key:\s+({[^}]+})/);
+              if (simpleMatch) {
+                offendingValue = simpleMatch[1];
+              }
+            }
+          }
+        }
+
+        if (!fieldName) {
+          fieldName = 'unknown_field';
+        }
+        if (!offendingValue) {
+          offendingValue = 'unknown_value';
+        }
+
         return res.status(400).json({
           success: false,
-          message: `A unique constraint failed on field(s): ${pattern}. Request rolled back completely.`,
+          message: `A unique constraint failed on field '${fieldName}' (value: ${offendingValue}). Request rolled back completely.`,
         });
       }
+
 
       return res.status(400).json({
         success: false,
