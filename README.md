@@ -1,4 +1,4 @@
-﻿# Iqra School Management System (CMS)
+# Iqra School Management System (CMS)
 
 A full-stack, enterprise-ready School Management System built specifically for **Iqra Haddiqatul Atfal Model School**. This platform automates end-to-end academic, financial, administrative, and student lifecycle workflows with role-based access control (RBAC), PDF document generation, bulk Excel data operations, financial ledger management, occasional one-time fee billing, and dynamic customizable dashboards.
 
@@ -420,6 +420,21 @@ The backend includes automated helper seeders located in `backend/`:
 - **Strict Role-Based Authorizations**: Sensitive endpoints (e.g., student deletion, fee collection, payroll disbursement, one-time fee issuance) strictly enforce `authorize('admin')` middleware checks.
 - **Financial Audit Locks**: Charges that have received payments (`amountPaid > 0`) cannot have their amount/title altered or be deleted.
 - **Clean Separation of Concerns**: Modular structure cleanly separating Routing (`routes/`), Controller Logic (`controllers/`), Business/Utility Services (`services/`, `utils/`), and Database Entities (`models/`).
+
+---
+
+## 🎨 UI/UX Design System & Token Standardization
+
+The frontend adheres to a standardized **Linear / Stripe aesthetic design token system** engineered for crisp legibility and fast performance on low-end and mobile devices:
+
+- **Brand & Primary Core Color**: Unified Navy (`#00215E` / `bg-navy-900` with `hover:bg-navy-800`). All primary CTAs, active table tabs, and modal headers strictly use this brand core.
+- **Surface & Elevation Hierarchy**:
+  - Surface Containers / Cards: `bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs rounded-2xl`
+  - Modals & Slide-out Drawers: `shadow-xl rounded-2xl border border-slate-200/80`
+  - Interactive Elements (Buttons, Inputs, Selects): `rounded-xl` (12px)
+  - Micro-tags & Status Badges: `rounded-md` or `rounded-full` (with zero shadow overhead)
+- **High-Performance Table Rendering**: No per-row or per-card shadows within repeating table lists, avoiding GPU overdraw and layout thrashing on mobile browsers.
+- **Typography Scale**: Standardized `font-bold` headings (`text-2xl font-bold tracking-tight text-slate-900`), `text-xs sm:text-sm text-slate-500` subtitles, and `text-[11px] font-bold text-slate-500 uppercase tracking-wider` table column headers.
 
 ---
 

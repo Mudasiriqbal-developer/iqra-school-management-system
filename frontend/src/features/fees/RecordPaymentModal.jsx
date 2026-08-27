@@ -88,12 +88,12 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-gray-150 overflow-hidden transform transition-all scale-100">
         
         {/* Header */}
-        <div className="relative bg-navy-primary px-6 py-5 text-white flex justify-between items-center">
+        <div className="relative bg-navy-900 px-6 py-5 text-white flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <Receipt className="h-5 w-5 text-white" />
+            <Receipt className="h-5 w-5 text-sky-400" />
             <div>
-              <h2 className="text-md font-bold tracking-tight">{studentName}</h2>
-              <p className="text-xxs text-slate-200 font-bold uppercase tracking-wider mt-0.5">
+              <h2 className="text-base font-bold tracking-tight">{studentName}</h2>
+              <p className="text-[11px] text-slate-200 font-semibold uppercase tracking-wider mt-0.5">
                 {feeRecord.type === 'admission' 
                   ? 'Record Admission Fee & Books Payment' 
                   : feeRecord.type === 'one_time' 
@@ -224,14 +224,14 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors"
+              className="px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-navy-primary text-white rounded-xl text-xs font-bold hover:opacity-90 transition-opacity flex items-center space-x-2 disabled:opacity-40 disabled:hover:opacity-40"
+              className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-2 disabled:opacity-40 disabled:hover:opacity-40"
               disabled={isConfirmDisabled}
             >
               {loading ? (

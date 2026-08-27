@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, PlusCircle, Users, User, Layers, Calendar, DollarSign, Search, Check, Loader2, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getClasses, getSectionsByClass, getStudents, issueOneTimeCharge } from './feeService';
@@ -227,13 +227,13 @@ const IssueChargeModal = ({ isOpen, onClose, onSuccess }) => {
       <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-150 dark:border-slate-700 overflow-hidden transform transition-all my-8">
         
         {/* Header */}
-        <div className="bg-navy-primary px-6 py-5 text-white flex justify-between items-center">
+        <div className="bg-navy-900 px-6 py-5 text-white flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-white/10 rounded-xl">
-              <PlusCircle className="h-6 w-6 text-purple-300" />
+              <PlusCircle className="h-5 w-5 text-sky-400" />
             </div>
             <div>
-              <h2 className="text-lg font-black tracking-tight">Issue One-Time Charge</h2>
+              <h2 className="text-base sm:text-lg font-bold tracking-tight">Issue One-Time Charge</h2>
               <p className="text-xs text-slate-200 font-medium mt-0.5">
                 Issue exam fees, paper funds, activity kits, or special fees to students
               </p>
@@ -518,7 +518,7 @@ const IssueChargeModal = ({ isOpen, onClose, onSuccess }) => {
             <button
               type="submit"
               disabled={submitting || targetCount === 0 || !title.trim() || !amount}
-              className="px-6 py-2.5 bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-2 shadow-sm"
+              className="px-6 py-2.5 bg-navy-900 hover:bg-navy-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-2 shadow-xs"
             >
               {submitting ? (
                 <>

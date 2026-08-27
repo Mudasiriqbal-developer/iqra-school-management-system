@@ -161,7 +161,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
       <div className="relative bg-white w-full max-w-lg h-full shadow-2xl flex flex-col z-10 animate-slideLeft">
         
         {/* Drawer Header */}
-        <div className="bg-navy-primary px-6 py-5 text-white flex justify-between items-center shrink-0">
+        <div className="bg-navy-900 px-6 py-5 text-white flex justify-between items-center shrink-0">
           <div>
             <h2 className="text-base font-bold tracking-tight">Student Fee Ledger</h2>
             <p className="text-xs text-slate-200 mt-0.5">{studentName}</p>
@@ -236,7 +236,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                   <button
                     onClick={handleSaveMonthlyFee}
                     disabled={savingFee}
-                    className="bg-navy-primary text-white font-bold py-2 px-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center space-x-1.5 text-xs disabled:opacity-50"
+                    className="bg-navy-900 hover:bg-navy-800 text-white font-bold py-2 px-3.5 rounded-xl transition-colors flex items-center space-x-1.5 text-xs shadow-xs disabled:opacity-50"
                   >
                     {savingFee ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -247,7 +247,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                   </button>
                 </div>
                 {successNote ? (
-                  <p className="text-[10px] text-navy-primary font-semibold bg-navy-50/50 p-2.5 rounded-lg border border-navy-100 leading-normal">
+                  <p className="text-[10px] text-navy-900 font-semibold bg-navy-50/50 p-2.5 rounded-lg border border-navy-100 leading-normal">
                     {successNote}
                   </p>
                 ) : (
@@ -382,10 +382,10 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
         </div>
 
         {/* Drawer Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-gray-100 flex justify-end shrink-0">
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 bg-navy-primary hover:opacity-90 text-white rounded-xl text-xs font-bold transition-opacity focus:outline-none"
+            className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs focus:outline-none"
           >
             Close
           </button>
