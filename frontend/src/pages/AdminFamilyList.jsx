@@ -31,6 +31,9 @@ const AdminFamilyList = () => {
   const [address, setAddress] = useState('');
   const [members, setMembers] = useState([]);
   const [errorsStep1, setErrorsStep1] = useState({});
+  const [touchedStep1, setTouchedStep1] = useState({});
+  const [submitAttemptedStep1, setSubmitAttemptedStep1] = useState(false);
+  const [submitAttemptedStep2, setSubmitAttemptedStep2] = useState(false);
 
   // Class & Section data for dropdowns
   const [classes, setClasses] = useState([]);
@@ -91,6 +94,7 @@ const AdminFamilyList = () => {
     },
     errors: {},
     serverErrors: [],
+    touched: {},
   });
 
   // Fetch all classes once
@@ -229,10 +233,25 @@ const AdminFamilyList = () => {
     setContactInfo('');
     setAddress('');
     setErrorsStep1({});
+    setTouchedStep1({});
+    setSubmitAttemptedStep1(false);
+    setSubmitAttemptedStep2(false);
     setStep(1);
     setMembers([createEmptyMember('existing')]);
     setIsAddModalOpen(true);
     fetchClasses();
+  };
+
+  const handleTouchMemberField = (rowId, field) => {
+    setMembers(prev => prev.map(m => {
+      if (m.id === rowId) {
+        return {
+          ...m,
+          touched: { ...m.touched, [field]: true }
+        };
+      }
+      return m;
+    }));
   };
 
   const handleStudentSearchChange = (rowId, query) => {
@@ -403,6 +422,9 @@ const AdminFamilyList = () => {
   };
 
   const handleNextStep = () => {
+    setSubmitAttemptedStep1(true);
+    setTouchedStep1({ familyName: true, contactInfo: true });
+
     const errs = {};
     if (!familyName.trim()) errs.familyName = 'Family Name is required';
     if (!contactInfo.trim()) errs.contactInfo = 'Contact Number is required';
@@ -418,6 +440,25 @@ const AdminFamilyList = () => {
 
   const handleSubmitWizard = async (e) => {
     e.preventDefault();
+    setSubmitAttemptedStep2(true);
+    
+    // Mark all fields in all members as touched so errors display immediately
+    setMembers(prev => prev.map(m => ({
+      ...m,
+      touched: {
+        studentId: true,
+        name: true,
+        dateOfBirth: true,
+        gender: true,
+        classId: true,
+        sectionId: true,
+        parentName: true,
+        fatherContact: true,
+        monthlyFee: true,
+        bookFee: true,
+        bookFeeDueDate: true
+      }
+    })));
 
     const errs1 = {};
     if (!familyName.trim()) errs1.familyName = 'Family Name is required';
@@ -441,7 +482,24 @@ const AdminFamilyList = () => {
       if (Object.keys(errors).length > 0) {
         hasErrors = true;
       }
-      return { ...m, errors, serverErrors: [] };
+      return { 
+        ...m, 
+        errors, 
+        serverErrors: [],
+        touched: {
+          studentId: true,
+          name: true,
+          dateOfBirth: true,
+          gender: true,
+          classId: true,
+          sectionId: true,
+          parentName: true,
+          fatherContact: true,
+          monthlyFee: true,
+          bookFee: true,
+          bookFeeDueDate: true
+        }
+      };
     });
 
     if (hasErrors) {
@@ -771,6 +829,7 @@ const AdminFamilyList = () => {
                           type="text"
                           placeholder="e.g. Mudasir Household"
                           value={familyName}
+                          onBlur={() => setTouchedStep1(prev => ({ ...prev, familyName: true }))}
                           onChange={(e) => {
                             setFamilyName(e.target.value);
                             if (errorsStep1.familyName) {
@@ -778,22 +837,23 @@ const AdminFamilyList = () => {
                             }
                           }}
                           className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
-                            errorsStep1.familyName ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-navy-900'
+                            (touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-navy-900'
                           }`}
                         />
-                        {errorsStep1.familyName && (
+                        {(touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName && (
                           <p className="text-red-500 text-xs font-medium mt-1">{errorsStep1.familyName}</p>
                         )}
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
+                        <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block mb-1.5">
                           Contact Number <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           placeholder="e.g. +92 300 1234567"
                           value={contactInfo}
+                          onBlur={() => setTouchedStep1(prev => ({ ...prev, contactInfo: true }))}
                           onChange={(e) => {
                             setContactInfo(e.target.value);
                             if (errorsStep1.contactInfo) {
@@ -801,10 +861,10 @@ const AdminFamilyList = () => {
                             }
                           }}
                           className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
-                            errorsStep1.contactInfo ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-navy-900'
+                            (touchedStep1.contactInfo || submitAttemptedStep1) && errorsStep1.contactInfo ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-navy-900'
                           }`}
                         />
-                        {errorsStep1.contactInfo && (
+                        {(touchedStep1.contactInfo || submitAttemptedStep1) && errorsStep1.contactInfo && (
                           <p className="text-red-500 text-xs font-medium mt-1">{errorsStep1.contactInfo}</p>
                         )}
                       </div>
@@ -886,14 +946,14 @@ const AdminFamilyList = () => {
                               </div>
 
                               <div className="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
-                                <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5 shadow-3xs">
+                                <div className="inline-flex rounded-lg border border-gray-200 bg-slate-100/50 p-1 shadow-3xs space-x-1">
                                   <button
                                     type="button"
                                     onClick={() => handleToggleMode(member.id, 'existing')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                                    className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
                                       member.mode === 'existing'
-                                        ? 'bg-navy-900 text-white shadow-2xs'
-                                        : 'text-gray-500 hover:text-gray-900'
+                                        ? 'bg-navy-900 text-white shadow-2xs border border-navy-950'
+                                        : 'bg-white text-gray-500 hover:text-gray-900 border border-gray-200 shadow-3xs'
                                     }`}
                                   >
                                     Existing Student
@@ -901,10 +961,10 @@ const AdminFamilyList = () => {
                                   <button
                                     type="button"
                                     onClick={() => handleToggleMode(member.id, 'new')}
-                                    className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                                    className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${
                                       member.mode === 'new'
-                                        ? 'bg-navy-900 text-white shadow-2xs'
-                                        : 'text-gray-500 hover:text-gray-900'
+                                        ? 'bg-navy-900 text-white shadow-2xs border border-navy-950'
+                                        : 'bg-white text-gray-500 hover:text-gray-900 border border-gray-200 shadow-3xs'
                                     }`}
                                   >
                                     New Student
@@ -929,27 +989,28 @@ const AdminFamilyList = () => {
                               <div className="space-y-3">
                                 {!member.selectedStudent ? (
                                   <div>
-                                    <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1">
+                                    <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block mb-1">
                                       Search and Link Student
                                     </label>
                                     <div className="relative">
-                                      <div className="flex items-center border border-gray-200 rounded-xl p-3 bg-white focus-within:border-navy-900">
-                                        <Search className="h-4.5 w-4.5 text-gray-400 mr-2 flex-shrink-0" />
+                                      <div className="flex items-center border border-gray-200 rounded-2xl p-4 bg-white focus-within:border-navy-900 focus-within:ring-2 focus-within:ring-navy-900/20 transition-all shadow-xs">
+                                        <Search className="h-5 w-5 text-gray-400 mr-2.5 flex-shrink-0" />
                                         <input
                                           type="text"
                                           placeholder="Type sibling's name or registration number..."
                                           value={member.studentSearch}
                                           onChange={(e) => handleStudentSearchChange(member.id, e.target.value)}
-                                          className="w-full text-sm outline-hidden text-gray-800"
+                                          onBlur={() => handleTouchMemberField(member.id, 'studentId')}
+                                          className="w-full text-sm outline-none border-none focus:outline-none focus:ring-0 bg-transparent text-gray-800 placeholder-gray-400"
                                         />
                                         {member.searching && (
-                                          <Loader2 className="h-4.5 w-4.5 text-gray-400 animate-spin flex-shrink-0" />
+                                          <Loader2 className="h-5 w-5 text-gray-400 animate-spin flex-shrink-0" />
                                         )}
                                       </div>
 
                                       {/* Row Search Dropdown results */}
                                       {member.searchResults?.length > 0 && (
-                                        <div className="absolute top-full left-0 right-0 z-20 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg divide-y divide-gray-100">
+                                        <div className="absolute top-full left-0 right-0 z-20 mt-1.5 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg divide-y divide-gray-100">
                                           {member.searchResults.map((student) => {
                                             const isSelectedElsewhere = members.some(m => m.studentId === student._id && m.id !== member.id);
                                             return (
@@ -979,7 +1040,7 @@ const AdminFamilyList = () => {
                                         </div>
                                       )}
                                     </div>
-                                    {member.errors.studentId && (
+                                    {(member.touched.studentId || submitAttemptedStep2) && member.errors.studentId && (
                                       <p className="text-red-500 text-xs font-semibold mt-1">{member.errors.studentId}</p>
                                     )}
                                   </div>
@@ -1024,11 +1085,12 @@ const AdminFamilyList = () => {
                                       placeholder="Full name of student"
                                       value={member.studentData.name}
                                       onChange={(e) => handleNewStudentDataChange(member.id, 'name', e.target.value)}
+                                      onBlur={() => handleTouchMemberField(member.id, 'name')}
                                       className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                        member.errors.name ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                        (member.touched.name || submitAttemptedStep2) && member.errors.name ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                       }`}
                                     />
-                                    {member.errors.name && (
+                                    {(member.touched.name || submitAttemptedStep2) && member.errors.name && (
                                       <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.name}</p>
                                     )}
                                   </div>
@@ -1041,11 +1103,12 @@ const AdminFamilyList = () => {
                                       type="date"
                                       value={member.studentData.dateOfBirth}
                                       onChange={(e) => handleNewStudentDataChange(member.id, 'dateOfBirth', e.target.value)}
+                                      onBlur={() => handleTouchMemberField(member.id, 'dateOfBirth')}
                                       className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                        member.errors.dateOfBirth ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                        (member.touched.dateOfBirth || submitAttemptedStep2) && member.errors.dateOfBirth ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                       }`}
                                     />
-                                    {member.errors.dateOfBirth && (
+                                    {(member.touched.dateOfBirth || submitAttemptedStep2) && member.errors.dateOfBirth && (
                                       <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.dateOfBirth}</p>
                                     )}
                                   </div>
@@ -1057,8 +1120,9 @@ const AdminFamilyList = () => {
                                     <select
                                       value={member.studentData.gender}
                                       onChange={(e) => handleNewStudentDataChange(member.id, 'gender', e.target.value)}
+                                      onBlur={() => handleTouchMemberField(member.id, 'gender')}
                                       className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                        member.errors.gender ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                        (member.touched.gender || submitAttemptedStep2) && member.errors.gender ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                       }`}
                                     >
                                       <option value="">Select Gender</option>
@@ -1066,13 +1130,13 @@ const AdminFamilyList = () => {
                                       <option value="female">Female</option>
                                       <option value="other">Other</option>
                                     </select>
-                                    {member.errors.gender && (
+                                    {(member.touched.gender || submitAttemptedStep2) && member.errors.gender && (
                                       <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.gender}</p>
                                     )}
                                   </div>
 
                                   <div>
-                                    <label className="text-[10px] font-extrabold text-navy-950 uppercase block mb-1">
+                                    <label className="text-[10px] font-extrabold text-navy-955 uppercase block mb-1">
                                       Class <span className="text-red-500">*</span>
                                     </label>
                                     {loadingClasses ? (
@@ -1084,8 +1148,9 @@ const AdminFamilyList = () => {
                                       <select
                                         value={member.studentData.classId}
                                         onChange={(e) => handleNewStudentDataChange(member.id, 'classId', e.target.value)}
+                                        onBlur={() => handleTouchMemberField(member.id, 'classId')}
                                         className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                          member.errors.classId ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                          (member.touched.classId || submitAttemptedStep2) && member.errors.classId ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                         }`}
                                       >
                                         <option value="">Select Class</option>
@@ -1094,22 +1159,23 @@ const AdminFamilyList = () => {
                                         ))}
                                       </select>
                                     )}
-                                    {member.errors.classId && (
+                                    {(member.touched.classId || submitAttemptedStep2) && member.errors.classId && (
                                       <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.classId}</p>
                                     )}
                                   </div>
 
                                   <div>
-                                    <label className="text-[10px] font-extrabold text-navy-950 uppercase block mb-1">
+                                    <label className="text-[10px] font-extrabold text-navy-955 uppercase block mb-1">
                                       Section <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                       value={member.studentData.sectionId}
                                       onChange={(e) => handleNewStudentDataChange(member.id, 'sectionId', e.target.value)}
+                                      onBlur={() => handleTouchMemberField(member.id, 'sectionId')}
                                       disabled={!member.studentData.classId}
                                       className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
                                         !member.studentData.classId ? 'bg-slate-100 border-gray-200 cursor-not-allowed' :
-                                        member.errors.sectionId ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                        (member.touched.sectionId || submitAttemptedStep2) && member.errors.sectionId ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                       }`}
                                     >
                                       <option value="">Select Section</option>
@@ -1117,13 +1183,13 @@ const AdminFamilyList = () => {
                                         <option key={sec._id} value={sec._id}>{sec.name}</option>
                                       ))}
                                     </select>
-                                    {member.errors.sectionId && (
+                                    {(member.touched.sectionId || submitAttemptedStep2) && member.errors.sectionId && (
                                       <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.sectionId}</p>
                                     )}
                                   </div>
 
                                   <div>
-                                    <label className="text-[10px] font-extrabold text-navy-950 uppercase block mb-1">
+                                    <label className="text-[10px] font-extrabold text-navy-955 uppercase block mb-1">
                                       Father Name <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -1131,17 +1197,18 @@ const AdminFamilyList = () => {
                                       placeholder="Parent / Father's Name"
                                       value={member.studentData.parentName}
                                       onChange={(e) => handleNewStudentDataChange(member.id, 'parentName', e.target.value)}
+                                      onBlur={() => handleTouchMemberField(member.id, 'parentName')}
                                       className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                        member.errors.parentName ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                        (member.touched.parentName || submitAttemptedStep2) && member.errors.parentName ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                       }`}
                                     />
-                                    {member.errors.parentName && (
+                                    {(member.touched.parentName || submitAttemptedStep2) && member.errors.parentName && (
                                       <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.parentName}</p>
                                     )}
                                   </div>
 
                                   <div>
-                                    <label className="text-[10px] font-extrabold text-navy-950 uppercase block mb-1">
+                                    <label className="text-[10px] font-extrabold text-navy-955 uppercase block mb-1">
                                       Father Contact <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -1149,18 +1216,19 @@ const AdminFamilyList = () => {
                                       placeholder="Father's phone/contact"
                                       value={member.studentData.fatherContact}
                                       onChange={(e) => handleNewStudentDataChange(member.id, 'fatherContact', e.target.value)}
+                                      onBlur={() => handleTouchMemberField(member.id, 'fatherContact')}
                                       className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                        member.errors.fatherContact ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                        (member.touched.fatherContact || submitAttemptedStep2) && member.errors.fatherContact ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                       }`}
                                     />
-                                    {member.errors.fatherContact && (
+                                    {(member.touched.fatherContact || submitAttemptedStep2) && member.errors.fatherContact && (
                                       <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.fatherContact}</p>
                                     )}
                                   </div>
                                 </div>
 
                                 {/* Fee Sub-section */}
-                                <div className="bg-navy-50/30 border border-navy-100/50 p-4 rounded-xl space-y-3 shadow-3xs">
+                                <div className="bg-navy-50/30 border border-navy-100/50 p-4 rounded-xl space-y-3 shadow-3xs text-left">
                                   <h5 className="text-[10px] font-bold text-navy-900 uppercase tracking-wider border-b border-navy-150/80 pb-1.5 flex items-center">
                                     <Calendar className="h-3.5 w-3.5 mr-1.5 text-navy-700" />
                                     Fee Configuration (Setup at Enrollment Only)
@@ -1168,7 +1236,7 @@ const AdminFamilyList = () => {
 
                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
-                                      <label className="text-[10px] font-bold text-navy-950 uppercase block mb-1">
+                                      <label className="text-[10px] font-bold text-navy-955 uppercase block mb-1">
                                         Monthly tuition Fee (Rs.) <span className="text-red-500">*</span>
                                       </label>
                                       <input
@@ -1178,17 +1246,18 @@ const AdminFamilyList = () => {
                                         placeholder="e.g. 3500"
                                         value={member.feeConfig.monthlyFee}
                                         onChange={(e) => handleFeeConfigChange(member.id, 'monthlyFee', e.target.value)}
+                                        onBlur={() => handleTouchMemberField(member.id, 'monthlyFee')}
                                         className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                          member.errors.monthlyFee ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                          (member.touched.monthlyFee || submitAttemptedStep2) && member.errors.monthlyFee ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                         }`}
                                       />
-                                      {member.errors.monthlyFee && (
+                                      {(member.touched.monthlyFee || submitAttemptedStep2) && member.errors.monthlyFee && (
                                         <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.monthlyFee}</p>
                                       )}
                                     </div>
 
                                     <div>
-                                      <label className="text-[10px] font-bold text-navy-950 uppercase block mb-1">
+                                      <label className="text-[10px] font-bold text-navy-955 uppercase block mb-1">
                                         One-time Book Fee (Rs.) <span className="text-gray-400">(Optional)</span>
                                       </label>
                                       <input
@@ -1198,17 +1267,18 @@ const AdminFamilyList = () => {
                                         placeholder="e.g. 1500"
                                         value={member.feeConfig.bookFee}
                                         onChange={(e) => handleFeeConfigChange(member.id, 'bookFee', e.target.value)}
+                                        onBlur={() => handleTouchMemberField(member.id, 'bookFee')}
                                         className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
-                                          member.errors.bookFee ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                          (member.touched.bookFee || submitAttemptedStep2) && member.errors.bookFee ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                         }`}
                                       />
-                                      {member.errors.bookFee && (
+                                      {(member.touched.bookFee || submitAttemptedStep2) && member.errors.bookFee && (
                                         <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.bookFee}</p>
                                       )}
                                     </div>
 
                                     <div>
-                                      <label className="text-[10px] font-bold text-navy-950 uppercase block mb-1">
+                                      <label className="text-[10px] font-bold text-navy-955 uppercase block mb-1">
                                         Book Fee Due Date {parseFloat(member.feeConfig.bookFee) > 0 && <span className="text-red-500">*</span>}
                                       </label>
                                       <input
@@ -1216,12 +1286,13 @@ const AdminFamilyList = () => {
                                         value={member.feeConfig.bookFeeDueDate}
                                         disabled={!(parseFloat(member.feeConfig.bookFee) > 0)}
                                         onChange={(e) => handleFeeConfigChange(member.id, 'bookFeeDueDate', e.target.value)}
+                                        onBlur={() => handleTouchMemberField(member.id, 'bookFeeDueDate')}
                                         className={`w-full text-xs p-2.5 rounded-xl border focus:outline-hidden ${
                                           !(parseFloat(member.feeConfig.bookFee) > 0) ? 'bg-slate-100 border-gray-200 cursor-not-allowed' :
-                                          member.errors.bookFeeDueDate ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
+                                          (member.touched.bookFeeDueDate || submitAttemptedStep2) && member.errors.bookFeeDueDate ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-900 bg-white'
                                         }`}
                                       />
-                                      {member.errors.bookFeeDueDate && (
+                                      {(member.touched.bookFeeDueDate || submitAttemptedStep2) && member.errors.bookFeeDueDate && (
                                         <p className="text-red-500 text-[10px] font-semibold mt-1">{member.errors.bookFeeDueDate}</p>
                                       )}
                                     </div>
