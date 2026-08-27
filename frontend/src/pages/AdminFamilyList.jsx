@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Users, Search, Plus, Phone, MapPin, X, Info, AlertTriangle, Loader2, UserPlus, Eye, Trash2, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { Users, Search, Plus, Phone, MapPin, X, Info, AlertTriangle, Loader2, UserPlus, Trash2, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/shared/DashboardLayout';
-import StatusBadge from '../components/shared/StatusBadge';
 import ConfirmModal from '../components/shared/ConfirmModal';
+import FamilyDetailModal from '../features/family/FamilyDetailModal';
 import { getFamilies, deleteFamily, createFamilyWithEnrollment } from '../features/family/familyService';
 import { getStudents, getClasses, getSectionsByClass } from '../features/students/studentService';
 
 const AdminFamilyList = () => {
-  const navigate = useNavigate();
   
   // State variables
   const [families, setFamilies] = useState([]);
@@ -23,6 +21,7 @@ const AdminFamilyList = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [familyToDelete, setFamilyToDelete] = useState(null);
+  const [selectedFamilyId, setSelectedFamilyId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Wizard States
@@ -603,87 +602,88 @@ const AdminFamilyList = () => {
           />
         </div>
 
-        {/* Table Content */}
+        {/* Card Grid Content */}
         {loading ? (
           <div className="py-24 text-center">
             <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-navy-900 border-t-transparent"></div>
             <p className="text-sm font-bold text-navy-950 mt-4">Loading family listings...</p>
           </div>
         ) : families.length > 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/75 border-b border-gray-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                    <th className="py-4 px-6">Family Name</th>
-                    <th className="py-4 px-6">Guardian / Contact</th>
-                    <th className="py-4 px-6">Address</th>
-                    <th className="py-4 px-6 text-center">Linked Students</th>
-                    <th className="py-4 px-6 text-right">Combined Outstanding</th>
-                    <th className="py-4 px-6 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                  {families.map((family) => (
-                    <tr key={family._id} className="hover:bg-slate-50/50 transition-colors duration-150">
-                      <td className="py-4 px-6 font-extrabold text-navy-950">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {families.map((family) => (
+                <div
+                  key={family._id}
+                  onClick={() => setSelectedFamilyId(family._id)}
+                  className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between transition-all duration-300 min-h-[220px] cursor-pointer hover:shadow-md hover:border-navy-200 hover:-translate-y-0.5 group text-left"
+                >
+                  <div className="space-y-3.5">
+                    {/* Header: Family Name & Actions */}
+                    <div className="flex justify-between items-start gap-2">
+                      <h3 className="font-extrabold text-navy-950 text-base leading-tight group-hover:text-navy-900 transition-colors">
                         {family.familyName}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="font-bold text-gray-900">{family.guardianName || '—'}</div>
-                        <div className="text-xs text-gray-500 flex items-center mt-1">
-                          <Phone className="h-3 w-3 mr-1 text-gray-400" />
-                          {family.contactNumber}
+                      </h3>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(family);
+                        }}
+                        className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors flex-shrink-0"
+                        title="Delete Family"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Guardian & Contact */}
+                    <div className="space-y-1 text-xs">
+                      <div className="font-semibold text-gray-500 uppercase tracking-wider block text-[10px]">Guardian / Contact</div>
+                      <div className="font-bold text-gray-900">{family.guardianName || '—'}</div>
+                      <div className="text-gray-500 flex items-center mt-0.5">
+                        <Phone className="h-3.5 w-3.5 mr-1 text-gray-400 flex-shrink-0" />
+                        {family.contactNumber}
+                      </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className="text-xs text-gray-500 max-w-full truncate" title={family.address}>
+                      {family.address ? (
+                        <div className="flex items-center">
+                          <MapPin className="h-3.5 w-3.5 text-gray-400 mr-1 flex-shrink-0" />
+                          <span className="truncate">{family.address}</span>
                         </div>
-                      </td>
-                      <td className="py-4 px-6 max-w-xs truncate" title={family.address}>
-                        {family.address ? (
-                          <div className="flex items-center">
-                            <MapPin className="h-3.5 w-3.5 text-gray-400 mr-1 flex-shrink-0" />
-                            <span className="truncate">{family.address}</span>
-                          </div>
-                        ) : '—'}
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="flex flex-col items-center justify-center space-y-1">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-navy-50 text-navy-800 border border-navy-100 shadow-2xs">
-                            {family.students?.length || 0} Students
-                          </span>
-                          <div className="text-[10px] text-gray-400 max-w-[150px] truncate">
-                            {family.students?.map(s => s.fullName).join(', ') || 'None linked'}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-extrabold text-navy-950">
-                        Rs. 0.00
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          <button
-                            onClick={() => navigate(`/admin/family/${family._id}`)}
-                            className="p-1.5 rounded-lg bg-navy-50 text-navy-700 hover:bg-navy-100 hover:text-navy-900 transition-colors"
-                            title="View Family Profile"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(family)}
-                            className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
-                            title="Delete Family"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      ) : '—'}
+                    </div>
+
+                    {/* Linked Students count + badge */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-navy-50 text-navy-800 border border-navy-100 shadow-2xs">
+                          {family.students?.length || 0} Students
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-gray-400 truncate" title={family.students?.map(s => s.fullName).join(', ')}>
+                        {family.students?.map(s => s.fullName).join(', ') || 'None linked'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Combined Outstanding amount */}
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                      Combined Outstanding
+                    </span>
+                    <span className="font-extrabold text-navy-950 text-sm">
+                      Rs. 0.00
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Pagination controls */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 bg-slate-50 border-t border-gray-100 flex items-center justify-between">
+              <div className="px-6 py-4 bg-white rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
                 <div className="text-xs text-gray-500 font-medium">
                   Showing family {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalFamilies)} of {totalFamilies}
                 </div>
@@ -721,6 +721,14 @@ const AdminFamilyList = () => {
               <span>Add Family Tree</span>
             </button>
           </div>
+        )}
+
+        {/* Family Details Modal */}
+        {selectedFamilyId && (
+          <FamilyDetailModal
+            familyId={selectedFamilyId}
+            onClose={() => setSelectedFamilyId(null)}
+          />
         )}
 
         {/* Add Family Modal / Wizard */}
