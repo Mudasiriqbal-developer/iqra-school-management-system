@@ -137,27 +137,27 @@ const StudentFees = () => {
 
         {/* Occasional / One-Time Charges Section (Exam Fees, Paper Fees) */}
         {feeData?.oneTimeCharges && feeData.oneTimeCharges.length > 0 && (
-          <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-purple-900 to-indigo-900 text-white flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700/80 flex justify-between items-center">
               <div>
-                <span className="px-2 py-0.5 bg-purple-500/30 text-purple-200 text-[10px] font-black uppercase tracking-wider rounded-md border border-purple-400/30">
+                <span className="px-2.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wider rounded-md border border-purple-100 dark:border-purple-800/40">
                   Occasional Dues
                 </span>
-                <h2 className="text-lg font-bold tracking-tight mt-1">Examination & Special Fees</h2>
-                <p className="text-xs text-purple-200/80 mt-0.5">Special charges issued separately from monthly tuition.</p>
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight mt-1">Examination & Special Fees</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Special charges issued separately from monthly tuition.</p>
               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-purple-50/50 border-b border-purple-100">
-                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider">Fee Description</th>
-                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider">Due Date</th>
-                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-right">Amount Due</th>
-                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-right">Amount Paid</th>
-                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-right">Remaining</th>
-                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-center">Status</th>
+                  <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700">
+                    <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fee Description</th>
+                    <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Due Date</th>
+                    <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Amount Due</th>
+                    <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Amount Paid</th>
+                    <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Remaining</th>
+                    <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-purple-50 text-sm">

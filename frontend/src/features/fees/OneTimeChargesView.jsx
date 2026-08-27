@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -238,22 +238,22 @@ const OneTimeChargesView = () => {
   return (
     <div className="space-y-6">
 
-      {/* Top Banner & Action */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-purple-900 via-indigo-900 to-navy-950 p-6 rounded-2xl text-white shadow-lg">
+      {/* Top Header Card */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="px-2.5 py-0.5 bg-purple-500/30 text-purple-200 text-[10px] font-black uppercase tracking-wider rounded-full border border-purple-400/30">
+            <span className="px-2.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wider rounded-md border border-purple-100 dark:border-purple-800/40">
               Occasional & Special Fees
             </span>
           </div>
-          <h2 className="text-xl font-black mt-1.5 tracking-tight">Outstanding One-Time Charges</h2>
-          <p className="text-xs text-purple-200/80 mt-1 max-w-xl">
+          <h2 className="text-xl font-bold mt-1 tracking-tight text-slate-900 dark:text-slate-100">Outstanding One-Time Charges</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
             Track exam fees, paper funds, activity charges, and special levies issued separately from monthly tuition.
           </p>
         </div>
         <button
           onClick={() => setIsIssueModalOpen(true)}
-          className="px-5 py-3 bg-purple-500 hover:bg-purple-600 active:scale-95 text-white text-xs font-black rounded-xl shadow-md transition-all flex items-center space-x-2 shrink-0 border border-purple-400/40"
+          className="px-4 py-2.5 bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-2 shrink-0"
         >
           <PlusCircle className="h-4 w-4" />
           <span>Issue New Charge</span>
@@ -263,14 +263,14 @@ const OneTimeChargesView = () => {
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Billed */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Total Billed</span>
-            <div className="p-2 bg-purple-50 dark:bg-purple-950/50 rounded-xl text-purple-600 dark:text-purple-400">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Billed</span>
+            <div className="p-2 bg-navy-50/80 dark:bg-sky-950/40 text-navy-950 dark:text-sky-400 rounded-xl">
               <DollarSign className="h-4 w-4" />
             </div>
           </div>
-          <p className="text-2xl font-black text-navy-950 dark:text-slate-100 mt-2">
+          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-2">
             Rs. {Number(summary.totalBilled || 0).toLocaleString()}
           </p>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
@@ -279,14 +279,14 @@ const OneTimeChargesView = () => {
         </div>
 
         {/* Total Collected */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Total Collected</span>
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-xl text-emerald-600 dark:text-emerald-400">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Collected</span>
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
               <Wallet className="h-4 w-4" />
             </div>
           </div>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">
+          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">
             Rs. {Number(summary.totalCollected || 0).toLocaleString()}
           </p>
           <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 font-semibold mt-1">
@@ -295,14 +295,14 @@ const OneTimeChargesView = () => {
         </div>
 
         {/* Outstanding Balance */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Outstanding Dues</span>
-            <div className="p-2 bg-rose-50 dark:bg-rose-950/50 rounded-xl text-rose-600 dark:text-rose-400">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Outstanding Dues</span>
+            <div className="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl">
               <AlertCircle className="h-4 w-4" />
             </div>
           </div>
-          <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2">
+          <p className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-2">
             Rs. {Number(summary.totalOutstanding || 0).toLocaleString()}
           </p>
           <p className="text-[11px] text-rose-700/80 dark:text-rose-400/80 font-semibold mt-1">
@@ -310,27 +310,22 @@ const OneTimeChargesView = () => {
           </p>
         </div>
 
-        {/* Recovery Rate */}
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm">
+        {/* Target Coverage */}
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Collection Rate</span>
-            <div className="p-2 bg-sky-50 dark:bg-sky-950/50 rounded-xl text-sky-600 dark:text-sky-400">
-              <CheckCircle className="h-4 w-4" />
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Collection Rate</span>
+            <div className="p-2 bg-navy-50/80 dark:bg-sky-950/40 text-navy-950 dark:text-sky-400 rounded-xl">
+              <Sparkles className="h-4 w-4" />
             </div>
           </div>
-          <p className="text-2xl font-black text-navy-950 dark:text-slate-100 mt-2">
+          <p className="text-2xl font-bold text-navy-900 dark:text-sky-400 mt-2">
             {summary.totalBilled > 0
               ? `${Math.round((summary.totalCollected / summary.totalBilled) * 100)}%`
               : '0%'}
           </p>
-          <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 mt-3 overflow-hidden">
-            <div
-              className="bg-purple-600 h-1.5 rounded-full transition-all"
-              style={{
-                width: `${summary.totalBilled > 0 ? Math.min(100, Math.round((summary.totalCollected / summary.totalBilled) * 100)) : 0}%`
-              }}
-            />
-          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
+            Recovery progress
+          </p>
         </div>
       </div>
 

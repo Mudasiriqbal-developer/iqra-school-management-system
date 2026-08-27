@@ -601,8 +601,8 @@ const AdminAcademics = () => {
       <div className="space-y-6">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Academic Structure</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Academic Structure</h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Configure Classes, Sections, and Subjects in one unified workstation.
           </p>
         </div>
@@ -610,12 +610,12 @@ const AdminAcademics = () => {
         {/* 3-Column Workstation Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* COLUMN 1: Classes */}
-          <div className="bg-white p-5 rounded-2xl border border-gray-200/60 shadow-sm flex flex-col min-h-[480px]">
+          <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col min-h-[480px]">
             {/* Column Header */}
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 className="font-bold text-gray-800 text-base">Classes</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Select a class to manage its structure</p>
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">Classes</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Select a class to manage its structure</p>
               </div>
               <button
                 onClick={() => setIsAddingClass(!isAddingClass)}

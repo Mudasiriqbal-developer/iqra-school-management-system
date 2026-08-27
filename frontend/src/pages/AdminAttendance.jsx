@@ -416,9 +416,9 @@ const AdminAttendance = () => {
                       <div className="flex justify-end pt-2 border-t border-border/50">
                         <button
                           onClick={() => handleOpenHistoryModal(studentId, fullName, registrationNumber)}
-                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-primary/20 rounded-btn bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all shadow-subtle"
+                          className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors shadow-xs"
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-3.5 w-3.5 text-slate-500" />
                           <span>View History</span>
                         </button>
                       </div>
@@ -431,17 +431,17 @@ const AdminAttendance = () => {
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-background border-b border-border">
-                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider w-1/3">
+                    <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700">
+                      <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-1/3">
                         Student Info
                       </th>
-                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider">
+                      <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                         Registration No
                       </th>
-                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">
+                      <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
                         Status
                       </th>
-                      <th className="py-4 px-6 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">
+                      <th className="py-3.5 px-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
                         Actions
                       </th>
                     </tr>
@@ -459,9 +459,9 @@ const AdminAttendance = () => {
                           key={rec._id} 
                           className="hover:bg-background/40 transition-colors"
                         >
-                          <td className="py-4 px-6">
+                          <td className="py-3.5 px-6">
                             <div className="flex items-center space-x-3.5">
-                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shadow-inner ${avatar.bg}`}>
+                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${avatar.bg}`}>
                                 {avatar.initials}
                               </div>
                               <span className="font-bold text-text-primary text-sm">
@@ -470,20 +470,20 @@ const AdminAttendance = () => {
                             </div>
                           </td>
 
-                          <td className="py-4 px-6 text-sm font-semibold text-text-secondary">
+                          <td className="py-3.5 px-6 text-sm font-semibold text-text-secondary">
                             {registrationNumber}
                           </td>
 
-                          <td className="py-4 px-6 text-center">
+                          <td className="py-3.5 px-6 text-center">
                             <StatusBadge status={badgeProps.status} label={badgeProps.label} />
                           </td>
 
-                          <td className="py-4 px-6 text-right">
+                          <td className="py-3.5 px-6 text-right">
                             <button
                               onClick={() => handleOpenHistoryModal(studentId, fullName, registrationNumber)}
-                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-primary/20 rounded-btn bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all shadow-subtle"
+                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors shadow-xs"
                             >
-                              <Eye className="h-3.5 w-3.5" />
+                              <Eye className="h-3.5 w-3.5 text-slate-500" />
                               <span>View History</span>
                             </button>
                           </td>

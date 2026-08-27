@@ -433,7 +433,7 @@ const Support = () => {
                   <button
                     type="submit"
                     disabled={submittingTicket}
-                    className="bg-primary hover:bg-primary-hover text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 text-sm disabled:opacity-50"
+                    className="bg-navy-900 hover:bg-navy-800 text-white font-bold py-2.5 px-6 rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-2 text-sm disabled:opacity-50"
                   >
                     {submittingTicket ? (
                       <>

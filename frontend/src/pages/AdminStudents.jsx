@@ -353,27 +353,27 @@ const AdminStudents = () => {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Student Management</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage and monitor student records across the school.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Student Management</h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Manage and monitor student records across the school.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
             <button
               onClick={() => setIsIssueChargeModalOpen(true)}
-              className="flex-1 sm:flex-none bg-purple-50 text-purple-800 border border-purple-200 hover:bg-purple-100 font-bold py-2.5 px-3.5 rounded-xl flex items-center justify-center space-x-1.5 transition-all shadow-xs text-sm"
+              className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 font-bold py-2.5 px-3.5 rounded-xl flex items-center justify-center space-x-1.5 transition-colors shadow-xs text-xs sm:text-sm"
             >
-              <PlusCircle className="h-4 w-4 text-purple-700" />
+              <PlusCircle className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               <span>Issue Charge</span>
             </button>
             <button
               onClick={() => setIsImportModalOpen(true)}
-              className="flex-1 sm:flex-none bg-white text-navy-900 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-xs text-sm"
+              className="flex-1 sm:flex-none bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-xs text-xs sm:text-sm"
             >
-              <FileSpreadsheet className="h-4 w-4 text-navy-700" />
-              <span>Import from CSV/Excel</span>
+              <FileSpreadsheet className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+              <span>Import CSV/Excel</span>
             </button>
             <button
               onClick={handleOpenAdd}
-              className="flex-1 sm:flex-none bg-navy-900 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 hover:bg-navy-800 transition-colors shadow-sm text-sm"
+              className="flex-1 sm:flex-none bg-navy-900 hover:bg-navy-800 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-xs text-xs sm:text-sm"
             >
               <Plus className="h-4 w-4" />
               <span>Add Student</span>

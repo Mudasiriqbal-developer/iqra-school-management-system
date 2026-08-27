@@ -257,59 +257,58 @@ const AdminFees = () => {
       userRole="Administrator"
       subtitle="Administrative Suite"
     >
-      <div className="space-y-8">
+      <div className="space-y-6">
         
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-2xl font-extrabold text-navy-950 dark:text-slate-100 tracking-tight">Fee Management</h1>
-            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Fee Management</h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Monitor monthly student billing, issue occasional one-time charges, and collect payments.
             </p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2.5">
             <button
               onClick={() => setIsIssueModalOpen(true)}
-              className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2"
+              className="px-4 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors shadow-xs flex items-center space-x-2"
             >
               <PlusCircle className="h-4 w-4" />
               <span>Issue One-Time Charge</span>
             </button>
             <button
               onClick={handleRefresh}
-              className="p-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+              className="p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-xs"
               title="Refresh Data"
             >
-              <RefreshCw className="h-4.5 w-4.5" />
+              <RefreshCw className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex border-b border-gray-200 dark:border-slate-700 space-x-6 sm:space-x-8">
+        <div className="flex border-b border-slate-200 dark:border-slate-700 space-x-6 sm:space-x-8">
           <button
             type="button"
             onClick={() => setActiveTab('monthly')}
-            className={`pb-3.5 text-xs font-bold tracking-tight transition-all flex items-center space-x-2 border-b-2 ${
+            className={`pb-3.5 text-xs sm:text-sm tracking-tight transition-colors flex items-center space-x-2 border-b-2 ${
               activeTab === 'monthly'
-                ? 'border-navy-primary dark:border-sky-400 text-navy-primary dark:text-sky-400 font-black'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-slate-300 font-semibold'
+                ? 'border-navy-900 dark:border-sky-400 text-navy-900 dark:text-sky-400 font-bold'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'
             }`}
           >
             <Wallet className="h-4 w-4" />
             <span>Monthly Tuition Register</span>
           </button>
-
           <button
             type="button"
             onClick={() => setActiveTab('one_time')}
-            className={`pb-3.5 text-xs font-bold tracking-tight transition-all flex items-center space-x-2 border-b-2 ${
+            className={`pb-3.5 text-xs sm:text-sm tracking-tight transition-colors flex items-center space-x-2 border-b-2 ${
               activeTab === 'one_time'
-                ? 'border-purple-600 dark:border-purple-400 text-purple-700 dark:text-purple-300 font-black'
-                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-slate-300 font-semibold'
+                ? 'border-navy-900 dark:border-sky-400 text-navy-900 dark:text-sky-400 font-bold'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium'
             }`}
           >
-            <Clock className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" />
             <span>One-Time Charges (Exam / Paper Fees)</span>
           </button>
         </div>
