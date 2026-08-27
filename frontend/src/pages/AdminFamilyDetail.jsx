@@ -5,7 +5,15 @@ import toast from 'react-hot-toast';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatusBadge from '../components/shared/StatusBadge';
 import ConfirmModal from '../components/shared/ConfirmModal';
-import { getFamilyById, updateFamily, updateFamilyStudents } from '../features/family/familyService';
+import { 
+  getFamilyById, 
+  updateFamily, 
+  updateFamilyStudents, 
+  getFamilyFeeSummary, 
+  getFamilyBooksSummary, 
+  payFamilyFees, 
+  downloadFamilyVoucherPDF 
+} from '../features/family/familyService';
 import { getStudents } from '../features/students/studentService';
 
 const AdminFamilyDetail = () => {
@@ -40,6 +48,19 @@ const AdminFamilyDetail = () => {
   const [studentToUnlink, setStudentToUnlink] = useState(null);
   const [unlinking, setUnlinking] = useState(false);
 
+  // Financial details states
+  const [feeSummary, setFeeSummary] = useState(null);
+  const [booksSummary, setBooksSummary] = useState(null);
+  const [loadingFinancials, setLoadingFinancials] = useState(false);
+
+  // Pay modal states
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [selectedFeeRecordIds, setSelectedFeeRecordIds] = useState([]);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [idempotencyKey, setIdempotencyKey] = useState('');
+  const [isPaying, setIsPaying] = useState(false);
+  const [paymentSuccessData, setPaymentSuccessData] = useState(null);
+
   // Load family data
   const loadFamilyDetails = async () => {
     try {
@@ -64,9 +85,82 @@ const AdminFamilyDetail = () => {
     }
   };
 
+  const loadFinancialData = async () => {
+    try {
+      setLoadingFinancials(true);
+      const [feeRes, booksRes] = await Promise.all([
+        getFamilyFeeSummary(id),
+        getFamilyBooksSummary(id)
+      ]);
+      if (feeRes.success) {
+        setFeeSummary(feeRes.data);
+      }
+      if (booksRes.success) {
+        setBooksSummary(booksRes.data);
+      }
+    } catch (err) {
+      console.error('Failed to load financial data:', err);
+    } finally {
+      setLoadingFinancials(false);
+    }
+  };
+
   useEffect(() => {
     loadFamilyDetails();
+    loadFinancialData();
   }, [id]);
+
+  const openPayModal = () => {
+    // Generate UUID client-side when opening
+    const key = (self.crypto && self.crypto.randomUUID) 
+      ? self.crypto.randomUUID() 
+      : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    setIdempotencyKey(key);
+    
+    // Default: all checked
+    if (feeSummary && feeSummary.students) {
+      const allIds = feeSummary.students.flatMap(s => s.outstandingRecords.map(r => r.feeRecordId));
+      setSelectedFeeRecordIds(allIds);
+    } else {
+      setSelectedFeeRecordIds([]);
+    }
+    
+    setPaymentMethod('cash');
+    setPaymentSuccessData(null);
+    setIsPaying(false);
+    setIsPayModalOpen(true);
+  };
+
+  const handleConfirmPayment = async (e) => {
+    e.preventDefault();
+    if (selectedFeeRecordIds.length === 0) {
+      toast.error('Please select at least one fee record to pay');
+      return;
+    }
+
+    try {
+      setIsPaying(true);
+      const res = await payFamilyFees(id, {
+        feeRecordIds: selectedFeeRecordIds,
+        paymentMethod,
+        idempotencyKey
+      });
+
+      if (res.success) {
+        toast.success(res.message || 'Payment processed successfully');
+        setPaymentSuccessData(res.data);
+        // Refresh family, fee summary, books summary
+        await loadFamilyDetails();
+        await loadFinancialData();
+      }
+    } catch (err) {
+      console.error(err);
+      const errMsg = err.response?.data?.message || 'Payment failed';
+      toast.error(errMsg);
+    } finally {
+      setIsPaying(false);
+    }
+  };
 
   // Debounced search for student additions
   useEffect(() => {
@@ -429,7 +523,7 @@ const AdminFamilyDetail = () => {
                 )}
               </div>
 
-              {/* Combined Fee & Books Panel (Phase 2, 3, 4 Stubs) */}
+              {/* Combined Fee & Books Panel */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0 border-b border-gray-100 pb-3">
                   <div>
@@ -440,10 +534,14 @@ const AdminFamilyDetail = () => {
                     <p className="text-[11px] text-gray-400 mt-0.5">Consolidated fee balance and issued assets across all siblings.</p>
                   </div>
                   
-                  {/* Pay button disabled for Phase 1 */}
                   <button
-                    disabled
-                    className="px-4 py-2 bg-gray-100 text-gray-400 border border-gray-200 rounded-xl text-xs font-extrabold cursor-not-allowed flex items-center space-x-1"
+                    onClick={openPayModal}
+                    disabled={!feeSummary || feeSummary.familyTotal === 0}
+                    className={`px-4 py-2 border rounded-xl text-xs font-extrabold flex items-center space-x-1 transition-colors ${
+                      feeSummary && feeSummary.familyTotal > 0
+                        ? 'bg-navy-900 hover:bg-navy-800 text-white border-navy-950 shadow-xs'
+                        : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                    }`}
                   >
                     <span>Pay Combined Fees</span>
                   </button>
@@ -451,27 +549,108 @@ const AdminFamilyDetail = () => {
 
                 {/* Stat cards block */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-xl border border-gray-150 flex items-center justify-between">
-                    <div>
+                  {/* Fee Panel */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-gray-150 space-y-3">
+                    <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Outstanding Dues</span>
-                      <span className="text-xl font-black text-navy-950 block mt-1">Rs. 0.00</span>
+                      <span className="text-lg font-black text-navy-950">
+                        Rs. {feeSummary ? feeSummary.familyTotal.toFixed(2) : '0.00'}
+                      </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-150 text-gray-500 uppercase">Stub 0</span>
+                    
+                    <div className="divide-y divide-gray-100 border-t border-gray-150 pt-2 space-y-1.5 max-h-48 overflow-y-auto">
+                      {feeSummary && feeSummary.students && feeSummary.students.length > 0 ? (
+                        feeSummary.students.map((student) => (
+                          <div key={student.studentId} className="flex justify-between items-center text-xs pt-1.5">
+                            <div className="min-w-0">
+                              <span className="font-bold text-gray-700 block truncate">{student.studentName}</span>
+                              <span className="text-[10px] text-gray-400 block">{student.classSection}</span>
+                            </div>
+                            <span className="font-extrabold text-navy-900">
+                              Rs. {student.studentTotal.toFixed(2)}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[10px] text-gray-400 italic py-2">No students or fee data available.</p>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="p-4 bg-slate-50 rounded-xl border border-gray-150 flex items-center justify-between">
-                    <div>
+                  {/* Books Panel */}
+                  <div className="p-4 bg-slate-50 rounded-xl border border-gray-150 space-y-3">
+                    <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Books Outstanding</span>
-                      <span className="text-xl font-black text-navy-950 block mt-1">—</span>
+                      <span className="text-lg font-black text-navy-950">—</span>
                     </div>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">Stub</span>
+
+                    <div className="divide-y divide-gray-100 border-t border-gray-150 pt-2 space-y-1.5 max-h-48 overflow-y-auto">
+                      {booksSummary && booksSummary.students && booksSummary.students.length > 0 ? (
+                        booksSummary.students.map((student) => (
+                          <div key={student.studentId} className="flex justify-between items-center text-xs pt-1.5">
+                            <div className="min-w-0">
+                              <span className="font-bold text-gray-700 block truncate">{student.studentName}</span>
+                            </div>
+                            <span className="font-bold text-gray-400">—</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[10px] text-gray-400 italic py-2">No students or books data available.</p>
+                      )}
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="p-3 bg-navy-50/40 rounded-xl border border-navy-100 flex items-center text-xs text-navy-800">
-                  <Info className="h-4 w-4 mr-2 text-navy-900 flex-shrink-0" />
-                  <span>Fee aggregation, books outstanding summary, combined family voucher, and transaction payment modules will load in Pass 2.</span>
-                </div>
+              {/* Payment History Panel */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+                <h3 className="text-sm font-extrabold text-navy-950 uppercase tracking-wider flex items-center">
+                  <BookOpen className="h-4.5 w-4.5 mr-1 text-navy-900" />
+                  Combined Payment History
+                </h3>
+
+                {family && family.vouchers && family.vouchers.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-gray-150 text-gray-400 font-bold uppercase tracking-wider">
+                          <th className="p-3">Voucher No</th>
+                          <th className="p-3">Payment Date</th>
+                          <th className="p-3">Method</th>
+                          <th className="p-3 text-right">Total Paid</th>
+                          <th className="p-3 text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {family.vouchers.map((voucher) => (
+                          <tr key={voucher._id} className="hover:bg-slate-50/50">
+                            <td className="p-3 font-extrabold text-navy-950">{voucher.voucherNumber}</td>
+                            <td className="p-3 text-gray-600">
+                              {new Date(voucher.paymentDate).toLocaleDateString()}
+                            </td>
+                            <td className="p-3 text-gray-600 uppercase">{voucher.paymentMethod}</td>
+                            <td className="p-3 text-right font-extrabold text-navy-900">
+                              Rs. {voucher.totalAmount.toFixed(2)}
+                            </td>
+                            <td className="p-3 text-center">
+                              <button
+                                onClick={() => downloadFamilyVoucherPDF(id, voucher._id, `family-voucher-${voucher.voucherNumber}.pdf`)}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-navy-50 hover:bg-navy-100 text-navy-900 rounded-lg border border-navy-150 transition-colors font-bold text-[10px]"
+                              >
+                                <Download className="h-3 w-3" />
+                                <span>Download PDF</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 italic bg-gray-50 p-4 rounded-xl border border-dashed border-gray-200 text-center">
+                    No combined family payments recorded yet.
+                  </p>
+                )}
               </div>
 
             </div>
@@ -603,6 +782,204 @@ const AdminFamilyDetail = () => {
           confirmText="Yes, Unlink"
           cancelText="Cancel"
         />
+
+        {/* Pay as Family Modal */}
+        {isPayModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 overflow-y-auto">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-xl w-full flex flex-col overflow-hidden my-8">
+              
+              {/* Modal Header */}
+              <div className="bg-navy-900 text-white p-5 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="h-5 w-5 text-sky-400" />
+                  <h3 className="text-base font-extrabold tracking-tight">Pay Combined Fees</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPayModalOpen(false)}
+                  className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 overflow-y-auto max-h-[70vh]">
+                {!paymentSuccessData ? (
+                  <form onSubmit={handleConfirmPayment} className="space-y-5">
+                    
+                    {/* Header info */}
+                    <div className="p-3.5 bg-slate-50 border border-gray-150 rounded-xl text-xs space-y-1">
+                      <div className="flex justify-between">
+                        <span className="font-bold text-gray-550">Family Name:</span>
+                        <span className="font-extrabold text-navy-950">{family?.familyName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-bold text-gray-550">Idempotency Key:</span>
+                        <span className="text-[10px] font-mono text-gray-400">{idempotencyKey}</span>
+                      </div>
+                    </div>
+
+                    {/* Outstanding list */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block">
+                        Select Fees to Pay
+                      </label>
+                      
+                      <div className="space-y-3.5 max-h-60 overflow-y-auto divide-y divide-gray-100 pr-1">
+                        {feeSummary && feeSummary.students && feeSummary.students.length > 0 ? (
+                          feeSummary.students.map((student) => {
+                            if (student.outstandingRecords.length === 0) return null;
+                            return (
+                              <div key={student.studentId} className="pt-3 space-y-2">
+                                <div className="text-xs font-extrabold text-navy-950 flex justify-between">
+                                  <span>{student.studentName}</span>
+                                  <span className="text-[10px] text-gray-400 font-semibold">{student.classSection}</span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {student.outstandingRecords.map((record) => {
+                                    const isChecked = selectedFeeRecordIds.includes(record.feeRecordId);
+                                    return (
+                                      <label
+                                        key={record.feeRecordId}
+                                        className={`flex items-center justify-between p-2.5 border rounded-xl cursor-pointer text-xs transition-colors ${
+                                          isChecked
+                                            ? 'bg-navy-50/50 border-navy-200'
+                                            : 'bg-white border-gray-250 hover:bg-slate-50'
+                                        }`}
+                                      >
+                                        <div className="flex items-center space-x-2">
+                                          <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={() => {
+                                              if (isChecked) {
+                                                setSelectedFeeRecordIds(prev => prev.filter(id => id !== record.feeRecordId));
+                                              } else {
+                                                setSelectedFeeRecordIds(prev => [...prev, record.feeRecordId]);
+                                              }
+                                            }}
+                                            className="h-4 w-4 rounded-sm text-navy-900 border-gray-300 focus:ring-navy-900"
+                                          />
+                                          <span className="font-bold text-gray-700">{record.month}</span>
+                                        </div>
+                                        <span className="font-extrabold text-navy-900">Rs. {record.amount.toFixed(2)}</span>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <p className="text-xs text-gray-400 italic py-2">No outstanding fees found.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Payment Method */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block">
+                        Payment Method
+                      </label>
+                      <select
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-full text-xs p-3 rounded-xl border border-gray-250 focus:border-navy-900 focus:outline-hidden transition-colors font-bold text-gray-800"
+                      >
+                        <option value="cash">Cash</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="card">Card</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    {/* Running Total & Submit */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-150">
+                      <div>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Running Total (Selected)</span>
+                        <span className="text-lg font-black text-navy-950">
+                          Rs. {
+                            feeSummary?.students
+                              ?.flatMap(s => s.outstandingRecords)
+                              ?.filter(r => selectedFeeRecordIds.includes(r.feeRecordId))
+                              ?.reduce((sum, r) => sum + r.amount, 0)
+                              ?.toFixed(2) || '0.00'
+                          }
+                        </span>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsPayModalOpen(false)}
+                          className="px-4 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isPaying || selectedFeeRecordIds.length === 0}
+                          className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5"
+                        >
+                          {isPaying && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                          <span>Confirm Payment</span>
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                ) : (
+                  // Success State View
+                  <div className="py-6 text-center space-y-5">
+                    <div className="h-14 w-14 bg-green-50 border border-green-200 rounded-full flex items-center justify-center mx-auto text-green-600">
+                      <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h4 className="text-lg font-black text-navy-950">Payment Successful!</h4>
+                      <p className="text-xs text-gray-400">Consolidated family receipt voucher has been generated.</p>
+                    </div>
+
+                    <div className="max-w-xs mx-auto p-4 bg-slate-50 border border-gray-150 rounded-xl text-left text-xs space-y-2">
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-gray-550">Voucher Number:</span>
+                        <span className="font-extrabold text-navy-950">{paymentSuccessData.voucherNumber}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-gray-555">Total Paid Amount:</span>
+                        <span className="font-extrabold text-navy-950">Rs. {paymentSuccessData.totalAmount?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-gray-555">Method:</span>
+                        <span className="font-bold text-gray-700 uppercase">{paymentSuccessData.paymentMethod}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+                      <button
+                        onClick={() => {
+                          downloadFamilyVoucherPDF(id, paymentSuccessData._id, `family-voucher-${paymentSuccessData.voucherNumber}.pdf`);
+                        }}
+                        className="w-full sm:w-auto px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md flex items-center justify-center space-x-1.5"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        <span>Download Voucher PDF</span>
+                      </button>
+                      <button
+                        onClick={() => setIsPayModalOpen(false)}
+                        className="w-full sm:w-auto px-5 py-2.5 border border-gray-255 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs flex items-center justify-center"
+                      >
+                        Close Window
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </DashboardLayout>
