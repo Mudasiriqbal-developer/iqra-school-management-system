@@ -26,8 +26,17 @@ const feeRecordSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['monthly', 'admission'],
+      enum: ['monthly', 'admission', 'one_time'],
       default: 'monthly',
+    },
+    title: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    dueDate: {
+      type: Date,
+      default: null,
     },
     payments: [
       {
@@ -57,7 +66,10 @@ const feeRecordSchema = new mongoose.Schema(
   }
 );
 
-// Compound UNIQUE index on { studentId, month, type }
-feeRecordSchema.index({ studentId: 1, month: 1, type: 1 }, { unique: true });
+// Compound partial UNIQUE index on { studentId, month, type } only for monthly records
+feeRecordSchema.index(
+  { studentId: 1, month: 1, type: 1 },
+  { unique: true, partialFilterExpression: { type: 'monthly' } }
+);
 
 module.exports = mongoose.model('FeeRecord', feeRecordSchema);

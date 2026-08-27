@@ -19,7 +19,9 @@ import {
   AlertTriangle,
   FileText,
   Loader2,
-  Settings
+  Settings,
+  PlusCircle,
+  Clock
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -36,6 +38,8 @@ import {
 
 import RecordPaymentModal from '../features/fees/RecordPaymentModal';
 import StudentLedgerDrawer from '../features/fees/StudentLedgerDrawer';
+import OneTimeChargesView from '../features/fees/OneTimeChargesView';
+import IssueChargeModal from '../features/fees/IssueChargeModal';
 
 const AdminFees = () => {
   // Navigation sidebar configuration
@@ -55,6 +59,8 @@ const AdminFees = () => {
   // Component Modals/Drawers visibility
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('monthly'); // 'monthly' | 'one_time'
 
   // Target Student for Modal operations
   // Format: { studentId, fullName, registrationNumber, feeRecord }
@@ -256,15 +262,22 @@ const AdminFees = () => {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Fee Management</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Monitor monthly student billing, collect payments, and configure fee rates.
+            <h1 className="text-2xl font-extrabold text-navy-950 dark:text-slate-100 tracking-tight">Fee Management</h1>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
+              Monitor monthly student billing, issue occasional one-time charges, and collect payments.
             </p>
           </div>
-          <div className="flex space-x-3">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsIssueModalOpen(true)}
+              className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center space-x-2"
+            >
+              <PlusCircle className="h-4 w-4" />
+              <span>Issue One-Time Charge</span>
+            </button>
             <button
               onClick={handleRefresh}
-              className="p-2.5 border border-gray-200 rounded-xl bg-white text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+              className="p-2.5 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
               title="Refresh Data"
             >
               <RefreshCw className="h-4.5 w-4.5" />
@@ -272,8 +285,41 @@ const AdminFees = () => {
           </div>
         </div>
 
-        {/* Stat Summary Cards (Calculated from active page list) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Tab Switcher */}
+        <div className="flex border-b border-gray-200 dark:border-slate-700 space-x-6 sm:space-x-8">
+          <button
+            type="button"
+            onClick={() => setActiveTab('monthly')}
+            className={`pb-3.5 text-xs font-bold tracking-tight transition-all flex items-center space-x-2 border-b-2 ${
+              activeTab === 'monthly'
+                ? 'border-navy-primary dark:border-sky-400 text-navy-primary dark:text-sky-400 font-black'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-slate-300 font-semibold'
+            }`}
+          >
+            <Wallet className="h-4 w-4" />
+            <span>Monthly Tuition Register</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('one_time')}
+            className={`pb-3.5 text-xs font-bold tracking-tight transition-all flex items-center space-x-2 border-b-2 ${
+              activeTab === 'one_time'
+                ? 'border-purple-600 dark:border-purple-400 text-purple-700 dark:text-purple-300 font-black'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-slate-300 font-semibold'
+            }`}
+          >
+            <Clock className="h-4 w-4" />
+            <span>One-Time Charges (Exam / Paper Fees)</span>
+          </button>
+        </div>
+
+        {activeTab === 'one_time' ? (
+          <OneTimeChargesView />
+        ) : (
+          <>
+            {/* Stat Summary Cards (Calculated from active page list) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             icon={TrendingUp}
             label="Total Collected"
@@ -746,6 +792,8 @@ const AdminFees = () => {
             </div>
           )}
         </div>
+        </>
+        )}
 
       </div>
 
@@ -770,6 +818,15 @@ const AdminFees = () => {
           setIsLedgerOpen(false);
           setSelectedStudent(null);
           fetchData(); // refresh parent table to update setting/status
+        }}
+      />
+
+      {/* Issue One-Time Charge Modal */}
+      <IssueChargeModal
+        isOpen={isIssueModalOpen}
+        onClose={() => setIsIssueModalOpen(false)}
+        onSuccess={() => {
+          fetchData();
         }}
       />
 

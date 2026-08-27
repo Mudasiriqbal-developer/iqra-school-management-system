@@ -60,5 +60,42 @@ export const downloadReceipt = async (studentId, studentName) => {
   window.URL.revokeObjectURL(url);
 };
 
+/**
+ * Issue a one-time charge (e.g. Exam Fee, Paper Fee) to class/section or individual students.
+ * @param {Object} data - { title, amount, dueDate, targetType, classId, sectionId, studentIds }
+ */
+export const issueOneTimeCharge = async (data) => {
+  const response = await api.post('/fee-records/issue-charge', data);
+  return response.data;
+};
+
+/**
+ * Fetch one-time charges report with filters & summary KPIs.
+ * @param {Object} params - { classId, sectionId, status, search, title, page, limit }
+ */
+export const getOneTimeCharges = async (params) => {
+  const response = await api.get('/fee-records/one-time-charges', { params });
+  return response.data;
+};
+
+/**
+ * Update an unpaid one-time charge (title, amountDue, dueDate).
+ * @param {string} id - FeeRecord ID
+ * @param {Object} data - { title, amountDue, dueDate }
+ */
+export const updateOneTimeCharge = async (id, data) => {
+  const response = await api.put(`/fee-records/${id}/one-time`, data);
+  return response.data;
+};
+
+/**
+ * Delete / void an unpaid one-time charge.
+ * @param {string} id - FeeRecord ID
+ */
+export const deleteOneTimeCharge = async (id) => {
+  const response = await api.delete(`/fee-records/${id}/one-time`);
+  return response.data;
+};
+
 // Re-export student service helper methods
 export { getStudents, getClasses, getSectionsByClass };

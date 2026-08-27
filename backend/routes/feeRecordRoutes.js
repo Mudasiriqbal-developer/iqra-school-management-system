@@ -3,7 +3,11 @@ const {
   getStudentLedger,
   recordPayment,
   generateReceiptPDF,
-  getCurrentMonthFeeList
+  getCurrentMonthFeeList,
+  issueOneTimeCharge,
+  getOneTimeChargesReport,
+  updateOneTimeCharge,
+  deleteOneTimeCharge
 } = require('../controllers/feeRecordController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -17,5 +21,11 @@ router.get('/current-month', getCurrentMonthFeeList);
 router.get('/student/:studentId', getStudentLedger);
 router.get('/student/:studentId/receipt-pdf', generateReceiptPDF);
 router.post('/:id/pay', recordPayment);
+
+// One-time charge endpoints
+router.post('/issue-charge', issueOneTimeCharge);
+router.get('/one-time-charges', getOneTimeChargesReport);
+router.put('/:id/one-time', updateOneTimeCharge);
+router.delete('/:id/one-time', deleteOneTimeCharge);
 
 module.exports = router;

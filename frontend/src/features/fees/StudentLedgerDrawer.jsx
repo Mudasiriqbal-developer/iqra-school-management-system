@@ -268,29 +268,45 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                   <div className="space-y-3">
                     {records.map((record) => {
                       const badge = getFeeBadgeProps(record.status);
-                      const isExpanded = !!expandedMonths[record.month];
+                      const isExpanded = !!expandedMonths[record._id];
                       const remaining = Math.max(0, record.amountDue - record.amountPaid);
+                      const isAdmission = record.type === 'admission';
+                      const isOneTime = record.type === 'one_time';
                       
+                      let recordTitle = formatMonth(record.month);
+                      if (isAdmission) {
+                        recordTitle = 'Admission & Books Due';
+                      } else if (isOneTime) {
+                        recordTitle = record.title || 'One-Time Charge';
+                      }
+
                       return (
                         <div
                           key={record._id}
                           className={`border rounded-xl overflow-hidden shadow-sm ${
-                            record.type === 'admission'
+                            isAdmission
                               ? 'border-l-4 border-l-blue-500 border-gray-200/80'
+                              : isOneTime
+                              ? 'border-l-4 border-l-purple-500 border-gray-200/80'
                               : 'border-gray-200/80'
                           }`}
                         >
                           {/* Month Row */}
                           <div
-                            onClick={() => handleToggleMonth(record.month)}
+                            onClick={() => handleToggleMonth(record._id)}
                             className="flex justify-between items-center p-4 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 cursor-pointer select-none transition-colors"
                           >
                             <div className="space-y-1">
-                              <p className="text-xs font-black text-navy-950 dark:text-slate-100 flex items-center">
-                                {record.type === 'admission' ? 'Admission & Books Due' : formatMonth(record.month)}
-                                {record.type === 'admission' && (
-                                  <span className="ml-2 text-[9px] font-black uppercase px-1.5 py-0.5 bg-blue-50 dark:bg-sky-950/40 text-blue-700 dark:text-sky-300 border border-blue-100 dark:border-sky-800/40 rounded-md">
-                                    One-Time
+                              <p className="text-xs font-black text-navy-950 dark:text-slate-100 flex items-center flex-wrap gap-1.5">
+                                <span>{recordTitle}</span>
+                                {isAdmission && (
+                                  <span className="text-[9px] font-black uppercase px-1.5 py-0.5 bg-blue-50 dark:bg-sky-950/40 text-blue-700 dark:text-sky-300 border border-blue-100 dark:border-sky-800/40 rounded-md">
+                                    Admission
+                                  </span>
+                                )}
+                                {isOneTime && (
+                                  <span className="text-[9px] font-black uppercase px-1.5 py-0.5 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-100 dark:border-purple-800/40 rounded-md">
+                                    One-Time Charge
                                   </span>
                                 )}
                               </p>
@@ -298,6 +314,9 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                                 <span>Due: <strong className="text-navy-950 dark:text-slate-100">Rs. {record.amountDue}</strong></span>
                                 <span>Paid: <strong className="text-emerald-600 dark:text-emerald-400">Rs. {record.amountPaid}</strong></span>
                                 {remaining > 0 && <span>Left: <strong className="text-rose-600 dark:text-rose-400">Rs. {remaining}</strong></span>}
+                                {record.dueDate && (
+                                  <span>Due Date: <strong className="text-slate-600 dark:text-slate-300">{formatDate(record.dueDate)}</strong></span>
+                                )}
                               </div>
                             </div>
                             <div className="flex items-center space-x-3">
@@ -344,7 +363,7 @@ const StudentLedgerDrawer = ({ isOpen, studentId, studentName, onClose }) => {
                                   ))}
                                 </div>
                               ) : (
-                                <p className="text-xxs text-gray-400 italic">No payments recorded for this month.</p>
+                                <p className="text-xxs text-gray-400 italic">No payments recorded for this charge.</p>
                               )}
                             </div>
                           )}

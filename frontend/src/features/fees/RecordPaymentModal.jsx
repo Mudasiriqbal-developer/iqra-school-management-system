@@ -94,7 +94,11 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
             <div>
               <h2 className="text-md font-bold tracking-tight">{studentName}</h2>
               <p className="text-xxs text-slate-200 font-bold uppercase tracking-wider mt-0.5">
-                {feeRecord.type === 'admission' ? 'Record Admission Fee & Books Payment' : `Record ${month} Fee Collection`}
+                {feeRecord.type === 'admission' 
+                  ? 'Record Admission Fee & Books Payment' 
+                  : feeRecord.type === 'one_time' 
+                    ? `Record ${feeRecord.title || 'One-Time Charge'} Payment` 
+                    : `Record ${month} Fee Collection`}
               </p>
             </div>
           </div>
@@ -124,7 +128,7 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
           {/* Payment Option Cards */}
           <div className="space-y-3">
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Collected Amount</label>
-            <div className={`grid grid-cols-1 ${feeRecord.type === 'admission' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-3`}>
+            <div className={`grid grid-cols-1 ${feeRecord.type === 'admission' || feeRecord.type === 'one_time' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-3`}>
               
               {/* Full Payment */}
               <button
@@ -141,7 +145,7 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
               </button>
 
               {/* Half Payment */}
-              {feeRecord.type !== 'admission' && (
+              {feeRecord.type !== 'admission' && feeRecord.type !== 'one_time' && (
                 <button
                   type="button"
                   onClick={() => setSelectedOption('half')}

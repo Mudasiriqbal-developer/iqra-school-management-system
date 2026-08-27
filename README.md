@@ -1,6 +1,6 @@
-# Iqra School Management System (CMS)
+﻿# Iqra School Management System (CMS)
 
-A full-stack, enterprise-ready School Management System built specifically for **Iqra Haddiqatul Atfal Model School**. This platform automates end-to-end academic, financial, administrative, and student lifecycle workflows with role-based access control (RBAC), PDF document generation, bulk Excel data operations, financial ledger management, and dynamic customizable dashboards.
+A full-stack, enterprise-ready School Management System built specifically for **Iqra Haddiqatul Atfal Model School**. This platform automates end-to-end academic, financial, administrative, and student lifecycle workflows with role-based access control (RBAC), PDF document generation, bulk Excel data operations, financial ledger management, occasional one-time fee billing, and dynamic customizable dashboards.
 
 ---
 
@@ -16,7 +16,7 @@ A full-stack, enterprise-ready School Management System built specifically for *
    - [2. Student Information System (SIS) & Bulk Excel Import](#2-student-information-system-sis--bulk-excel-import)
    - [3. Family Accounts & Consolidated Vouchers](#3-family-accounts--consolidated-vouchers)
    - [4. Academics & Faculty Workload Management](#4-academics--faculty-workload-management)
-   - [5. Fee Management & Student Ledgers](#5-fee-management--student-ledgers)
+   - [5. Fee Management, Student Ledgers & One-Time Charges](#5-fee-management-student-ledgers--one-time-charges)
    - [6. Financial Accounting: Expenses & Payroll](#6-financial-accounting-expenses--payroll)
    - [7. Daily Attendance & Analytics](#7-daily-attendance--analytics)
    - [8. Examination, Grading & Report Cards](#8-examination-grading--report-cards)
@@ -105,6 +105,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 | **Class & Section Setup** | Yes | View Only | View Assigned Class |
 | **Teacher Subject Assignments** | Full Access | View Assigned | View Subject Teachers |
 | **Fee Collection & Payment Records** | Full Access | No | View Own Ledger / Invoices |
+| **One-Time Charges (Exam/Paper Fees)** | Issue, Manage, Collect | No | View Own Charges |
 | **Family Tree & Multi-Child Invoicing** | Full Access | No | View Family Summary |
 | **Expense Tracking & Categorization** | Full Access | No | No |
 | **Staff Salary Payroll Processing** | Full Access | View Own Payslip | No |
@@ -139,10 +140,13 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Hierarchical Structure**: Manage Academic Classes (e.g., Nursery to Class 10), Sections (e.g., Section A, Green), and Subjects (Science, Math, Urdu, etc.).
 - **Teacher Assignment Engine**: Assign teachers to specific class-section-subject combinations without scheduling conflicts.
 
-### 5. Fee Management & Student Ledgers
-- **Automated Monthly Generation**: Bulk generation of monthly fee dues for all active students.
-- **Flexible Payment Collection**: Record full or partial payments with discount allowances, payment modes (Cash, Bank, Online), and automatic receipt numbering.
-- **Dynamic Ledger Drawer**: Instant side-drawer view of paid records, outstanding balances, and receipt download buttons.
+### 5. Fee Management, Student Ledgers & One-Time Charges
+- **Automated Monthly Billing**: Bulk generation of monthly fee dues for all active students.
+- **Flexible Payment Collection**: Record full, half, or custom payments with payment modes (Cash, Bank, Online), and automatic receipt numbering.
+- **Occasional / One-Time Charges System**: Issue exam fees, paper funds, activity kits, or special levies to an entire class, section, or specific hand-picked students with optional due dates.
+- **Outstanding One-Time Charges Hub**: Dedicated reporting view and KPI dashboard tracking one-time billings, collections, and dues independently from monthly tuition.
+- **Strict Financial Audit Locks**: Once any payment (`amountPaid > 0`) is recorded against a one-time charge, its title, amount, and delete actions are permanently locked.
+- **Dynamic Ledger Drawer**: Comprehensive transaction ledger showing monthly tuition, admission dues, and one-time charges with status badges and PDF receipts.
 
 ### 6. Financial Accounting: Expenses & Payroll
 - **Expense Tracker**: Log school operating costs by category (Utilities, Maintenance, Supplies, Events) with date filters and net balance analysis.
@@ -228,7 +232,7 @@ iqra-school-management-system/
 | **`Class` & `Section`** | Academic structure hierarchy: `name`, `code`, `order`, `numericValue`, sections assigned to classes. |
 | **`Subject`** | Academic subjects: `name`, `code`, `type` (Core/Elective), `classId`. |
 | **`Assignment`** | Maps `teacherId` to `classId`, `sectionId`, and `subjectId`. |
-| **`FeeRecord`** | Monthly fee dues & collections: `studentId`, `month` (`YYYY-MM`), `amountDue`, `amountPaid`, `discount`, `status` (`paid`/`partial`/`pending`), `payments[]`. |
+| **`FeeRecord`** | Financial dues & ledger records: `studentId`, `month` (`YYYY-MM`), `title` (for one-time charges), `dueDate`, `amountDue`, `amountPaid`, `status` (`paid`/`partial`/`pending`), `type` (`monthly`/`admission`/`one_time`), `payments[]`. Partial unique compound index on `{ studentId, month, type: 'monthly' }`. |
 | **`BookFee`** | Course books and curriculum kit fees charged to students. |
 | **`Expense`** | School operational expense records: `title`, `amount`, `category`, `paymentMode`, `date`, `receiptNumber`, `description`. |
 | **`Payroll`** | Staff salary disbursement ledger: `teacherId`, `month`, `baseSalary`, `allowances`, `deductions`, `netSalary`, `status` (`paid`/`pending`). |
@@ -269,11 +273,15 @@ iqra-school-management-system/
 - `GET  /api/families/:familyId/vouchers/:voucherId/pdf` — Download family voucher PDF.
 
 ### Fees & Financial Ledgers (`/api/fees` & `/api/fee-records`)
-- `GET  /api/fees/summary` — Global fee KPI summary (Total, Collected, Pending, Overdue).
-- `GET  /api/fee-records/current-month` — Active fee records for the current billing cycle.
-- `GET  /api/fee-records/student/:studentId` — Full transaction ledger for a student.
-- `POST /api/fee-records/:id/pay` — Submit payment against a fee record.
-- `GET  /api/fee-records/student/:studentId/receipt-pdf` — Download payment receipt PDF.
+- `GET    /api/fees/summary` — Global fee KPI summary (Total, Collected, Pending, Overdue).
+- `GET    /api/fee-records/current-month` — Active monthly tuition records for the current billing cycle.
+- `GET    /api/fee-records/student/:studentId` — Full transaction ledger for a student (monthly, admission, and one-time charges).
+- `POST   /api/fee-records/:id/pay` — Submit full, half, or custom payment against any fee record.
+- `GET    /api/fee-records/student/:studentId/receipt-pdf` — Download payment receipt PDF with branded headers.
+- `POST   /api/fee-records/issue-charge` — Bulk issue one-time charges (e.g. Exam Fee, Paper Fee) to whole classes or individual students.
+- `GET    /api/fee-records/one-time-charges` — Fetch outstanding one-time charges report with KPI metrics and multi-filter pagination.
+- `PUT    /api/fee-records/:id/one-time` — Edit unpaid one-time charge (locked once payment is recorded).
+- `DELETE /api/fee-records/:id/one-time` — Void/delete unpaid one-time charge (locked once payment is recorded).
 
 ### Expenses & Payroll (`/api/expenses` & `/api/payroll`)
 - `GET  /api/expenses` / `POST /api/expenses` — View and record school operating expenses.
@@ -409,7 +417,8 @@ The backend includes automated helper seeders located in `backend/`:
 - **Token Expiry & Auto-Logout**: JWT tokens are validated on each request. Axios response interceptors immediately wipe local tokens upon `401 Unauthorized` responses and route users to the login screen.
 - **Password Protection**: Passwords are encrypted with Bcrypt.js salt hashing before being committed to MongoDB.
 - **SQL / NoSQL Injection Prevention**: Request parameters and input bodies are sanitized using `express-validator` and typed Mongoose schemas.
-- **Strict Role-Based Authorizations**: Sensitive endpoints (e.g., student deletion, fee collection, payroll disbursement) strictly enforce `authorize('admin')` middleware checks.
+- **Strict Role-Based Authorizations**: Sensitive endpoints (e.g., student deletion, fee collection, payroll disbursement, one-time fee issuance) strictly enforce `authorize('admin')` middleware checks.
+- **Financial Audit Locks**: Charges that have received payments (`amountPaid > 0`) cannot have their amount/title altered or be deleted.
 - **Clean Separation of Concerns**: Modular structure cleanly separating Routing (`routes/`), Controller Logic (`controllers/`), Business/Utility Services (`services/`, `utils/`), and Database Entities (`models/`).
 
 ---

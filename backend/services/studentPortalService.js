@@ -155,7 +155,7 @@ const getMyFeeHistory = async (user) => {
     throw error;
   }
 
-  const records = await FeeRecord.find({ studentId: student._id }).sort({ month: -1 });
+  const records = await FeeRecord.find({ studentId: student._id }).sort({ createdAt: -1 });
 
   let totalBilled = 0;
   let totalPaid = 0;
@@ -168,11 +168,19 @@ const getMyFeeHistory = async (user) => {
   records.forEach(r => {
     if (r.payments && r.payments.length > 0) {
       r.payments.forEach(p => {
+        const itemDesc = r.type === 'one_time'
+          ? (r.title || 'One-Time Charge')
+          : (r.type === 'admission' ? 'Admission & Books' : `Monthly Tuition (${r.month})`);
+
         history.push({
+          _id: p._id,
           amount: p.amount,
           paidOn: p.paidOn,
           method: p.method,
-          forMonth: r.month
+          type: p.type,
+          forMonth: r.month,
+          feeType: r.type,
+          description: itemDesc
         });
       });
     }
@@ -181,11 +189,24 @@ const getMyFeeHistory = async (user) => {
   history.sort((a, b) => new Date(b.paidOn) - new Date(a.paidOn));
 
   const currentMonthStr = new Date().toISOString().slice(0, 7);
-  const currentRecord = records.find(r => r.month === currentMonthStr) || {
+  const currentRecord = records.find(r => r.month === currentMonthStr && r.type === 'monthly') || {
     status: 'pending',
     amountDue: student.monthlyFeeAmount || 0,
     amountPaid: 0,
   };
+
+  const oneTimeCharges = records
+    .filter(r => r.type === 'one_time')
+    .map(r => ({
+      _id: r._id,
+      title: r.title || 'One-Time Charge',
+      amountDue: r.amountDue,
+      amountPaid: r.amountPaid,
+      balance: Math.max(0, r.amountDue - r.amountPaid),
+      status: r.status,
+      dueDate: r.dueDate,
+      createdAt: r.createdAt
+    }));
 
   return {
     studentName: student.fullName,
@@ -198,6 +219,7 @@ const getMyFeeHistory = async (user) => {
     balance: currentRecord.amountDue - currentRecord.amountPaid,
     dueDate: null,
     history,
+    oneTimeCharges,
     monthlyRecords: records
   };
 };

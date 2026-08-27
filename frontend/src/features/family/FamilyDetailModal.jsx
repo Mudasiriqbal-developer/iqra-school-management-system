@@ -854,7 +854,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                                             }}
                                             className="h-4 w-4 rounded-sm text-navy-900 border-gray-300 focus:ring-navy-900"
                                           />
-                                          <span className="font-bold text-gray-700">{record.month}</span>
+                                          <span className="font-bold text-gray-700">{record.title || record.month}</span>
                                         </div>
                                         <span className="font-extrabold text-navy-900">Rs. {record.amount.toFixed(2)}</span>
                                       </label>

@@ -135,6 +135,63 @@ const StudentFees = () => {
           </div>
         )}
 
+        {/* Occasional / One-Time Charges Section (Exam Fees, Paper Fees) */}
+        {feeData?.oneTimeCharges && feeData.oneTimeCharges.length > 0 && (
+          <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden">
+            <div className="p-6 bg-gradient-to-r from-purple-900 to-indigo-900 text-white flex justify-between items-center">
+              <div>
+                <span className="px-2 py-0.5 bg-purple-500/30 text-purple-200 text-[10px] font-black uppercase tracking-wider rounded-md border border-purple-400/30">
+                  Occasional Dues
+                </span>
+                <h2 className="text-lg font-bold tracking-tight mt-1">Examination & Special Fees</h2>
+                <p className="text-xs text-purple-200/80 mt-0.5">Special charges issued separately from monthly tuition.</p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-purple-50/50 border-b border-purple-100">
+                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider">Fee Description</th>
+                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider">Due Date</th>
+                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-right">Amount Due</th>
+                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-right">Amount Paid</th>
+                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-right">Remaining</th>
+                    <th className="py-3 px-6 text-xs font-bold text-purple-900 uppercase tracking-wider text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-purple-50 text-sm">
+                  {feeData.oneTimeCharges.map((charge) => (
+                    <tr key={charge._id} className="hover:bg-purple-50/30 transition-colors">
+                      <td className="py-4 px-6 font-bold text-navy-950">
+                        {charge.title}
+                      </td>
+                      <td className="py-4 px-6 text-gray-600 font-medium">
+                        {formatDate(charge.dueDate)}
+                      </td>
+                      <td className="py-4 px-6 text-right font-bold text-navy-950">
+                        Rs. {charge.amountDue.toLocaleString()}
+                      </td>
+                      <td className="py-4 px-6 text-right font-bold text-emerald-600">
+                        Rs. {charge.amountPaid.toLocaleString()}
+                      </td>
+                      <td className="py-4 px-6 text-right font-bold text-rose-600">
+                        Rs. {charge.balance.toLocaleString()}
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <StatusBadge
+                          status={charge.status === 'paid' ? 'active' : charge.status === 'partial' ? 'pending' : 'danger'}
+                          label={charge.status === 'paid' ? 'Paid in Full' : charge.status === 'partial' ? 'Partial Paid' : 'Unpaid'}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* History Table */}
         <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -148,7 +205,7 @@ const StudentFees = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">For Month</th>
+                  <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Fee / Purpose</th>
                   <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount Paid</th>
                   <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Payment Method</th>
                   <th className="py-3 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider">Payment Date</th>
@@ -159,8 +216,10 @@ const StudentFees = () => {
                 {feeData?.history && feeData.history.length > 0 ? (
                   feeData.history.map((record, index) => (
                     <tr key={record._id || index} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4 px-6 text-sm font-bold text-navy-950">{record.forMonth}</td>
-                      <td className="py-4 px-6 text-sm font-semibold text-gray-700">Rs. {record.amount}</td>
+                      <td className="py-4 px-6 text-sm font-bold text-navy-950">
+                        {record.description || record.forMonth}
+                      </td>
+                      <td className="py-4 px-6 text-sm font-semibold text-emerald-600">Rs. {record.amount.toLocaleString()}</td>
                       <td className="py-4 px-6 text-sm text-gray-600 capitalize">
                         {record.method?.replace('_', ' ')}
                       </td>

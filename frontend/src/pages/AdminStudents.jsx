@@ -5,7 +5,7 @@ import {
   Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
   AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, Key, MoreVertical, Settings,
-  FileSpreadsheet
+  FileSpreadsheet, PlusCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -17,6 +17,7 @@ import { getStudents, getStudentById, deleteStudent, getClasses, getSectionsByCl
 import StudentFormModal from '../features/students/StudentFormModal';
 import StudentViewDrawer from '../features/students/StudentViewDrawer';
 import BulkStudentImportModal from '../features/students/BulkStudentImportModal';
+import IssueChargeModal from '../features/fees/IssueChargeModal';
 
 const AdminStudents = () => {
   const [searchParams] = useSearchParams();
@@ -90,6 +91,7 @@ const AdminStudents = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isIssueChargeModalOpen, setIsIssueChargeModalOpen] = useState(false);
   
   // Deactivation confirmation modal states
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -354,7 +356,14 @@ const AdminStudents = () => {
             <h1 className="text-2xl font-extrabold text-navy-950 tracking-tight">Student Management</h1>
             <p className="text-sm text-gray-500 mt-1">Manage and monitor student records across the school.</p>
           </div>
-          <div className="flex items-center space-x-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <button
+              onClick={() => setIsIssueChargeModalOpen(true)}
+              className="flex-1 sm:flex-none bg-purple-50 text-purple-800 border border-purple-200 hover:bg-purple-100 font-bold py-2.5 px-3.5 rounded-xl flex items-center justify-center space-x-1.5 transition-all shadow-xs text-sm"
+            >
+              <PlusCircle className="h-4 w-4 text-purple-700" />
+              <span>Issue Charge</span>
+            </button>
             <button
               onClick={() => setIsImportModalOpen(true)}
               className="flex-1 sm:flex-none bg-white text-navy-900 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-xs text-sm"
@@ -1110,6 +1119,16 @@ const AdminStudents = () => {
           </div>
         </div>
       )}
+
+      {/* Issue One-Time Charge Modal */}
+      <IssueChargeModal
+        isOpen={isIssueChargeModalOpen}
+        onClose={() => setIsIssueChargeModalOpen(false)}
+        onSuccess={() => {
+          fetchStudentsData();
+        }}
+      />
+
     </DashboardLayout>
   );
 };

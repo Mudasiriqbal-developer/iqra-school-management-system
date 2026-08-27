@@ -422,6 +422,8 @@ const getFamilyFeeSummary = async (req, res, next) => {
         .map(r => ({
           feeRecordId: r._id,
           month: r.month,
+          title: r.title || (r.type === 'admission' ? 'Admission & Books' : null),
+          type: r.type,
           amount: r.amountDue - r.amountPaid
         }));
 
@@ -573,6 +575,8 @@ const payFamilyFees = async (req, res, next) => {
         studentName: student.fullName,
         classSection: classSec,
         month: record.month,
+        title: record.title || (record.type === 'admission' ? 'Admission & Books' : null),
+        type: record.type,
         amount: remaining,
         feeRecordId: record._id
       });
@@ -793,7 +797,8 @@ const generateFamilyVoucherPDF = async (req, res, next) => {
 
         doc.save();
         doc.fillColor('#1E293B').font('Helvetica').fontSize(8);
-        doc.text(item.month, monthColX + 10, currentY + 4, { width: colWidths.month - 10 });
+        const itemLabel = item.title || item.month;
+        doc.text(itemLabel, monthColX + 10, currentY + 4, { width: colWidths.month - 10 });
         doc.text(`Rs. ${item.amount.toFixed(2)}`, amountColX, currentY + 4, { width: colWidths.amount, align: 'right' });
         doc.font('Helvetica-Bold').fillColor('#16A34A').text('PAID', statusColX, currentY + 4, { width: colWidths.status, align: 'center' });
         doc.restore();

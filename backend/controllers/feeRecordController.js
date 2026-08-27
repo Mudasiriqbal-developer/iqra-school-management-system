@@ -256,8 +256,13 @@ const generateReceiptPDF = async (req, res, next) => {
       // Print values
       doc.save();
       doc.fillColor('#1E293B').font('Helvetica').fontSize(8);
-      const monthLabel = isAdmission ? 'Admission & Books' : r.month;
-      doc.font(isAdmission ? 'Helvetica-Bold' : 'Helvetica').text(monthLabel, monthColX + 5, yPosition + 4, { width: colWidths.month - 5 });
+      let monthLabel = r.month;
+      if (isAdmission) {
+        monthLabel = 'Admission & Books';
+      } else if (r.type === 'one_time') {
+        monthLabel = r.title ? r.title : 'One-Time Charge';
+      }
+      doc.font(isAdmission || r.type === 'one_time' ? 'Helvetica-Bold' : 'Helvetica').text(monthLabel, monthColX + 5, yPosition + 4, { width: colWidths.month - 5 });
       doc.text(r.amountDue.toFixed(2), dueColX, yPosition + 4, { width: colWidths.due, align: 'right' });
       doc.text(r.amountPaid.toFixed(2), paidColX, yPosition + 4, { width: colWidths.paid, align: 'right' });
 
@@ -404,10 +409,327 @@ const getCurrentMonthFeeList = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Issue a one-time charge to an entire class, section, or individual students
+ * @route   POST /api/fee-records/issue-charge
+ * @access  Private (Admin Only)
+ */
+const issueOneTimeCharge = async (req, res, next) => {
+  try {
+    const { title, amount, dueDate, targetType, classId, sectionId, studentIds } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Charge title/label is required'
+      });
+    }
+
+    const numericAmount = Number(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid positive charge amount is required'
+      });
+    }
+
+    let targetStudentIds = [];
+
+    if (targetType === 'individual') {
+      if (!Array.isArray(studentIds) || studentIds.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'At least one student must be selected for individual charge issuance'
+        });
+      }
+      // Verify active students
+      const foundStudents = await Student.find({
+        _id: { $in: studentIds },
+        status: 'active'
+      }).select('_id');
+      targetStudentIds = foundStudents.map(s => s._id);
+    } else {
+      // Default: class/section target
+      if (!classId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Class is required when issuing charge to a class'
+        });
+      }
+
+      const filter = { classId, status: 'active' };
+      if (sectionId && sectionId.trim() !== '') {
+        filter.sectionId = sectionId;
+      }
+
+      const students = await Student.find(filter).select('_id');
+      targetStudentIds = students.map(s => s._id);
+    }
+
+    if (targetStudentIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No active students found matching the selected target criteria'
+      });
+    }
+
+    const now = new Date();
+    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const parsedDueDate = dueDate ? new Date(dueDate) : null;
+
+    const recordsToInsert = targetStudentIds.map(studentId => ({
+      studentId,
+      month: monthStr,
+      title: title.trim(),
+      amountDue: numericAmount,
+      amountPaid: 0,
+      status: 'pending',
+      type: 'one_time',
+      dueDate: parsedDueDate,
+      payments: []
+    }));
+
+    const createdRecords = await FeeRecord.insertMany(recordsToInsert, { ordered: false });
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        issuedCount: createdRecords.length,
+        title: title.trim(),
+        amount: numericAmount,
+        dueDate: parsedDueDate
+      },
+      message: `Successfully issued charge "${title.trim()}" (Rs. ${numericAmount}) to ${createdRecords.length} student(s)`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get report / listing of one-time charges with aggregation & filters
+ * @route   GET /api/fee-records/one-time-charges
+ * @access  Private (Admin Only)
+ */
+const getOneTimeChargesReport = async (req, res, next) => {
+  try {
+    const { classId, sectionId, status, search, title, page = 1, limit = 15 } = req.query;
+
+    const pageVal = parseInt(page, 10) || 1;
+    const limitVal = parseInt(limit, 10) || 15;
+    const skipVal = (pageVal - 1) * limitVal;
+
+    const filter = { type: 'one_time' };
+
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+    if (title && title.trim() !== '') {
+      filter.title = { $regex: title.trim(), $options: 'i' };
+    }
+
+    // Student sub-filters
+    const studentFilter = {};
+    if (classId && classId.trim() !== '') {
+      studentFilter.classId = classId;
+    }
+    if (sectionId && sectionId.trim() !== '') {
+      studentFilter.sectionId = sectionId;
+    }
+    if (search && search.trim() !== '') {
+      studentFilter.$or = [
+        { fullName: { $regex: search.trim(), $options: 'i' } },
+        { registrationNumber: { $regex: search.trim(), $options: 'i' } },
+        { fatherName: { $regex: search.trim(), $options: 'i' } }
+      ];
+    }
+
+    // If filtering by student fields, resolve student IDs first
+    if (Object.keys(studentFilter).length > 0) {
+      const matchingStudents = await Student.find(studentFilter).select('_id');
+      const matchingIds = matchingStudents.map(s => s._id);
+      filter.studentId = { $in: matchingIds };
+    }
+
+    // Overall KPI metrics for one-time charges matching filters
+    const summaryAgg = await FeeRecord.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: null,
+          totalBilled: { $sum: '$amountDue' },
+          totalCollected: { $sum: '$amountPaid' },
+          pendingCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] }
+          },
+          partialCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'partial'] }, 1, 0] }
+          },
+          paidCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'paid'] }, 1, 0] }
+          },
+          totalCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const summary = summaryAgg[0] || {
+      totalBilled: 0,
+      totalCollected: 0,
+      pendingCount: 0,
+      partialCount: 0,
+      paidCount: 0,
+      totalCount: 0
+    };
+    summary.totalOutstanding = summary.totalBilled - summary.totalCollected;
+
+    // Paginated list
+    const total = await FeeRecord.countDocuments(filter);
+    const records = await FeeRecord.find(filter)
+      .populate({
+        path: 'studentId',
+        select: 'fullName registrationNumber fatherName fatherContact status classId sectionId',
+        populate: [
+          { path: 'classId', select: 'name' },
+          { path: 'sectionId', select: 'name' }
+        ]
+      })
+      .sort({ createdAt: -1 })
+      .skip(skipVal)
+      .limit(limitVal);
+
+    const pages = Math.ceil(total / limitVal);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        records,
+        summary,
+        total,
+        page: pageVal,
+        pages
+      },
+      message: 'One-time charges report retrieved successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Edit a one-time charge (Only allowed if amountPaid === 0)
+ * @route   PUT /api/fee-records/:id/one-time
+ * @access  Private (Admin Only)
+ */
+const updateOneTimeCharge = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { title, amountDue, dueDate } = req.body;
+
+    const record = await FeeRecord.findById(id);
+    if (!record) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fee record not found'
+      });
+    }
+
+    if (record.type !== 'one_time') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only one-time charges can be edited through this action'
+      });
+    }
+
+    // AUDIT RULE: Once payment is recorded, charge cannot be modified
+    if (record.amountPaid > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot edit this charge because payment has already been recorded against it. This preserves the financial audit trail.'
+      });
+    }
+
+    if (title && title.trim()) {
+      record.title = title.trim();
+    }
+    if (amountDue !== undefined) {
+      const numAmount = Number(amountDue);
+      if (isNaN(numAmount) || numAmount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid positive amount is required'
+        });
+      }
+      record.amountDue = numAmount;
+    }
+    if (dueDate !== undefined) {
+      record.dueDate = dueDate ? new Date(dueDate) : null;
+    }
+
+    await record.save();
+
+    return res.status(200).json({
+      success: true,
+      data: record,
+      message: 'One-time charge updated successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete/Void a one-time charge (Only allowed if amountPaid === 0)
+ * @route   DELETE /api/fee-records/:id/one-time
+ * @access  Private (Admin Only)
+ */
+const deleteOneTimeCharge = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const record = await FeeRecord.findById(id);
+    if (!record) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fee record not found'
+      });
+    }
+
+    if (record.type !== 'one_time') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only one-time charges can be deleted through this action'
+      });
+    }
+
+    // AUDIT RULE: Once payment is recorded, charge cannot be deleted
+    if (record.amountPaid > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete this charge because payment has already been recorded against it. This preserves the financial audit trail.'
+      });
+    }
+
+    await FeeRecord.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      data: null,
+      message: 'One-time charge deleted/voided successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getOrCreateCurrentMonthRecord,
   getStudentLedger,
   recordPayment,
   generateReceiptPDF,
-  getCurrentMonthFeeList
+  getCurrentMonthFeeList,
+  issueOneTimeCharge,
+  getOneTimeChargesReport,
+  updateOneTimeCharge,
+  deleteOneTimeCharge
 };

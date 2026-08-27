@@ -36,6 +36,14 @@ const familyVoucherSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        title: {
+          type: String,
+          default: null,
+        },
+        type: {
+          type: String,
+          default: 'monthly',
+        },
         amount: {
           type: Number,
           required: true,
