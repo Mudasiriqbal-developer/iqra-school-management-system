@@ -140,7 +140,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.trim().length >= 2 && setIsDropdownOpen(true)}
               placeholder="Search students, faculty..."
-              className="block w-full pl-9 pr-8 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/40 focus:border-navy-700 text-xs bg-gray-50 dark:bg-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 transition-all shadow-inner"
+              className="block w-full pl-9 pr-8 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-900/30 focus:border-navy-900 text-xs bg-slate-50 dark:bg-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 transition-colors"
             />
             {searchQuery && (
               <button
@@ -154,10 +154,10 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
 
           {/* Autocomplete Results Dropdown */}
           {isDropdownOpen && (
-            <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 py-2 z-50 max-h-96 overflow-y-auto animate-modal-zoom">
+            <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50 max-h-96 overflow-y-auto animate-modal-zoom">
               {isSearching ? (
                 <div className="p-4 text-center text-xs text-gray-500 dark:text-slate-400 flex items-center justify-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-navy-900 dark:text-sky-400" />
                   <span>Searching directory...</span>
                 </div>
               ) : totalResults === 0 ? (
@@ -165,12 +165,12 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
                   No matching students or faculty found.
                 </div>
               ) : (
-                <div className="divide-y divide-gray-100 dark:divide-slate-700/60">
+                <div className="divide-y divide-slate-100 dark:divide-slate-700/60">
                   {/* Students Section */}
                   {searchResults.students.length > 0 && (
                     <div className="py-1">
-                      <div className="px-4 py-1.5 text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider bg-gray-50/80 dark:bg-slate-900/40 flex items-center space-x-1.5">
-                        <GraduationCap className="h-3.5 w-3.5 text-navy-700 dark:text-sky-400" />
+                      <div className="px-4 py-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/40 flex items-center space-x-1.5">
+                        <GraduationCap className="h-3.5 w-3.5 text-navy-900 dark:text-sky-400" />
                         <span>Students ({searchResults.students.length})</span>
                       </div>
                       {searchResults.students.map((st) => (
@@ -180,14 +180,14 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
                           className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center justify-between transition-colors group"
                         >
                           <div>
-                            <p className="text-xs font-bold text-navy-950 dark:text-slate-100 group-hover:text-navy-700 dark:group-hover:text-sky-400">
+                            <p className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-navy-900 dark:group-hover:text-sky-400">
                               {st.fullName || st.name}
                             </p>
-                            <p className="text-[10px] text-gray-500 dark:text-slate-400">
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400">
                               Reg #: {st.registrationNumber || st.rollNumber || 'N/A'} {st.classId?.name ? `• ${st.classId.name}` : ''}
                             </p>
                           </div>
-                          <span className="text-[10px] bg-navy-50 text-navy-700 dark:bg-sky-950/40 dark:text-sky-400 px-2 py-0.5 rounded-full font-semibold border border-navy-100/40 dark:border-sky-900/40">
+                          <span className="text-[10px] bg-navy-50 text-navy-900 dark:bg-sky-950/40 dark:text-sky-400 px-2 py-0.5 rounded-md font-bold border border-navy-100/60 dark:border-sky-900/40">
                             Student
                           </span>
                         </button>
@@ -198,7 +198,7 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
                   {/* Teachers Section */}
                   {searchResults.teachers.length > 0 && (
                     <div className="py-1">
-                      <div className="px-4 py-1.5 text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider bg-gray-50/80 dark:bg-slate-900/40 flex items-center space-x-1.5">
+                      <div className="px-4 py-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/40 flex items-center space-x-1.5">
                         <User className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>Faculty ({searchResults.teachers.length})</span>
                       </div>
@@ -209,14 +209,14 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
                           className="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center justify-between transition-colors group"
                         >
                           <div>
-                            <p className="text-xs font-bold text-navy-950 dark:text-slate-100 group-hover:text-navy-700 dark:group-hover:text-sky-400">
+                            <p className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-navy-900 dark:group-hover:text-sky-400">
                               {tc.fullName || tc.name}
                             </p>
-                            <p className="text-[10px] text-gray-500 dark:text-slate-400">
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400">
                               Emp #: {tc.employeeId || 'N/A'} {tc.qualification ? `• ${tc.qualification}` : ''}
                             </p>
                           </div>
-                          <span className="text-[10px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5 rounded-full font-semibold border border-emerald-100/40 dark:border-emerald-900/40">
+                          <span className="text-[10px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5 rounded-md font-bold border border-emerald-100/60 dark:border-emerald-900/40">
                             Faculty
                           </span>
                         </button>

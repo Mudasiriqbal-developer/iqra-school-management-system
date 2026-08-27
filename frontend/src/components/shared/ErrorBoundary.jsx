@@ -82,16 +82,16 @@ class ErrorBoundary extends Component {
             </p>
 
             {/* Two buttons: Reload Page and Go to Dashboard */}
-            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center mb-8">
               <button
                 onClick={this.handleReload}
-                className="bg-navy-900 hover:bg-navy-800 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform active:scale-95 transition-all duration-200 flex-1 sm:flex-initial"
+                className="bg-navy-900 hover:bg-navy-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-xs transition-colors flex-1 sm:flex-initial text-sm"
               >
                 Reload Page
               </button>
               <button
                 onClick={this.handleGoToDashboard}
-                className="bg-white border-2 border-navy-900 text-navy-900 hover:bg-gray-50 font-semibold py-3 px-6 rounded-full shadow hover:shadow-md transform active:scale-95 transition-all duration-200 flex-1 sm:flex-initial"
+                className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold py-2.5 px-5 rounded-xl shadow-xs transition-colors flex-1 sm:flex-initial text-sm"
               >
                 Go to Dashboard
               </button>
