@@ -21,7 +21,8 @@ import {
   Loader2,
   Settings,
   PlusCircle,
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 

@@ -15,7 +15,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  X,
+  Sparkles,
+  TrendingUp
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getOneTimeCharges, getClasses, getSectionsByClass, deleteOneTimeCharge, updateOneTimeCharge } from './feeService';
