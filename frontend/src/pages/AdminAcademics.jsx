@@ -15,17 +15,21 @@ import {
   TrendingUp,
   Pencil,
   Trash2,
-  Check,
-  X,
-  GripVertical,
   ChevronUp,
   ChevronDown,
+  ArrowUpDown,
+  Search,
+  UserCheck,
   Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import DashboardLayout from '../components/shared/DashboardLayout';
-import InlineEditableRow from '../features/academics/InlineEditableRow';
+import ClassFormModal from '../features/academics/ClassFormModal';
+import SectionFormModal from '../features/academics/SectionFormModal';
+import SubjectFormModal from '../features/academics/SubjectFormModal';
+import ConfirmModal from '../components/shared/ConfirmModal';
+import { formatClassName, getInitials } from '../utils/format';
 import {
   getClasses,
   createClass,
@@ -46,11 +50,8 @@ import {
   reorderSubjects
 } from '../features/academics/academicService';
 import { getTeachers } from '../features/teachers/teacherService';
-import ConfirmModal from '../components/shared/ConfirmModal';
-import { formatClassName, formatClassNameWithGender } from '../utils/format';
 
 const AdminAcademics = () => {
-  // Sidebar items
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
     { label: 'Students', icon: Users, path: '/admin/students' },
@@ -64,49 +65,39 @@ const AdminAcademics = () => {
     { label: 'Settings', icon: Settings, path: '/admin/settings' },
   ];
 
-  // Core academic state
+  // Core State
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
-  const [genderFilter, setGenderFilter] = useState('all');
   const [sections, setSections] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
 
-  // Loading states
+  // Filters & Search
+  const [searchTerm, setSearchTerm] = useState('');
+  const [genderFilter, setGenderFilter] = useState('all');
+
+  // Loading States
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
 
-  // Ref to track the currently active/selected class ID for avoiding fetch race conditions
-  const activeClassIdRef = useRef(null);
+  // Reorder Mode Toggles (Touch & Mobile Compatible)
+  const [isReorderingClasses, setIsReorderingClasses] = useState(false);
+  const [isReorderingSections, setIsReorderingSections] = useState(false);
+  const [isReorderingSubjects, setIsReorderingSubjects] = useState(false);
 
-  // Form toggle states
-  const [isAddingClass, setIsAddingClass] = useState(false);
-  const [newClassName, setNewClassName] = useState('');
-  const [newClassGender, setNewClassGender] = useState('mixed');
-  const [newClassDefaultFee, setNewClassDefaultFee] = useState('');
+  // Modal States
+  const [classModalOpen, setClassModalOpen] = useState(false);
+  const [editingClassItem, setEditingClassItem] = useState(null);
+  const [isSubmittingClass, setIsSubmittingClass] = useState(false);
 
-  // Class editing states
-  const [editingClassId, setEditingClassId] = useState(null);
-  const [editClassNameValue, setEditClassNameValue] = useState('');
-  const [editClassGenderValue, setEditClassGenderValue] = useState('mixed');
-  const [editClassDefaultFeeValue, setEditClassDefaultFeeValue] = useState('');
+  const [sectionModalOpen, setSectionModalOpen] = useState(false);
+  const [editingSectionItem, setEditingSectionItem] = useState(null);
+  const [isSubmittingSection, setIsSubmittingSection] = useState(false);
 
-  const [isAddingSection, setIsAddingSection] = useState(false);
-  const [newSectionName, setNewSectionName] = useState('');
-
-  const [isAddingSubject, setIsAddingSubject] = useState(false);
-  const [newSubjectName, setNewSubjectName] = useState('');
-
-  // Section specific editing & teacher assignment states
-  const [editingSectionId, setEditingSectionId] = useState(null);
-  const [editSectionValue, setEditSectionValue] = useState('');
-  const [assigningSectionId, setAssigningSectionId] = useState(null);
-
-  // Drag and drop states & refs
-  const dragSourceIndexRef = useRef(null);
-  const dragTypeRef = useRef(null);
-  const [dragOverInfo, setDragOverInfo] = useState(null); // { type: 'class'|'section'|'subject', index: number }
+  const [subjectModalOpen, setSubjectModalOpen] = useState(false);
+  const [editingSubjectItem, setEditingSubjectItem] = useState(null);
+  const [isSubmittingSubject, setIsSubmittingSubject] = useState(false);
 
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -118,479 +109,296 @@ const AdminAcademics = () => {
     type: 'danger',
   });
 
-  const handleDragOver = (e, index, type) => {
-    if (dragTypeRef.current !== type) return;
-    e.preventDefault();
-    setDragOverInfo({ type, index });
-  };
+  const activeClassIdRef = useRef(null);
 
-  const handleDragLeave = () => {
-    setDragOverInfo(null);
-  };
+  // 1. Fetch Classes & Teachers on mount
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
-  const handleDragEnd = () => {
-    dragSourceIndexRef.current = null;
-    dragTypeRef.current = null;
-    setDragOverInfo(null);
-  };
-
-  const handleDrop = async (e, targetIndex, type) => {
-    e.preventDefault();
-    if (dragTypeRef.current !== type) return;
-    const sourceIndex = dragSourceIndexRef.current;
-    if (sourceIndex === null || sourceIndex === targetIndex) return;
-
-    if (type === 'class') {
-      const updated = [...classes];
-      const [removed] = updated.splice(sourceIndex, 1);
-      updated.splice(targetIndex, 0, removed);
-      setClasses(updated);
-
-      try {
-        await reorderClasses(updated.map(c => c._id));
-        toast.success('Classes reordered');
-      } catch (_err) {
-        toast.error('Failed to save class order');
-        fetchClasses();
-      }
-    } else if (type === 'section') {
-      const updated = [...sections];
-      const [removed] = updated.splice(sourceIndex, 1);
-      updated.splice(targetIndex, 0, removed);
-      setSections(updated);
-
-      try {
-        await reorderSections(updated.map(s => s._id));
-        toast.success('Sections reordered');
-      } catch (_err) {
-        toast.error('Failed to save section order');
-        if (selectedClass) {
-          fetchDetailsForClass(selectedClass._id);
-        }
-      }
-    } else if (type === 'subject') {
-      const updated = [...subjects];
-      const [removed] = updated.splice(sourceIndex, 1);
-      updated.splice(targetIndex, 0, removed);
-      setSubjects(updated);
-
-      try {
-        await reorderSubjects(updated.map(s => s._id));
-        toast.success('Subjects reordered');
-      } catch (_err) {
-        toast.error('Failed to save subject order');
-        if (selectedClass) {
-          fetchDetailsForClass(selectedClass._id);
-        }
-      }
-    }
-  };
-
-  // Touch-Friendly Directional Reordering Handlers (Mobile & Touch Devices)
-  const handleMoveClass = async (e, index, direction) => {
-    e.stopPropagation();
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= classes.length) return;
-
-    const updated = [...classes];
-    const [removed] = updated.splice(index, 1);
-    updated.splice(targetIndex, 0, removed);
-    setClasses(updated);
-
-    try {
-      await reorderClasses(updated.map(c => c._id));
-      toast.success('Class order updated');
-    } catch (_err) {
-      toast.error('Failed to save class order');
-      fetchClasses();
-    }
-  };
-
-  const handleMoveSection = async (e, index, direction) => {
-    e.stopPropagation();
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= sections.length) return;
-
-    const updated = [...sections];
-    const [removed] = updated.splice(index, 1);
-    updated.splice(targetIndex, 0, removed);
-    setSections(updated);
-
-    try {
-      await reorderSections(updated.map(s => s._id));
-      toast.success('Section order updated');
-    } catch (_err) {
-      toast.error('Failed to save section order');
-      if (selectedClass) fetchDetailsForClass(selectedClass._id);
-    }
-  };
-
-  const handleMoveSubject = async (e, index, direction) => {
-    e.stopPropagation();
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= subjects.length) return;
-
-    const updated = [...subjects];
-    const [removed] = updated.splice(index, 1);
-    updated.splice(targetIndex, 0, removed);
-    setSubjects(updated);
-
-    try {
-      await reorderSubjects(updated.map(s => s._id));
-      toast.success('Subject order updated');
-    } catch (_err) {
-      toast.error('Failed to save subject order');
-      if (selectedClass) fetchDetailsForClass(selectedClass._id);
-    }
-  };
-
-  // Fetch all classes on mount
-  const fetchClasses = async (autoSelectId = null) => {
+  const fetchInitialData = async () => {
     setLoadingClasses(true);
     try {
-      const res = await getClasses();
-      if (res.success) {
-        const fetchedClasses = res.data || [];
-        setClasses(fetchedClasses);
+      const [classesRes, teachersRes] = await Promise.all([
+        getClasses(),
+        getTeachers(),
+      ]);
 
-        // Selection logic
+      if (classesRes.success) {
+        const fetchedClasses = classesRes.data || [];
+        setClasses(fetchedClasses);
         if (fetchedClasses.length > 0) {
-          if (autoSelectId) {
-            const found = fetchedClasses.find(c => c._id === autoSelectId);
-            if (found) setSelectedClass(found);
-          } else {
-            // Keep current selection if still valid, or auto-select first class
-            setSelectedClass((prev) => {
-              if (prev) {
-                const stillExists = fetchedClasses.find(c => c._id === prev._id);
-                if (stillExists) return stillExists;
-              }
-              return fetchedClasses[0];
-            });
-          }
-        } else {
-          setSelectedClass(null);
+          setClassDetails(fetchedClasses[0]);
         }
-      } else {
-        toast.error(res.message || 'Failed to load classes');
+      }
+
+      if (teachersRes.success) {
+        setTeachers(teachersRes.data || []);
       }
     } catch (err) {
-      console.error(err);
-      toast.error('Server error loading classes');
+      toast.error(err.response?.data?.message || 'Failed to load academic data');
     } finally {
       setLoadingClasses(false);
     }
   };
 
-  // Fetch sections and subjects for selected class
-  const fetchDetailsForClass = async (classId) => {
+  // 2. Select Class and Load Its Sections & Subjects
+  const setClassDetails = async (classDoc) => {
+    if (!classDoc) return;
+    setSelectedClass(classDoc);
+    activeClassIdRef.current = classDoc._id;
     setLoadingSections(true);
     setLoadingSubjects(true);
+
     try {
-      const [sectionsRes, subjectsRes] = await Promise.all([
-        getSectionsByClass(classId),
-        getSubjectsByClass(classId)
+      const [secsRes, subsRes] = await Promise.all([
+        getSectionsByClass(classDoc._id),
+        getSubjectsByClass(classDoc._id),
       ]);
 
-      // Only update state if this class is still the active class
-      if (activeClassIdRef.current !== classId) return;
-
-      if (sectionsRes.success) {
-        setSections(sectionsRes.data || []);
-      } else {
-        toast.error(sectionsRes.message || 'Failed to load sections');
-      }
-
-      if (subjectsRes.success) {
-        setSubjects(subjectsRes.data || []);
-      } else {
-        toast.error(subjectsRes.message || 'Failed to load subjects');
+      if (activeClassIdRef.current === classDoc._id) {
+        if (secsRes.success) setSections(secsRes.data || []);
+        if (subsRes.success) setSubjects(subsRes.data || []);
       }
     } catch (err) {
-      console.error(err);
-      if (activeClassIdRef.current === classId) {
-        toast.error('Server error loading class details');
-      }
+      toast.error('Error fetching class structure');
     } finally {
-      if (activeClassIdRef.current === classId) {
+      if (activeClassIdRef.current === classDoc._id) {
         setLoadingSections(false);
         setLoadingSubjects(false);
       }
     }
   };
 
-  // Fetch teachers list
-  const fetchTeachers = async () => {
-    setLoadingTeachers(true);
+  // =========================================================================
+  // CLASS ACTIONS
+  // =========================================================================
+  const handleSaveClass = async (formData) => {
+    setIsSubmittingClass(true);
     try {
-      const res = await getTeachers();
-      if (res.success) {
-        setTeachers(res.data || []);
-      } else {
-        toast.error(res.message || 'Failed to load teachers');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Server error loading teachers');
-    } finally {
-      setLoadingTeachers(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClasses();
-    fetchTeachers();
-  }, []);
-
-  useEffect(() => {
-    const classId = selectedClass?._id;
-    activeClassIdRef.current = classId;
-    setSections([]);
-    setSubjects([]);
-
-    if (classId) {
-      fetchDetailsForClass(classId);
-    }
-  }, [selectedClass?._id]);
-
-  // Class teacher assignments
-  const handleAssignTeacher = async (sectionId, teacherId) => {
-    try {
-      const res = await assignClassTeacher(sectionId, teacherId);
-      if (res.success) {
-        toast.success('Class teacher assigned successfully');
-        setSections(prev => prev.map(s => s._id === sectionId ? res.data : s));
-        setAssigningSectionId(null);
-      } else {
-        toast.error(res.message || 'Failed to assign teacher');
-      }
-    } catch (err) {
-      console.error(err);
-      const msg = err.response?.data?.message || 'Error assigning teacher';
-      toast.error(msg);
-    }
-  };
-
-  const handleUnassignTeacher = async (sectionId) => {
-    setConfirmModal({
-      isOpen: true,
-      title: 'Remove Class Teacher',
-      message: 'Are you sure you want to remove the Class Teacher from this section?',
-      confirmText: 'Remove',
-      type: 'warning',
-      onConfirm: async () => {
-        setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        try {
-          const res = await unassignClassTeacher(sectionId);
-          if (res.success) {
-            toast.success('Class teacher removed successfully');
-            setSections(prev => prev.map(s => s._id === sectionId ? res.data : s));
-          } else {
-            toast.error(res.message || 'Failed to remove teacher');
+      if (editingClassItem) {
+        const res = await updateClass(editingClassItem._id, formData);
+        if (res.success) {
+          toast.success('Class updated successfully');
+          setClasses(prev => prev.map(c => c._id === editingClassItem._id ? res.data : c));
+          if (selectedClass?._id === editingClassItem._id) {
+            setSelectedClass(res.data);
           }
-        } catch (err) {
-          console.error(err);
-          toast.error(err.response?.data?.message || 'Error removing teacher');
+          setClassModalOpen(false);
+          setEditingClassItem(null);
+        } else {
+          toast.error(res.message || 'Failed to update class');
+        }
+      } else {
+        const res = await createClass(formData);
+        if (res.success) {
+          toast.success('Class created successfully');
+          setClasses(prev => [...prev, res.data]);
+          if (!selectedClass) {
+            setClassDetails(res.data);
+          }
+          setClassModalOpen(false);
+        } else {
+          toast.error(res.message || 'Failed to create class');
         }
       }
-    });
-  };
-
-  const getTeacherName = (classTeacherId) => {
-    if (!classTeacherId) return '';
-    if (typeof classTeacherId === 'object' && classTeacherId.userId?.name) {
-      return classTeacherId.userId.name;
-    }
-    const teacherId = typeof classTeacherId === 'object' ? classTeacherId._id : classTeacherId;
-    const found = teachers.find(t => t._id === teacherId);
-    return found?.userId?.name || 'Assigned Teacher';
-  };
-
-  // Class Handlers
-  const handleAddClass = async (e) => {
-    e.preventDefault();
-    const name = newClassName.trim();
-    if (!name) return;
-    try {
-      const feeNum = parseFloat(newClassDefaultFee) || 0;
-      const res = await createClass({ name, gender: newClassGender, defaultFee: feeNum });
-      if (res.success) {
-        toast.success('Class created successfully');
-        setNewClassName('');
-        setNewClassGender('mixed');
-        setNewClassDefaultFee('');
-        setIsAddingClass(false);
-        // Refresh classes and select the newly created class
-        await fetchClasses(res.data?._id);
-      } else {
-        toast.error(res.message || 'Failed to create class');
-      }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Error creating class');
+      toast.error(err.response?.data?.message || 'Error saving class');
+    } finally {
+      setIsSubmittingClass(false);
     }
   };
 
-  const handleUpdateClass = async (id, newName, newGender, newDefaultFee) => {
-    try {
-      const feeNum = parseFloat(newDefaultFee) || 0;
-      const res = await updateClass(id, { name: newName, gender: newGender, defaultFee: feeNum });
-      if (res.success) {
-        toast.success('Class updated successfully');
-        setClasses(prev => prev.map(c => c._id === id ? { ...c, name: newName, gender: newGender, defaultFee: feeNum } : c));
-        setSelectedClass(prev => prev && prev._id === id ? { ...prev, name: newName, gender: newGender, defaultFee: feeNum } : prev);
-      } else {
-        toast.error(res.message || 'Failed to update class');
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Error updating class');
-    }
-  };
-
-  const handleDeleteClass = async (id) => {
+  const handleDeleteClass = (classDoc) => {
     setConfirmModal({
       isOpen: true,
-      title: 'Delete Class',
-      message: 'Are you sure you want to delete this class? This cannot be undone if no data depends on it.',
-      confirmText: 'Delete',
+      title: 'Delete ' + formatClassName(classDoc.name),
+      message: 'Are you sure you want to delete "' + formatClassName(classDoc.name) + '"? All associated sections and subjects will be affected. This action cannot be undone.',
+      confirmText: 'Delete Class',
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         try {
-          const res = await deleteClass(id);
+          const res = await deleteClass(classDoc._id);
           if (res.success) {
             toast.success('Class deleted successfully');
-            const remaining = classes.filter(c => c._id !== id);
-            setClasses(remaining);
-            if (selectedClass && selectedClass._id === id) {
-              setSelectedClass(remaining.length > 0 ? remaining[0] : null);
+            const updated = classes.filter(c => c._id !== classDoc._id);
+            setClasses(updated);
+            if (selectedClass?._id === classDoc._id) {
+              if (updated.length > 0) {
+                setClassDetails(updated[0]);
+              } else {
+                setSelectedClass(null);
+                setSections([]);
+                setSubjects([]);
+              }
             }
           } else {
             toast.error(res.message || 'Failed to delete class');
           }
         } catch (err) {
-          // Backend blocks deletion (returns 400) if sections exist
           toast.error(err.response?.data?.message || 'Error deleting class');
         }
       }
     });
   };
 
-  const handleAddSection = async (e) => {
-    e.preventDefault();
-    const name = newSectionName.trim();
-    if (!name || !selectedClass) return;
-    const classId = selectedClass._id;
+  const handleMoveClassOrder = async (index, direction) => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= classes.length) return;
+
+    const updated = [...classes];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    setClasses(updated);
+
     try {
-      const res = await createSection({ name, classId });
-      if (res.success) {
-        toast.success('Section created successfully');
-        setNewSectionName('');
-        setIsAddingSection(false);
-        // Refresh sections
-        const sectionsRes = await getSectionsByClass(classId);
-        if (activeClassIdRef.current === classId && sectionsRes.success) {
-          setSections(sectionsRes.data || []);
+      await reorderClasses(updated.map(c => c._id));
+    } catch (err) {
+      toast.error('Failed to save class order');
+    }
+  };
+
+  // =========================================================================
+  // SECTION ACTIONS
+  // =========================================================================
+  const handleSaveSection = async (formData) => {
+    if (!selectedClass) return;
+    setIsSubmittingSection(true);
+    try {
+      if (editingSectionItem) {
+        const res = await updateSection(editingSectionItem._id, { name: formData.name });
+        if (res.success) {
+          const currentTeacherId = editingSectionItem.classTeacherId ? (editingSectionItem.classTeacherId._id || editingSectionItem.classTeacherId) : null;
+          if (formData.classTeacherId !== currentTeacherId) {
+            if (formData.classTeacherId) {
+              await assignClassTeacher(editingSectionItem._id, formData.classTeacherId);
+            } else {
+              await unassignClassTeacher(editingSectionItem._id);
+            }
+          }
+          toast.success('Section updated successfully');
+          fetchSectionsForClass(selectedClass._id);
+          setSectionModalOpen(false);
+          setEditingSectionItem(null);
+        } else {
+          toast.error(res.message || 'Failed to update section');
         }
       } else {
-        toast.error(res.message || 'Failed to create section');
+        const res = await createSection({ name: formData.name, classId: selectedClass._id });
+        if (res.success) {
+          if (formData.classTeacherId && res.data?._id) {
+            await assignClassTeacher(res.data._id, formData.classTeacherId);
+          }
+          toast.success('Section created successfully');
+          fetchSectionsForClass(selectedClass._id);
+          setSectionModalOpen(false);
+        } else {
+          toast.error(res.message || 'Failed to create section');
+        }
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Error creating section');
+      toast.error(err.response?.data?.message || 'Error saving section');
+    } finally {
+      setIsSubmittingSection(false);
     }
   };
 
-  const handleUpdateSection = async (id, newName) => {
-    try {
-      const res = await updateSection(id, { name: newName });
-      if (res.success) {
-        toast.success('Section updated successfully');
-        setSections(prev => prev.map(s => s._id === id ? { ...s, name: newName } : s));
-      } else {
-        toast.error(res.message || 'Failed to update section');
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Error updating section');
+  const fetchSectionsForClass = async (classId) => {
+    const res = await getSectionsByClass(classId);
+    if (res.success) {
+      setSections(res.data || []);
     }
   };
 
-  const handleDeleteSection = async (id) => {
+  const handleDeleteSection = (sectionId) => {
     setConfirmModal({
       isOpen: true,
       title: 'Delete Section',
-      message: 'Are you sure you want to delete this section? This cannot be undone if no data depends on it.',
+      message: 'Are you sure you want to delete this section? Students must be reassigned first.',
       confirmText: 'Delete',
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         try {
-          const res = await deleteSection(id);
+          const res = await deleteSection(sectionId);
           if (res.success) {
             toast.success('Section deleted successfully');
-            setSections(prev => prev.filter(s => s._id !== id));
+            setSections(prev => prev.filter(s => s._id !== sectionId));
           } else {
             toast.error(res.message || 'Failed to delete section');
           }
         } catch (err) {
-          // Backend blocks deletion (returns 400) if students are assigned to the section
           toast.error(err.response?.data?.message || 'Error deleting section');
         }
       }
     });
   };
 
-  // Subject Handlers
-  const handleAddSubject = async (e) => {
-    e.preventDefault();
-    const name = newSubjectName.trim();
-    if (!name || !selectedClass) return;
-    const classId = selectedClass._id;
+  const handleMoveSectionOrder = async (index, direction) => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= sections.length) return;
+
+    const updated = [...sections];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    setSections(updated);
+
     try {
-      const res = await createSubject({ name, classId });
-      if (res.success) {
-        toast.success('Subject created successfully');
-        setNewSubjectName('');
-        setIsAddingSubject(false);
-        // Refresh subjects
-        const subjectsRes = await getSubjectsByClass(classId);
-        if (activeClassIdRef.current === classId && subjectsRes.success) {
-          setSubjects(subjectsRes.data || []);
+      await reorderSections(selectedClass._id, updated.map(s => s._id));
+    } catch (err) {
+      toast.error('Failed to save section order');
+    }
+  };
+
+  // =========================================================================
+  // SUBJECT ACTIONS
+  // =========================================================================
+  const handleSaveSubject = async (formData) => {
+    if (!selectedClass) return;
+    setIsSubmittingSubject(true);
+    try {
+      if (editingSubjectItem) {
+        const res = await updateSubject(editingSubjectItem._id, { name: formData.name });
+        if (res.success) {
+          toast.success('Subject updated successfully');
+          setSubjects(prev => prev.map(s => s._id === editingSubjectItem._id ? { ...s, name: formData.name } : s));
+          setSubjectModalOpen(false);
+          setEditingSubjectItem(null);
+        } else {
+          toast.error(res.message || 'Failed to update subject');
         }
       } else {
-        toast.error(res.message || 'Failed to create subject');
+        const res = await createSubject({ name: formData.name, classId: selectedClass._id });
+        if (res.success) {
+          toast.success('Subject added successfully');
+          setSubjects(prev => [...prev, res.data]);
+          setSubjectModalOpen(false);
+        } else {
+          toast.error(res.message || 'Failed to add subject');
+        }
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Error creating subject');
+      toast.error(err.response?.data?.message || 'Error saving subject');
+    } finally {
+      setIsSubmittingSubject(false);
     }
   };
 
-  const handleUpdateSubject = async (id, newName) => {
-    try {
-      const res = await updateSubject(id, { name: newName });
-      if (res.success) {
-        toast.success('Subject updated successfully');
-        setSubjects(prev => prev.map(s => s._id === id ? { ...s, name: newName } : s));
-      } else {
-        toast.error(res.message || 'Failed to update subject');
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Error updating subject');
-    }
-  };
-
-  const handleDeleteSubject = async (id) => {
+  const handleDeleteSubject = (subjectId, subjectName) => {
     setConfirmModal({
       isOpen: true,
-      title: 'Delete Subject',
-      message: 'Are you sure you want to delete this subject? This cannot be undone if no data depends on it.',
+      title: 'Delete ' + subjectName,
+      message: 'Are you sure you want to delete "' + subjectName + '"? This cannot be undone if no grades depend on it.',
       confirmText: 'Delete',
       type: 'danger',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         try {
-          const res = await deleteSubject(id);
+          const res = await deleteSubject(subjectId);
           if (res.success) {
             toast.success('Subject deleted successfully');
-            setSubjects(prev => prev.filter(s => s._id !== id));
+            setSubjects(prev => prev.filter(s => s._id !== subjectId));
           } else {
             toast.error(res.message || 'Failed to delete subject');
           }
@@ -601,654 +409,548 @@ const AdminAcademics = () => {
     });
   };
 
+  const handleMoveSubjectOrder = async (index, direction) => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= subjects.length) return;
+
+    const updated = [...subjects];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
+    setSubjects(updated);
+
+    try {
+      await reorderSubjects(selectedClass._id, updated.map(s => s._id));
+    } catch (err) {
+      toast.error('Failed to save subject order');
+    }
+  };
+
+  // Helper to find teacher name by ID
+  const getTeacherObj = (teacherId) => {
+    if (!teacherId) return null;
+    const tId = teacherId._id || teacherId;
+    return teachers.find(t => t._id.toString() === tId.toString()) || (teacherId._id ? teacherId : null);
+  };
+
+  // Filtered Classes
+  const filteredClasses = classes.filter(cls => {
+    const matchesGender = genderFilter === 'all' || cls.gender === genderFilter;
+    const matchesSearch = !searchTerm || cls.name.toLowerCase().includes(searchTerm.toLowerCase().trim());
+    return matchesGender && matchesSearch;
+  });
+
   return (
     <DashboardLayout navItems={navItems} subtitle="Administrative Suite">
       <div className="space-y-6">
+        
         {/* Page Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Academic Structure</h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Configure Classes, Sections, and Subjects in one unified workstation.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Academic Structure</h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Configure Classes, Sections, Class Teachers, and Curriculum Subjects in one unified workstation.
+            </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              type="button"
+              onClick={() => {
+                setEditingClassItem(null);
+                setClassModalOpen(true);
+              }}
+              className="px-4 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Create New Class</span>
+            </button>
+          </div>
         </div>
 
-        {/* 3-Column Workstation Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          {/* COLUMN 1: Classes */}
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col min-h-[480px]">
-            {/* Column Header */}
-            <div className="flex justify-between items-center mb-4">
+        {/* 2-PANE ENTERPRISE WORKSTATION */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* ========== LEFT PANE: CLASSES LIST (4/12) ========== */}
+          <div className="lg:col-span-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col min-h-[540px]">
+            
+            {/* Pane Header & Reorder Toggle */}
+            <div className="flex items-center justify-between mb-3.5">
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">Classes</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Select a class to manage its structure</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {classes.length} academic grades
+                </p>
               </div>
               <button
-                onClick={() => setIsAddingClass(!isAddingClass)}
-                className={`p-1.5 rounded-lg transition-colors border ${
-                  isAddingClass
-                    ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
-                    : 'bg-navy-900 text-white border-navy-900 hover:bg-navy-800'
-                }`}
-                title="Add Class"
+                type="button"
+                onClick={() => setIsReorderingClasses(!isReorderingClasses)}
+                className={'px-2.5 py-1.5 text-[11px] font-bold rounded-xl border transition-all flex items-center space-x-1.5 ' + (
+                  isReorderingClasses
+                    ? 'bg-navy-900 text-white border-navy-900 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                )}
               >
-                <Plus className={`h-4 w-4 transition-transform duration-200 ${isAddingClass ? 'rotate-45' : ''}`} />
+                <ArrowUpDown className="h-3.5 w-3.5" />
+                <span>{isReorderingClasses ? 'Done' : 'Reorder'}</span>
               </button>
             </div>
 
-            {/* Inline Add Class Form */}
-            {isAddingClass && (
-              <form onSubmit={handleAddClass} className="mb-4 p-3 bg-slate-50 border border-gray-200/50 rounded-xl space-y-2 animate-fadeIn">
-                <input
-                  type="text"
-                  placeholder="Class Name (e.g. Grade 1)"
-                  value={newClassName}
-                  onChange={(e) => setNewClassName(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white"
-                  autoFocus
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <select
-                    value={newClassGender}
-                    onChange={(e) => setNewClassGender(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white font-semibold text-gray-600"
-                  >
-                    <option value="mixed">Mixed</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="Default Fee (Rs.)"
-                    value={newClassDefaultFee}
-                    onChange={(e) => setNewClassDefaultFee(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white font-semibold text-gray-800"
-                  />
-                </div>
-                <div className="flex justify-end space-x-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAddingClass(false);
-                      setNewClassName('');
-                      setNewClassGender('mixed');
-                      setNewClassDefaultFee('');
-                    }}
-                    className="px-2.5 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-2.5 py-1 text-[10px] font-extrabold text-white bg-navy-900 hover:bg-navy-800 rounded-md transition-colors shadow-sm"
-                  >
-                    Save
-                  </button>
-                </div>
-              </form>
-            )}
+            {/* Search Bar */}
+            <div className="relative mb-2.5">
+              <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <Search className="h-3.5 w-3.5" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search classes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-navy-900/30"
+              />
+            </div>
 
             {/* Gender Filter Tabs */}
-            <div className="flex border border-gray-200/50 bg-slate-50 p-0.5 rounded-lg mb-3">
-              {['all', 'mixed', 'male', 'female'].map((tab) => (
+            <div className="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl mb-3">
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'mixed', label: 'Mixed' },
+                { key: 'male', label: 'Boys' },
+                { key: 'female', label: 'Girls' }
+              ].map((tab) => (
                 <button
-                  key={tab}
+                  key={tab.key}
                   type="button"
-                  onClick={() => setGenderFilter(tab)}
-                  className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all capitalize ${
-                    genderFilter === tab
-                      ? 'bg-white text-navy-950 shadow-sm font-extrabold'
-                      : 'text-gray-400 hover:text-gray-600'
-                  }`}
+                  onClick={() => setGenderFilter(tab.key)}
+                  className={'py-1 text-[10px] font-bold rounded-lg transition-all ' + (
+                    genderFilter === tab.key
+                      ? 'bg-white dark:bg-slate-800 text-navy-900 dark:text-sky-300 shadow-xs'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                  )}
                 >
-                  {tab}
+                  {tab.label}
                 </button>
               ))}
             </div>
 
-            {/* List */}
-            <div className="space-y-2 flex-grow overflow-y-auto max-h-[350px] pr-1">
+            {/* Classes Scroll List */}
+            <div className="space-y-2 flex-grow overflow-y-auto max-h-[480px] pr-1">
               {loadingClasses ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                   <Loader2 className="h-6 w-6 animate-spin text-navy-900" />
                   <span className="text-xs mt-2 font-medium">Loading classes...</span>
                 </div>
-              ) : classes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-gray-200 rounded-2xl p-4 bg-slate-50/50">
-                  <BookOpen className="h-8 w-8 text-gray-300 mb-2" />
-                  <p className="text-xs font-bold text-gray-700">No classes yet</p>
-                  <p className="text-[10px] text-gray-400 mt-1 max-w-[160px]">
-                    Create your first class to get started.
-                  </p>
-                </div>
-              ) : classes.filter(cls => genderFilter === 'all' || cls.gender === genderFilter).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-gray-200 rounded-2xl p-4 bg-slate-50/50">
-                  <BookOpen className="h-6 w-6 text-gray-300 mb-1" />
-                  <p className="text-[11px] font-bold text-gray-600">No classes match filter</p>
+              ) : filteredClasses.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-4">
+                  <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No classes found</p>
+                  <p className="text-[10px] text-slate-400 mt-1">Adjust your search or create a new class.</p>
                 </div>
               ) : (
-                classes
-                  .map((cls, index) => ({ cls, originalIndex: index }))
-                  .filter(({ cls }) => genderFilter === 'all' || cls.gender === genderFilter)
-                  .map(({ cls, originalIndex }) => {
-                    const isSelected = selectedClass?._id === cls._id;
-                    const dragOver = dragOverInfo?.type === 'class' && dragOverInfo?.index === originalIndex;
-                    
-                    return (
-                      <div
-                        key={cls._id}
-                        draggable={true}
-                        onDragStart={(_e) => {
-                          dragSourceIndexRef.current = originalIndex;
-                          dragTypeRef.current = 'class';
-                        }}
-                        onDragOver={(e) => handleDragOver(e, originalIndex, 'class')}
-                        onDragEnd={handleDragEnd}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, originalIndex, 'class')}
-                        onClick={() => setSelectedClass(cls)}
-                        className={`group flex flex-col p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
-                          isSelected
-                            ? 'border-navy-900/20 bg-navy-900/5 border-l-4 border-l-navy-900 shadow-sm font-semibold text-navy-900'
-                            : 'border-gray-200/50 hover:bg-slate-50 text-gray-700'
-                        } ${
-                          dragOver ? 'border-t-2 border-t-navy-900 border-dashed pt-2.5' : ''
-                        }`}
-                      >
-                        {editingClassId === cls._id ? (
-                          <div className="flex flex-col space-y-2 w-full" onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="text"
-                              value={editClassNameValue}
-                              onChange={(e) => setEditClassNameValue(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue, editClassDefaultFeeValue);
-                                  setEditingClassId(null);
-                                } else if (e.key === 'Escape') {
-                                  setEditingClassId(null);
-                                }
-                              }}
-                              className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white"
-                              placeholder="Class Name"
-                              autoFocus
-                            />
-                            <div className="grid grid-cols-2 gap-2">
-                              <select
-                                value={editClassGenderValue}
-                                onChange={(e) => setEditClassGenderValue(e.target.value)}
-                                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-medium text-gray-600"
-                              >
-                                <option value="mixed">Mixed</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                              </select>
-                              <input
-                                type="number"
-                                min="0"
-                                placeholder="Default Fee (Rs.)"
-                                value={editClassDefaultFeeValue}
-                                onChange={(e) => setEditClassDefaultFeeValue(e.target.value)}
-                                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-semibold text-gray-800"
-                              />
-                            </div>
-                            <div className="flex items-center space-x-1.5 justify-end">
-                              <button
-                                onClick={() => setEditingClassId(null)}
-                                className="px-2 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => {
-                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue, editClassDefaultFeeValue);
-                                  setEditingClassId(null);
-                                }}
-                                className="px-2.5 py-1 text-[10px] font-extrabold text-white bg-navy-900 hover:bg-navy-800 rounded-md transition-colors shadow-sm"
-                              >
-                                Save
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                            <div className="flex flex-col w-full">
-                              <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center flex-grow truncate pr-2">
-                                  <GripVertical className="h-4 w-4 text-gray-500 mr-1 cursor-grab active:cursor-grabbing flex-shrink-0 hidden sm:block" />
-                                  <div className="flex items-center space-x-1 mr-2">
-                                    <button
-                                      type="button"
-                                      disabled={originalIndex === 0}
-                                      onClick={(e) => handleMoveClass(e, originalIndex, 'up')}
-                                      className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                      title="Move Up"
-                                    >
-                                      <ChevronUp className="h-3.5 w-3.5" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      disabled={originalIndex === classes.length - 1}
-                                      onClick={(e) => handleMoveClass(e, originalIndex, 'down')}
-                                      className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                      title="Move Down"
-                                    >
-                                      <ChevronDown className="h-3.5 w-3.5" />
-                                    </button>
-                                  </div>
-                                  <span className="text-sm font-semibold text-gray-800 dark:text-slate-200 mr-2">{formatClassName(cls.name)}</span>
-                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
-                                    cls.gender === 'male'
-                                      ? 'bg-sky-50 text-sky-600 border-sky-100/50'
-                                      : cls.gender === 'female'
-                                      ? 'bg-rose-50 text-rose-600 border-rose-100/50'
-                                      : 'bg-slate-50 text-gray-500 border-gray-100'
-                                  }`}>
-                                    {cls.gender || 'mixed'}
-                                  </span>
-                                </div>
-                                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingClassId(cls._id);
-                                      setEditClassNameValue(cls.name);
-                                      setEditClassGenderValue(cls.gender || 'mixed');
-                                      setEditClassDefaultFeeValue(cls.defaultFee !== undefined && cls.defaultFee !== null ? cls.defaultFee : 0);
-                                    }}
-                                    className="p-1 text-gray-400 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
-                                    title="Edit Class"
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteClass(cls._id);
-                                    }}
-                                    className="p-1 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded transition-colors"
-                                    title="Delete Class"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="pl-7 sm:pl-9 mt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                                <span>Default Fee: <strong className="text-slate-800 dark:text-slate-200 font-bold">Rs. {(cls.defaultFee || 0).toLocaleString()}</strong>/mo</span>
-                              </div>
-                            </div>
-                        )}
+                filteredClasses.map((cls) => {
+                  const isSelected = selectedClass?._id === cls._id;
+                  const realIndex = classes.findIndex(c => c._id === cls._id);
+
+                  return (
+                    <div
+                      key={cls._id}
+                      onClick={() => { setClassDetails(cls); }}
+                      className={'p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ' + (
+                        isSelected
+                          ? 'border-navy-900 bg-navy-50/50 dark:bg-sky-950/30 dark:border-sky-500 shadow-xs'
+                          : 'border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                      )}
+                    >
+                      <div className="flex-grow min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                            {formatClassName(cls.name)}
+                          </span>
+                          <GenderTag gender={cls.gender} />
+                        </div>
+                        <div className="flex items-center justify-between mt-1.5 text-[0.70rem] text-slate-500 dark:text-slate-400">
+                          <span>
+                            Fee: <strong className="text-navy-900 dark:text-sky-300 font-bold">Rs. {(cls.defaultFee || 0).toLocaleString()}</strong>/mo
+                          </span>
+                        </div>
                       </div>
-                    );
-                  })
+
+                      {/* Reorder Mode Controls */}
+                      {isReorderingClasses && (
+                        <div className="flex items-center space-x-1 pl-2" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            disabled={realIndex === 0}
+                            onClick={() => handleMoveClassOrder(realIndex, 'up')}
+                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-100 transition-all"
+                            title="Move Up"
+                          >
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={realIndex === classes.length - 1}
+                            onClick={() => handleMoveClassOrder(realIndex, 'down')}
+                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-100 transition-all"
+                            title="Move Down"
+                          >
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
 
-          {/* COLUMN 2: Sections */}
-          <div className="bg-white p-5 rounded-2xl border border-gray-200/60 shadow-sm flex flex-col min-h-[480px]">
+          {/* ========== RIGHT PANE: CLASS WORKSPACE (8/12) ========== */}
+          <div className="lg:col-span-8 space-y-5">
+            
             {!selectedClass ? (
-              <div className="flex-grow flex flex-col items-center justify-center text-center p-6 bg-slate-50/30 rounded-2xl border border-dashed border-gray-200">
-                <Layers className="h-10 w-10 text-gray-300 mb-2" />
-                <p className="text-sm font-semibold text-gray-500">No Class Selected</p>
-                <p className="text-xs text-gray-400 mt-1 max-w-[200px]">
-                  Select a class from the left list to view and manage its sections.
+              <div className="bg-white dark:bg-slate-800 p-12 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col items-center justify-center text-center min-h-[480px]">
+                <Layers className="h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" />
+                <h3 className="text-base font-bold text-slate-700 dark:text-slate-200">No Class Selected</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm">
+                  Please select a class from the left list to configure its sections, teachers, and curriculum subjects.
                 </p>
               </div>
             ) : (
               <>
-                {/* Column Header */}
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h3 className="font-bold text-gray-800 text-base capitalize">
-                      Sections in {formatClassNameWithGender(selectedClass.name, selectedClass.gender)}
-                    </h3>
-                    <p className="text-xs text-gray-400 mt-0.5">Manage subdivisions of this class</p>
+                {/* Active Class Overview Card */}
+                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center space-x-2.5">
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                        {formatClassName(selectedClass.name)}
+                      </h2>
+                      <GenderTag gender={selectedClass.gender} />
+                    </div>
+                    <div className="flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400">
+                      <span>Default Monthly Fee: <strong className="text-navy-900 dark:text-sky-300 font-bold">Rs. {(selectedClass.defaultFee || 0).toLocaleString()}</strong> / mo</span>
+                      <span className="text-slate-300">•</span>
+                      <span>{sections.length} Sections</span>
+                      <span className="text-slate-300">•</span>
+                      <span>{subjects.length} Subjects</span>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setIsAddingSection(!isAddingSection)}
-                    className={`p-1.5 rounded-lg transition-colors border ${
-                      isAddingSection
-                        ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
-                        : 'bg-navy-900 text-white border-navy-900 hover:bg-navy-800'
-                    }`}
-                    title="Add Section"
-                  >
-                    <Plus className={`h-4 w-4 transition-transform duration-200 ${isAddingSection ? 'rotate-45' : ''}`} />
-                  </button>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingClassItem(selectedClass);
+                        setClassModalOpen(true);
+                      }}
+                      className="px-3.5 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center space-x-1.5"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      <span>Edit Class</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteClass(selectedClass)}
+                      className="p-2 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                      title="Delete Class"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* Inline Add Section Form */}
-                {isAddingSection && (
-                  <form onSubmit={handleAddSection} className="mb-4 p-3 bg-slate-50 border border-gray-200/50 rounded-xl space-y-2 animate-fadeIn">
-                    <input
-                      type="text"
-                      placeholder="Section Name (e.g. A)"
-                      value={newSectionName}
-                      onChange={(e) => setNewSectionName(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white"
-                      autoFocus
-                    />
-                    <div className="flex justify-end space-x-1.5">
+                {/* SECTIONS & CLASS TEACHERS CARD */}
+                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                        Sections & Class Teachers
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Manage section divisions and assigned faculty leads
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsReorderingSections(!isReorderingSections)}
+                        className={'px-2.5 py-1.5 text-[11px] font-bold rounded-xl border transition-all flex items-center space-x-1 ' + (
+                          isReorderingSections
+                            ? 'bg-navy-900 text-white border-navy-900'
+                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                        )}
+                      >
+                        <ArrowUpDown className="h-3.5 w-3.5" />
+                        <span>{isReorderingSections ? 'Done' : 'Reorder'}</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
-                          setIsAddingSection(false);
-                          setNewSectionName('');
+                          setEditingSectionItem(null);
+                          setSectionModalOpen(true);
                         }}
-                        className="px-2.5 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
+                        className="px-3 py-1.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5"
                       >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-2.5 py-1 text-[10px] font-extrabold text-white bg-navy-900 hover:bg-navy-800 rounded-md transition-colors shadow-sm"
-                      >
-                        Save
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Add Section</span>
                       </button>
                     </div>
-                  </form>
-                )}
+                  </div>
 
-                {/* List */}
-                <div className="space-y-2 flex-grow overflow-y-auto max-h-[350px] pr-1">
                   {loadingSections ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
                       <Loader2 className="h-6 w-6 animate-spin text-navy-900" />
                       <span className="text-xs mt-2 font-medium">Loading sections...</span>
                     </div>
                   ) : sections.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-gray-200 rounded-2xl p-4 bg-slate-50/50">
-                      <Layers className="h-8 w-8 text-gray-300 mb-2" />
-                      <p className="text-xs font-bold text-gray-700">No sections yet</p>
-                      <p className="text-[10px] text-gray-400 mt-1 max-w-[160px]">
-                        Add sections (like A, B, Gold, Silver) to this class.
-                      </p>
+                    <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50/50">
+                      <Layers className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-1.5" />
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No sections created yet</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Add sections like Section A and assign class teachers.</p>
                     </div>
                   ) : (
-                    sections.map((sec, index) => (
-                      <div
-                        key={sec._id}
-                        draggable={true}
-                        onDragStart={(_e) => {
-                          dragSourceIndexRef.current = index;
-                          dragTypeRef.current = 'section';
-                        }}
-                        onDragOver={(e) => handleDragOver(e, index, 'section')}
-                        onDragEnd={handleDragEnd}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, index, 'section')}
-                        className={`p-3.5 rounded-xl border transition-all duration-200 space-y-2 hover:bg-slate-50/50 cursor-pointer ${
-                          dragOverInfo?.type === 'section' && dragOverInfo?.index === index
-                            ? 'border-t-2 border-t-navy-900 border-dashed pt-2.5'
-                            : 'border-gray-200/50'
-                        }`}
-                      >
-                        {/* Top Row: Name and Edit/Delete Actions */}
-                        <div className="flex items-center justify-between">
-                          {editingSectionId === sec._id ? (
-                            <div className="flex items-center space-x-2 w-full" onClick={(e) => e.stopPropagation()}>
-                              <input
-                                type="text"
-                                value={editSectionValue}
-                                onChange={(e) => setEditSectionValue(e.target.value)}
-                                className="flex-grow px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white"
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleUpdateSection(sec._id, editSectionValue);
-                                    setEditingSectionId(null);
-                                  } else if (e.key === 'Escape') {
-                                    setEditingSectionId(null);
-                                  }
-                                }}
-                                autoFocus
-                              />
-                              <button
-                                onClick={() => {
-                                  handleUpdateSection(sec._id, editSectionValue);
-                                  setEditingSectionId(null);
-                                }}
-                                className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 text-green-600 hover:bg-green-50 rounded-lg"
-                              >
-                                <Check className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => setEditingSectionId(null)}
-                                className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 text-gray-500 hover:bg-gray-100 rounded-lg"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex items-center flex-grow truncate pr-2">
-                                <GripVertical className="h-4 w-4 text-gray-500 mr-1 cursor-grab active:cursor-grabbing flex-shrink-0 hidden sm:block" />
-                                <div className="flex items-center space-x-1 mr-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {sections.map((sec, index) => {
+                        const teacherObj = getTeacherObj(sec.classTeacherId);
+                        const teacherName = teacherObj ? (teacherObj.userId?.name || teacherObj.name || 'Teacher') : null;
+                        const empId = teacherObj ? (teacherObj.employeeId || '') : '';
+
+                        return (
+                          <div
+                            key={sec._id}
+                            className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/40 flex flex-col justify-between space-y-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-7 h-7 rounded-lg bg-navy-900 text-white font-bold text-xs flex items-center justify-center">
+                                  {sec.name.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                                  Section {sec.name}
+                                </span>
+                              </div>
+
+                              {isReorderingSections ? (
+                                <div className="flex items-center space-x-1">
                                   <button
                                     type="button"
                                     disabled={index === 0}
-                                    onClick={(e) => handleMoveSection(e, index, 'up')}
-                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                    title="Move Up"
+                                    onClick={() => handleMoveSectionOrder(index, 'up')}
+                                    className="p-1 rounded border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all"
                                   >
-                                    <ChevronUp className="h-3.5 w-3.5" />
+                                    <ChevronUp className="h-3 w-3" />
                                   </button>
                                   <button
                                     type="button"
                                     disabled={index === sections.length - 1}
-                                    onClick={(e) => handleMoveSection(e, index, 'down')}
-                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                    title="Move Down"
+                                    onClick={() => handleMoveSectionOrder(index, 'down')}
+                                    className="p-1 rounded border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all"
                                   >
-                                    <ChevronDown className="h-3.5 w-3.5" />
+                                    <ChevronDown className="h-3 w-3" />
                                   </button>
                                 </div>
-                                <span className="text-sm font-semibold text-gray-700">Section {sec.name}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <button
-                                  onClick={() => {
-                                    setEditingSectionId(sec._id);
-                                    setEditSectionValue(sec.name);
-                                  }}
-                                  className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-gray-500 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                                  title="Edit Section Name"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteSection(sec._id)}
-                                  className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
-                                  title="Delete Section"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Bottom Row: Class Teacher Assignment */}
-                        <div className="pt-1.5 border-t border-gray-100 text-xs flex flex-wrap items-center justify-between gap-2">
-                          {assigningSectionId === sec._id ? (
-                            <div className="flex items-center space-x-1.5 w-full">
-                              <select
-                                onChange={(e) => {
-                                  if (e.target.value) {
-                                    handleAssignTeacher(sec._id, e.target.value);
-                                  }
-                                }}
-                                className="flex-grow bg-white border border-gray-200 rounded-lg px-2 py-1 text-[11px] font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-navy-800"
-                                defaultValue=""
-                              >
-                                <option value="" disabled>Select Teacher...</option>
-                                {teachers.map(t => (
-                                  <option key={t._id} value={t._id}>
-                                    {t.userId?.name} ({t.employeeId})
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                onClick={() => setAssigningSectionId(null)}
-                                className="px-2 py-1 text-[10px] font-semibold text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              {sec.classTeacherId ? (
-                                <div className="flex items-center justify-between w-full">
-                                  <span className="text-[11px] text-gray-500 font-medium truncate max-w-[150px]">
-                                    Class Teacher: <span className="text-navy-900 font-bold">{getTeacherName(sec.classTeacherId)}</span>
-                                  </span>
-                                  <div className="flex items-center space-x-2 flex-shrink-0">
-                                    <button
-                                      onClick={() => setAssigningSectionId(sec._id)}
-                                      className="text-[10px] text-navy-800 hover:text-navy-950 font-bold hover:underline"
-                                    >
-                                      Change
-                                    </button>
-                                    <span className="text-gray-300">|</span>
-                                    <button
-                                      onClick={() => handleUnassignTeacher(sec._id)}
-                                      className="text-[10px] text-red-500 hover:text-red-700 font-bold hover:underline"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                </div>
                               ) : (
-                                <div className="flex items-center justify-between w-full">
-                                  <span className="text-[11px] text-gray-400 italic font-medium">No Class Teacher assigned</span>
+                                <div className="flex items-center space-x-1">
                                   <button
-                                    onClick={() => setAssigningSectionId(sec._id)}
-                                    className="text-[10px] text-navy-900 hover:text-navy-850 font-extrabold hover:underline flex items-center space-x-0.5"
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingSectionItem(sec);
+                                      setSectionModalOpen(true);
+                                    }}
+                                    className="p-1.5 text-slate-400 hover:text-navy-900 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                    title="Section Settings"
                                   >
-                                    <span>+ Assign</span>
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteSection(sec._id)}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors"
+                                    title="Delete Section"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
                               )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))
+                            </div>
+
+                            {/* Class Teacher Initials Avatar Block */}
+                            <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-700 flex items-center justify-between">
+                              {teacherName ? (
+                                <div className="flex items-center space-x-2.5">
+                                  <div className="w-6 h-6 rounded-full bg-navy-900 text-white font-bold text-[10px] flex items-center justify-center flex-shrink-0">
+                                    {getInitials(teacherName)}
+                                  </div>
+                                  <div className="truncate">
+                                    <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                      {teacherName}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400">Lead {empId ? '(' + empId + ')' : ''}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center space-x-1.5 text-slate-400">
+                                  <UserCheck className="h-3.5 w-3.5" />
+                                  <span className="text-[11px] italic">No Class Teacher</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
-              </>
-            )}
-          </div>
 
-          {/* COLUMN 3: Subjects */}
-          <div className="bg-white p-5 rounded-2xl border border-gray-200/60 shadow-sm flex flex-col min-h-[480px]">
-            {!selectedClass ? (
-              <div className="flex-grow flex flex-col items-center justify-center text-center p-6 bg-slate-50/30 rounded-2xl border border-dashed border-gray-200">
-                <BookMarked className="h-10 w-10 text-gray-300 mb-2" />
-                <p className="text-sm font-semibold text-gray-500">No Class Selected</p>
-                <p className="text-xs text-gray-400 mt-1 max-w-[200px]">
-                  Select a class from the left list to view and manage its subjects.
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Column Header */}
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h3 className="font-bold text-gray-800 text-base capitalize">
-                      Subjects in {formatClassNameWithGender(selectedClass.name, selectedClass.gender)}
-                    </h3>
-                    <p className="text-xs text-gray-400 mt-0.5">Manage curriculum subjects</p>
-                  </div>
-                  <button
-                    onClick={() => setIsAddingSubject(!isAddingSubject)}
-                    className={`p-1.5 rounded-lg transition-colors border ${
-                      isAddingSubject
-                        ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
-                        : 'bg-navy-900 text-white border-navy-900 hover:bg-navy-800'
-                    }`}
-                    title="Add Subject"
-                  >
-                    <Plus className={`h-4 w-4 transition-transform duration-200 ${isAddingSubject ? 'rotate-45' : ''}`} />
-                  </button>
-                </div>
-
-                {/* Inline Add Subject Form */}
-                {isAddingSubject && (
-                  <form onSubmit={handleAddSubject} className="mb-4 p-3 bg-slate-50 border border-gray-200/50 rounded-xl space-y-2 animate-fadeIn">
-                    <input
-                      type="text"
-                      placeholder="Subject Name (e.g. Mathematics)"
-                      value={newSubjectName}
-                      onChange={(e) => setNewSubjectName(e.target.value)}
-                      className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white"
-                      autoFocus
-                    />
-                    <div className="flex justify-end space-x-1.5">
+                {/* CURRICULUM SUBJECTS CARD */}
+                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                        Curriculum Subjects
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Academic courses taught in this class
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsReorderingSubjects(!isReorderingSubjects)}
+                        className={'px-2.5 py-1.5 text-[11px] font-bold rounded-xl border transition-all flex items-center space-x-1 ' + (
+                          isReorderingSubjects
+                            ? 'bg-navy-900 text-white border-navy-900'
+                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                        )}
+                      >
+                        <ArrowUpDown className="h-3.5 w-3.5" />
+                        <span>{isReorderingSubjects ? 'Done' : 'Reorder'}</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
-                          setIsAddingSubject(false);
-                          setNewSubjectName('');
+                          setEditingSubjectItem(null);
+                          setSubjectModalOpen(true);
                         }}
-                        className="px-2.5 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
+                        className="px-3 py-1.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5"
                       >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-2.5 py-1 text-[10px] font-extrabold text-white bg-navy-900 hover:bg-navy-800 rounded-md transition-colors shadow-sm"
-                      >
-                        Save
+                        <Plus className="h-3.5 w-3.5" />
+                        <span>Add Subject</span>
                       </button>
                     </div>
-                  </form>
-                )}
+                  </div>
 
-                {/* List */}
-                <div className="space-y-2 flex-grow overflow-y-auto max-h-[350px] pr-1">
                   {loadingSubjects ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
                       <Loader2 className="h-6 w-6 animate-spin text-navy-900" />
                       <span className="text-xs mt-2 font-medium">Loading subjects...</span>
                     </div>
                   ) : subjects.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-gray-200 rounded-2xl p-4 bg-slate-50/50">
-                      <BookMarked className="h-8 w-8 text-gray-300 mb-2" />
-                      <p className="text-xs font-bold text-gray-700">No subjects yet</p>
-                      <p className="text-[10px] text-gray-400 mt-1 max-w-[160px]">
-                        Add subjects (like Math, English, Physics) to this class.
-                      </p>
+                    <div className="flex flex-col items-center justify-center py-10 text-center border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50/50">
+                      <BookMarked className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-1.5" />
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No subjects added yet</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Add subjects like Math, Science, English for this class.</p>
                     </div>
                   ) : (
-                    subjects.map((sub, index) => (
-                      <InlineEditableRow
-                        key={sub._id}
-                        label={sub.name}
-                        onSave={(newName) => handleUpdateSubject(sub._id, newName)}
-                        onDelete={() => handleDeleteSubject(sub._id)}
-                        draggable={true}
-                        onDragStart={(_e) => {
-                          dragSourceIndexRef.current = index;
-                          dragTypeRef.current = 'subject';
-                        }}
-                        onDragOver={(e) => handleDragOver(e, index, 'subject')}
-                        onDragEnd={handleDragEnd}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, index, 'subject')}
-                        dragOver={dragOverInfo?.type === 'subject' && dragOverInfo?.index === index}
-                        onMoveUp={(e) => handleMoveSubject(e, index, 'up')}
-                        onMoveDown={(e) => handleMoveSubject(e, index, 'down')}
-                        isFirst={index === 0}
-                        isLast={index === subjects.length - 1}
-                      />
-                    ))
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {subjects.map((sub, index) => (
+                        <div
+                          key={sub._id}
+                          className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-900/30 flex items-center justify-between gap-2"
+                        >
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <div className="w-2 h-2 rounded-full bg-navy-900 flex-shrink-0" />
+                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 break-words">
+                              {sub.name}
+                            </span>
+                          </div>
+
+                          {isReorderingSubjects ? (
+                            <div className="flex items-center space-x-1 flex-shrink-0">
+                              <button
+                                type="button"
+                                disabled={index === 0}
+                                onClick={() => handleMoveSubjectOrder(index, 'up')}
+                                className="p-1 rounded border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all"
+                              >
+                                <ChevronUp className="h-3 w-3" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={index === subjects.length - 1}
+                                onClick={() => handleMoveSubjectOrder(index, 'down')}
+                                className="p-1 rounded border border-slate-200 text-slate-600 disabled:opacity-30 hover:bg-slate-100 transition-all"
+                              >
+                                <ChevronDown className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-1 flex-shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingSubjectItem(sub);
+                                  setSubjectModalOpen(true);
+                                }}
+                                className="p-1 text-slate-400 hover:text-navy-900 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                                title="Edit Subject"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteSubject(sub._id, sub.name)}
+                                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded transition-colors"
+                                title="Delete Subject"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
+
               </>
             )}
           </div>
+
         </div>
+
       </div>
+
+      {/* Class Modal */}
+      <ClassFormModal
+        isOpen={classModalOpen}
+        onClose={() => { setClassModalOpen(false); setEditingClassItem(null); }}
+        onSubmit={handleSaveClass}
+        isSubmitting={isSubmittingClass}
+        classItem={editingClassItem}
+      />
+
+      {/* Section Modal */}
+      <SectionFormModal
+        isOpen={sectionModalOpen}
+        onClose={() => { setSectionModalOpen(false); setEditingSectionItem(null); }}
+        onSubmit={handleSaveSection}
+        isSubmitting={isSubmittingSection}
+        section={editingSectionItem}
+        className={selectedClass ? formatClassName(selectedClass.name) : ''}
+        teachers={teachers}
+      />
+
+      {/* Subject Modal */}
+      <SubjectFormModal
+        isOpen={subjectModalOpen}
+        onClose={() => { setSubjectModalOpen(false); setEditingSubjectItem(null); }}
+        onSubmit={handleSaveSubject}
+        isSubmitting={isSubmittingSubject}
+        subject={editingSubjectItem}
+        className={selectedClass ? formatClassName(selectedClass.name) : ''}
+        existingSubjects={subjects}
+      />
+
+      {/* Confirm Modal */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
@@ -1259,7 +961,31 @@ const AdminAcademics = () => {
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
       />
+
     </DashboardLayout>
+  );
+};
+
+/** Explicit Gender Badge */
+const GenderTag = ({ gender }) => {
+  if (gender === 'male') {
+    return (
+      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-sky-50 text-sky-700 border border-sky-200/80 dark:bg-sky-950/50 dark:text-sky-300">
+        Boys Only
+      </span>
+    );
+  }
+  if (gender === 'female') {
+    return (
+      <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200/80 dark:bg-rose-950/50 dark:text-rose-300">
+        Girls Only
+      </span>
+    );
+  }
+  return (
+    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+      Mixed (Co-Ed)
+    </span>
   );
 };
 

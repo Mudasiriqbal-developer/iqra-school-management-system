@@ -137,8 +137,14 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Family Voucher PDF Generation**: Generate printable fee challans/vouchers covering all children in one slip.
 
 ### 4. Academics & Faculty Workload Management
+- **2-Pane Enterprise Academic Workstation**: Unified Master-Detail interface combining Class listing with an expansive, dedicated Class Workspace for Sections, Faculty Leads, and Curriculum Subjects.
 - **Hierarchical Structure**: Manage Academic Classes (e.g., Nursery to Class 10), Sections (e.g., Section A, Green), and Subjects (Science, Math, Urdu, etc.).
-- **Teacher Assignment Engine**: Assign teachers to specific class-section-subject combinations without scheduling conflicts.
+- **Class Default Fees**: Set and update class-level default monthly tuition fees with instant visibility and automatic billing inheritance.
+- **Touch & Mobile-Friendly Reorder Mode**: Dedicated arrangement toggle allowing seamless reordering of classes, sections, and subjects on desktop, tablets, and mobile devices without visual button clutter.
+- **Dedicated Academic Modals**: Modern dialogs for creating and editing classes (`ClassFormModal`), sections with faculty assignment (`SectionFormModal`), and subjects with single-click quick-suggestion tags (`SubjectFormModal`).
+- **Explicit Gender Badging**: Clear, accessible status indicators for `Mixed (Co-Ed)`, `Boys Only`, and `Girls Only` classes with search and filtering.
+- **Class Teacher Assignment**: Link faculty leads directly to sections with initials-based avatars and employee ID badges.
+- **Subject Workload Matrix**: Map teachers to specific class-section subject combinations to establish teaching allocations.
 
 ### 5. Fee Management, Student Ledgers & One-Time Charges
 - **Class Default Fee & Student Custom Override Architecture**:
