@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Edit2, Plus, Phone, MapPin, User, X, DollarSign, BookOpen, Download, Loader2, AlertTriangle, Info, LogOut } from 'lucide-react';
+import { ArrowLeft, Edit2, Plus, Phone, MapPin, User, X, DollarSign, BookOpen, Download, Loader2, AlertTriangle, Info, LogOut, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/shared/ConfirmModal';
 import { 
@@ -41,6 +41,42 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
   const [studentToUnlink, setStudentToUnlink] = useState(null);
   const [unlinking, setUnlinking] = useState(false);
+
+  // Refreshing state
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Reload only the modal's details & financial data in the background
+  const handleRefresh = async () => {
+    if (refreshing || !familyId) return;
+    try {
+      setRefreshing(true);
+      const [res, feeRes, booksRes] = await Promise.all([
+        getFamilyById(familyId),
+        getFamilyFeeSummary(familyId),
+        getFamilyBooksSummary(familyId)
+      ]);
+
+      if (res.success) {
+        setFamily(res.data);
+        if (!isEditModalOpen) {
+          setFamilyName(res.data.familyName || '');
+          setGuardianName(res.data.guardianName || '');
+          setContactNumber(res.data.contactNumber || '');
+          setAlternateContact(res.data.alternateContact || '');
+          setAddress(res.data.address || '');
+          setNotes(res.data.notes || '');
+        }
+      }
+      if (feeRes.success) setFeeSummary(feeRes.data);
+      if (booksRes.success) setBooksSummary(booksRes.data);
+      toast.success('Family details refreshed');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to refresh family details');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Financial details states
   const [feeSummary, setFeeSummary] = useState(null);
@@ -1025,13 +1061,24 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
             <User className="h-5 w-5 text-sky-400" />
             <h3 className="text-lg font-extrabold tracking-tight">Family Profile Detail</h3>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors animate-in spin-in-12 duration-200"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              aria-label="Refresh family details"
+              className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-50 flex items-center justify-center"
+            >
+              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors animate-in spin-in-12 duration-200"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Body */}
