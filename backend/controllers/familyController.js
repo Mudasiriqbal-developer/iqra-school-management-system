@@ -167,12 +167,42 @@ const getFamilies = async (req, res, next) => {
       .limit(limitVal)
       .sort({ createdAt: -1 });
 
+    // Gather all student IDs in this page of families
+    const allStudentIds = families.flatMap(f => f.students.map(s => s._id));
+
+    // Query all fee records for these students
+    const feeRecords = await FeeRecord.find({
+      studentId: { $in: allStudentIds }
+    });
+
+    // Map student ID to their live outstanding sum
+    const studentOutstandingMap = {};
+    for (const record of feeRecords) {
+      const outstanding = Math.max(0, record.amountDue - record.amountPaid);
+      const studentIdStr = record.studentId.toString();
+      studentOutstandingMap[studentIdStr] = (studentOutstandingMap[studentIdStr] || 0) + outstanding;
+    }
+
+    // Attach combinedOutstanding to each family in the response
+    const familiesWithOutstanding = families.map(f => {
+      const familyObj = f.toObject();
+      let combinedOutstanding = 0;
+      if (familyObj.students && Array.isArray(familyObj.students)) {
+        familyObj.students.forEach(student => {
+          const studentIdStr = student._id.toString();
+          combinedOutstanding += (studentOutstandingMap[studentIdStr] || 0);
+        });
+      }
+      familyObj.combinedOutstanding = combinedOutstanding;
+      return familyObj;
+    });
+
     const pages = Math.ceil(total / limitVal);
 
     return res.status(200).json({
       success: true,
       data: {
-        families,
+        families: familiesWithOutstanding,
         total,
         page: pageVal,
         pages

@@ -731,8 +731,8 @@ const AdminFamilyList = () => {
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                       Combined Outstanding
                     </span>
-                    <span className="font-extrabold text-navy-950 text-sm">
-                      Rs. 0.00
+                    <span className="font-extrabold text-navy-955 text-sm">
+                      Rs. {(family.combinedOutstanding || 0).toFixed(2)}
                     </span>
                   </div>
                 </div>

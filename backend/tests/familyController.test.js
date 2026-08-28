@@ -13,6 +13,7 @@ const FamilyVoucher = require('../models/FamilyVoucher');
 const Counter = require('../models/Counter');
 
 const {
+  getFamilies,
   getFamilyFeeSummary,
   getFamilyBooksSummary,
   payFamilyFees
@@ -438,5 +439,125 @@ test.describe('Family Pass 2 Controller Tests', () => {
     assert.strictEqual(dbRecordA.amountPaid, 0);
     assert.strictEqual(dbRecordB.status, 'pending');
     assert.strictEqual(dbRecordB.amountPaid, 0);
+  });
+
+  test.it('should return families with correct combinedOutstanding live calculation in getFamilies', async () => {
+    // 1. Create a test family with two students
+    const testFamilyList = await Family.create({
+      familyName: 'List Family Outstanding',
+      contactNumber: '03001234567',
+      guardianName: 'Guardian List'
+    });
+
+    const studentL1 = await Student.create({
+      registrationNumber: 'studL1',
+      fullName: 'List Student 1',
+      fatherName: 'Father',
+      gender: 'male',
+      dateOfBirth: new Date('2015-05-05'),
+      fatherContact: '03001234567',
+      classId: testClass._id,
+      sectionId: testSection._id,
+      monthlyFeeAmount: 3000,
+      familyId: testFamilyList._id,
+      status: 'active'
+    });
+
+    const studentL2 = await Student.create({
+      registrationNumber: 'studL2',
+      fullName: 'List Student 2',
+      fatherName: 'Father',
+      gender: 'male',
+      dateOfBirth: new Date('2016-06-06'),
+      fatherContact: '03001234567',
+      classId: testClass._id,
+      sectionId: testSection._id,
+      monthlyFeeAmount: 2500,
+      familyId: testFamilyList._id,
+      status: 'active'
+    });
+
+    testFamilyList.students = [studentL1._id, studentL2._id];
+    await testFamilyList.save();
+
+    // 2. Create another test family with fully paid fees
+    const testFamilyListPaid = await Family.create({
+      familyName: 'List Family Paid',
+      contactNumber: '03001234568',
+      guardianName: 'Guardian List Paid'
+    });
+
+    const studentL3 = await Student.create({
+      registrationNumber: 'studL3',
+      fullName: 'List Student 3',
+      fatherName: 'Father',
+      gender: 'male',
+      dateOfBirth: new Date('2017-07-07'),
+      fatherContact: '03001234568',
+      classId: testClass._id,
+      sectionId: testSection._id,
+      monthlyFeeAmount: 2000,
+      familyId: testFamilyListPaid._id,
+      status: 'active'
+    });
+
+    testFamilyListPaid.students = [studentL3._id];
+    await testFamilyListPaid.save();
+
+    // 3. Create fee records for these students
+    // studentL1: 3000 due, 1000 paid -> 2000 outstanding (partial)
+    await FeeRecord.create({
+      studentId: studentL1._id,
+      month: '2026-08',
+      amountDue: 3000,
+      amountPaid: 1000,
+      status: 'partial',
+      type: 'monthly'
+    });
+
+    // studentL2: 2500 due, 0 paid -> 2500 outstanding (pending)
+    await FeeRecord.create({
+      studentId: studentL2._id,
+      month: '2026-08',
+      amountDue: 2500,
+      amountPaid: 0,
+      status: 'pending',
+      type: 'monthly'
+    });
+
+    // studentL3: 2000 due, 2000 paid -> 0 outstanding (paid)
+    await FeeRecord.create({
+      studentId: studentL3._id,
+      month: '2026-08',
+      amountDue: 2000,
+      amountPaid: 2000,
+      status: 'paid',
+      type: 'monthly'
+    });
+
+    // 4. Invoke getFamilies via mockRequest and mockResponse
+    const getFamiliesReq = mockRequest();
+    getFamiliesReq.query = { search: 'List Family' };
+    const getFamiliesRes = mockResponse();
+
+    await getFamilies(getFamiliesReq, getFamiliesRes, mockNext);
+
+    assert.strictEqual(getFamiliesRes.statusCode, 200);
+    assert.strictEqual(getFamiliesRes.body.success, true);
+
+    const retrievedFamilies = getFamiliesRes.body.data.families;
+    assert.ok(retrievedFamilies.length >= 2, 'Should retrieve the test families');
+
+    // Find our created families in the response
+    const famOutstanding = retrievedFamilies.find(f => f._id.toString() === testFamilyList._id.toString());
+    const famPaid = retrievedFamilies.find(f => f._id.toString() === testFamilyListPaid._id.toString());
+
+    assert.ok(famOutstanding, 'Should find family with outstanding fees');
+    assert.ok(famPaid, 'Should find family with paid fees');
+
+    // Expected outstanding: 2000 (from L1) + 2500 (from L2) = 4500
+    assert.strictEqual(famOutstanding.combinedOutstanding, 4500, 'Combined outstanding sum should match');
+    // Expected outstanding: 0
+    assert.strictEqual(famPaid.combinedOutstanding, 0, 'Fully paid family outstanding should be 0.00');
   });
 });
