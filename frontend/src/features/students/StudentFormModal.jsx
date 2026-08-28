@@ -21,7 +21,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     address: '',
     customFee: '',
     customFeeNote: '',
-    monthlyFeeAmount: 0,
     status: 'active'
   });
 
@@ -63,7 +62,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           address: student.address || '',
           customFee: student.customFee !== null && student.customFee !== undefined ? student.customFee : '',
           customFeeNote: student.customFeeNote || '',
-          monthlyFeeAmount: student.monthlyFeeAmount || 0,
           status: student.status || 'active'
         });
       } else {
@@ -79,7 +77,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           address: '',
           customFee: '',
           customFeeNote: '',
-          monthlyFeeAmount: 0,
           status: 'active'
         });
       }
@@ -319,8 +316,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
         ...formData,
         address: formData.address.trim() || undefined,
         customFee: customFeeNum,
-        customFeeNote: customFeeNum !== null && formData.customFeeNote ? formData.customFeeNote.trim() : null,
-        monthlyFeeAmount: customFeeNum !== null ? customFeeNum : 0
+        customFeeNote: customFeeNum !== null && formData.customFeeNote ? formData.customFeeNote.trim() : null
       };
 
       // Add admission fields only if section was expanded and contains data

@@ -595,6 +595,9 @@ const commitImport = async (rows) => {
     throw error;
   }
 
+  let session = null;
+  let useTransaction = false;
+
   // 1. Pre-hash default password once outside loop for student User accounts
   const defaultPassword = 'student123';
   const salt = await bcrypt.genSalt(10);
@@ -700,9 +703,6 @@ const commitImport = async (rows) => {
   }
 
   // 3. Batch commit inside MongoDB transaction session
-  let session = null;
-  let useTransaction = false;
-
   try {
     session = await mongoose.startSession();
     session.startTransaction();
@@ -754,8 +754,21 @@ const commitImport = async (rows) => {
       }));
 
       if (useTransaction && session) {
-        await Student.insertMany(studentDocs, { session });
-        await User.insertMany(userDocs, { session });
+        try {
+          await Student.insertMany(studentDocs, { session });
+          await User.insertMany(userDocs, { session });
+        } catch (txErr) {
+          if (txErr.message && txErr.message.includes('replica set')) {
+            useTransaction = false;
+            try { await session.abortTransaction(); } catch (e) {}
+            try { await session.endSession(); } catch (e) {}
+            session = null;
+            await Student.insertMany(studentDocs);
+            await User.insertMany(userDocs);
+          } else {
+            throw txErr;
+          }
+        }
       } else {
         await Student.insertMany(studentDocs);
         await User.insertMany(userDocs);
@@ -769,14 +782,14 @@ const commitImport = async (rows) => {
     }
   } catch (err) {
     if (useTransaction && session) {
-      await session.abortTransaction();
+      try { await session.abortTransaction(); } catch (e) {}
     }
     const error = new Error(`Import commit failed: ${err.message}`);
     error.statusCode = 500;
     throw error;
   } finally {
     if (session) {
-      session.endSession();
+      try { await session.endSession(); } catch (e) {}
     }
   }
 

@@ -272,7 +272,9 @@ const seedBulkData = async () => {
       const fullName = `${namePool[i % namePool.length]} ${i > 20 ? (i + 1) : ''}`.trim();
       const fatherName = FATHER_NAMES[i % FATHER_NAMES.length];
       const fatherContact = `0300-1234${String(500 + i).padStart(3, '0')}`;
-      const monthlyFeeAmount = 2500 + ((i % 6) * 500); // 2500, 3000, 3500, 4000, 4500, 5000
+      const hasCustom = (i % 5 === 0);
+      const customFee = hasCustom ? 2000 : null;
+      const customFeeNote = hasCustom ? 'Scholarship / Sibling Discount' : null;
 
       // Check if User already exists for this registrationNumber
       let studentUser = await User.findOne({ registrationNumber: regNo });
@@ -297,7 +299,8 @@ const seedBulkData = async () => {
         address: `House #${(i * 3) + 10}, Street ${i % 15 + 1}, Sector I-9, Islamabad`,
         classId: targetClass._id,
         sectionId: targetSection._id,
-        monthlyFeeAmount,
+        customFee,
+        customFeeNote,
         status: 'active'
       });
 
@@ -313,6 +316,11 @@ const seedBulkData = async () => {
     const monthsToSeed = ['2026-05', '2026-06', '2026-07'];
 
     for (const student of createdStudents) {
+      const studentClass = classes.find(c => c._id.toString() === student.classId.toString());
+      const fee = (student.customFee !== null && student.customFee !== undefined) 
+        ? student.customFee 
+        : (studentClass?.defaultFee || 3000);
+
       for (let mIdx = 0; mIdx < monthsToSeed.length; mIdx++) {
         const monthStr = monthsToSeed[mIdx];
         const existingRecord = await FeeRecord.findOne({
@@ -325,8 +333,6 @@ const seedBulkData = async () => {
           summary.feeRecordsSkipped++;
           continue;
         }
-
-        const fee = student.monthlyFeeAmount || 3000;
         let status = 'paid';
         let amountPaid = fee;
         let payments = [];
