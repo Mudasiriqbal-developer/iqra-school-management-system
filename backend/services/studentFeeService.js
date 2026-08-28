@@ -104,7 +104,6 @@ const setStudentCustomFee = async (id, { customFee, customFeeNote }) => {
     // Reset to class default
     student.customFee = null;
     student.customFeeNote = null;
-    student.monthlyFeeAmount = student.classId?.defaultFee || 0;
   } else {
     const feeVal = Number(customFee);
     if (isNaN(feeVal) || feeVal < 0) {
@@ -114,7 +113,6 @@ const setStudentCustomFee = async (id, { customFee, customFeeNote }) => {
     }
     student.customFee = feeVal;
     student.customFeeNote = customFeeNote !== undefined ? (customFeeNote ? customFeeNote.trim() : null) : student.customFeeNote;
-    student.monthlyFeeAmount = feeVal;
   }
 
   await student.save();

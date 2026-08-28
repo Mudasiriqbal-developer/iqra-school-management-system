@@ -162,7 +162,6 @@ const createStudent = async (studentData) => {
     address,
     classId,
     sectionId,
-    monthlyFeeAmount: Number(monthlyFeeAmount) || 0,
     customFee: customFee !== undefined && customFee !== null && customFee !== '' ? Number(customFee) : null,
     customFeeNote: customFeeNote ? customFeeNote.trim() : null,
     status,
@@ -497,7 +496,6 @@ const updateStudent = async (id, studentData) => {
   if (dateOfBirth) student.dateOfBirth = dateOfBirth;
   if (fatherContact) student.fatherContact = fatherContact;
   if (address !== undefined) student.address = address;
-  if (monthlyFeeAmount !== undefined) student.monthlyFeeAmount = monthlyFeeAmount;
   if (customFee !== undefined) {
     student.customFee = (customFee === null || customFee === '') ? null : Number(customFee);
   }

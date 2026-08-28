@@ -111,10 +111,11 @@ const HEADER_MAPPING = {
   section: 'sectionName',
   sectionname: 'sectionName',
 
-  monthlyfeeamount: 'monthlyFeeAmount',
-  monthlyfee: 'monthlyFeeAmount',
-  fee: 'monthlyFeeAmount',
-  tuitionfee: 'monthlyFeeAmount',
+  monthlyfeeamount: 'customFee',
+  monthlyfee: 'customFee',
+  fee: 'customFee',
+  tuitionfee: 'customFee',
+  customfee: 'customFee',
 
   address: 'address',
   homeaddress: 'address',
@@ -147,7 +148,7 @@ const rowZodSchema = z.object({
     .min(1, 'Class name is required'),
   sectionName: z.string({ required_error: 'Section name is required' })
     .min(1, 'Section name is required'),
-  monthlyFeeAmount: z.number().min(0, 'Monthly fee cannot be negative').optional(),
+  customFee: z.number().min(0, 'Custom fee cannot be negative').nullable().optional(),
   address: z.string().max(300, 'Address too long').optional(),
   status: z.enum(['active', 'on_leave', 'suspended'], {
     errorMap: () => ({ message: 'Status must be active, on_leave, or suspended' }),
@@ -430,19 +431,21 @@ const validateImportFile = async (fileBuffer) => {
     const sectionNameRaw = rawData.sectionName ? rawData.sectionName.trim() : '';
     const address = rawData.address ? rawData.address.trim() : '';
     const statusRaw = rawData.status ? rawData.status.toLowerCase().trim() : 'active';
-    const monthlyFeeRaw = rawData.monthlyFeeAmount !== '' && rawData.monthlyFeeAmount !== undefined ? rawData.monthlyFeeAmount : '0';
+    const customFeeRaw = (rawData.customFee !== '' && rawData.customFee !== undefined) 
+      ? rawData.customFee 
+      : ((rawData.monthlyFeeAmount !== '' && rawData.monthlyFeeAmount !== undefined) ? rawData.monthlyFeeAmount : null);
 
     // Parse Date of Birth
     const dobRaw = rawData.dateOfBirth;
     const parsedDob = parseDateValue(dobRaw);
 
-    let monthlyFeeNumber = 0;
-    if (monthlyFeeRaw !== '' && monthlyFeeRaw !== undefined) {
-      const parsedFee = Number(monthlyFeeRaw);
+    let customFeeNumber = null;
+    if (customFeeRaw !== '' && customFeeRaw !== null && customFeeRaw !== undefined) {
+      const parsedFee = Number(customFeeRaw);
       if (isNaN(parsedFee) || parsedFee < 0) {
-        errors.push('Monthly fee must be a valid non-negative number');
+        errors.push('Fee amount must be a valid non-negative number if provided');
       } else {
-        monthlyFeeNumber = parsedFee;
+        customFeeNumber = parsedFee;
       }
     }
 
@@ -455,7 +458,7 @@ const validateImportFile = async (fileBuffer) => {
       fatherContact,
       className: classNameRaw,
       sectionName: sectionNameRaw,
-      monthlyFeeAmount: monthlyFeeNumber,
+      customFee: customFeeNumber,
       address,
       status: statusRaw || 'active',
     });
@@ -551,7 +554,7 @@ const validateImportFile = async (fileBuffer) => {
       sectionName: sectionNameRaw,
       classId: resolvedClassId,
       sectionId: resolvedSectionId,
-      monthlyFeeAmount: monthlyFeeNumber,
+      customFee: customFeeNumber,
       address,
       status: statusRaw || 'active',
     };
@@ -728,7 +731,8 @@ const commitImport = async (rows) => {
         address: r.address ? r.address.trim() : '',
         classId: r.classId,
         sectionId: r.sectionId,
-        monthlyFeeAmount: Number(r.monthlyFeeAmount) || 0,
+        customFee: (r.customFee !== undefined && r.customFee !== null && r.customFee !== '') ? Number(r.customFee) : null,
+        customFeeNote: null,
         status: r.status || 'active',
         photoUrl: '',
         admissionFee: 0,

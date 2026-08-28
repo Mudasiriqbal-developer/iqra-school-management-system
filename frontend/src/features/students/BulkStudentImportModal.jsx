@@ -683,7 +683,11 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                                 {row.className} - {row.sectionName}
                               </td>
                               <td className="py-2 px-4 font-semibold text-navy-950">
-                                Rs. {Number(row.monthlyFeeAmount || 0).toLocaleString()}
+                                {row.customFee !== undefined && row.customFee !== null && row.customFee !== '' ? (
+                                  <span className="text-navy-900 font-bold">Rs. {Number(row.customFee).toLocaleString()} <span className="text-[10px] text-navy-700 font-normal">(Custom)</span></span>
+                                ) : (
+                                  <span className="text-slate-400 font-medium text-xs">Class Default</span>
+                                )}
                               </td>
                               <td className="py-2 px-4">
                                 <StatusBadge status={row.status === 'active' ? 'active' : 'pending'} label={row.status} />
