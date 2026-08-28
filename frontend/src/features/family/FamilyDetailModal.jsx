@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Edit2, Plus, Phone, MapPin, User, X, DollarSign, BookOpen, Download, Loader2, AlertTriangle, Info, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/shared/ConfirmModal';
@@ -54,6 +54,20 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
   const [idempotencyKey, setIdempotencyKey] = useState('');
   const [isPaying, setIsPaying] = useState(false);
   const [paymentSuccessData, setPaymentSuccessData] = useState(null);
+
+  // Ref for click-outside detection on search container
+  const searchContainerRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setSearchResults([]);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Load family data
   const loadFamilyDetails = async () => {
@@ -375,7 +389,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
 
             {isAddStudentOpen && (
               <div className="space-y-4 pt-1">
-                <div className="relative">
+                <div className="relative" ref={searchContainerRef}>
                   <input
                     type="text"
                     placeholder="Search student to link..."
@@ -391,15 +405,19 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
 
                   {/* Dropdown results */}
                   {searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-10 mt-1 max-h-48 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg divide-y divide-gray-100">
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-[280px] overflow-y-auto bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg divide-y divide-gray-100 dark:divide-slate-700">
                       {searchResults.map((student) => (
                         <div
                           key={student._id}
-                          onClick={() => setSelectedStudentToLink(student)}
-                          className="p-3 text-xs hover:bg-slate-50 cursor-pointer text-gray-700 flex flex-col"
+                          onClick={() => {
+                            setSelectedStudentToLink(student);
+                            setStudentSearch('');
+                            setSearchResults([]);
+                          }}
+                          className="p-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-700/60 cursor-pointer text-gray-700 dark:text-slate-300 flex flex-col"
                         >
-                          <span className="font-extrabold text-navy-950">{student.fullName}</span>
-                          <span className="text-[9px] text-gray-400 mt-0.5">
+                          <span className="font-extrabold text-navy-955 dark:text-sky-400">{student.fullName}</span>
+                          <span className="text-[9px] text-gray-400 dark:text-slate-400 mt-0.5">
                             Reg: {student.registrationNumber} | Class: {student.classId?.name}
                           </span>
                         </div>
