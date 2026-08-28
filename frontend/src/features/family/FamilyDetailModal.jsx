@@ -13,11 +13,105 @@ import {
 } from './familyService';
 import { getStudents } from '../students/studentService';
 
+// Skeleton for the entire modal contents to prevent CLS
+const FamilyDetailSkeleton = () => (
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left animate-pulse">
+    {/* Left side: Profile Card & Link Sibling Skeletons */}
+    <div className="lg:col-span-1 space-y-6">
+      {/* Profile Card Skeleton */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2 w-full">
+            <div className="h-6 bg-gray-200 rounded w-2/3" />
+            <div className="h-3 bg-gray-100 rounded w-1/3" />
+          </div>
+          <div className="h-8 w-8 bg-gray-100 rounded-xl" />
+        </div>
+        <div className="space-y-4 pt-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-3 bg-gray-100 rounded w-1/4" />
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Sibling Link Quick Panel Skeleton */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-3">
+        <div className="flex justify-between items-center">
+          <div className="h-4 bg-gray-200 rounded w-1/3" />
+          <div className="h-7 w-7 bg-gray-100 rounded-lg" />
+        </div>
+      </div>
+    </div>
+
+    {/* Right side: Sibling grid, financials, and payment history skeletons */}
+    <div className="lg:col-span-2 space-y-6">
+      {/* Siblings Grid Skeleton */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+        <div className="h-4 bg-gray-200 rounded w-1/3" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="p-4 rounded-xl border border-gray-200 bg-slate-50/50 flex items-center justify-between">
+              <div className="flex items-center space-x-3.5 w-full">
+                <div className="h-10 w-10 bg-gray-200 rounded-full flex-shrink-0" />
+                <div className="space-y-2 w-full">
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="h-3 bg-gray-100 rounded w-1/3" />
+                  <div className="h-3.5 bg-gray-100 rounded w-2/3" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Financials Panel Skeleton */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+        <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+          <div className="space-y-2 w-full">
+            <div className="h-4 bg-gray-200 rounded w-1/3" />
+            <div className="h-3 bg-gray-100 rounded w-1/2" />
+          </div>
+          <div className="h-8 bg-gray-100 rounded-xl w-32" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="p-4 bg-slate-50 rounded-xl border border-gray-150 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
+                <div className="h-6 bg-gray-200 rounded w-1/4" />
+              </div>
+              <div className="border-t border-gray-150 pt-2 space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-3/4" />
+                <div className="h-4 bg-gray-100 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Payment History Skeleton */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+        <div className="h-4 bg-gray-200 rounded w-1/4" />
+        <div className="space-y-3">
+          <div className="h-8 bg-slate-50 rounded" />
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-10 bg-white border border-gray-100 rounded flex items-center justify-between px-3" />
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
   // State variables
   const [family, setFamily] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [downloadingVoucherId, setDownloadingVoucherId] = useState(null);
 
   // Edit metadata form states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -146,6 +240,20 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
       console.error('Failed to load financial data:', err);
     } finally {
       setLoadingFinancials(false);
+    }
+  };
+
+  const handleDownloadVoucherPDF = async (voucherId, voucherNumber) => {
+    if (downloadingVoucherId) return;
+    try {
+      setDownloadingVoucherId(voucherId);
+      await downloadFamilyVoucherPDF(familyId, voucherId, `family-voucher-${voucherNumber}.pdf`);
+      toast.success(`Voucher #${voucherNumber} downloaded successfully`);
+    } catch (err) {
+      console.error(err);
+      toast.error(`Failed to download voucher #${voucherNumber}`);
+    } finally {
+      setDownloadingVoucherId(null);
     }
   };
 
@@ -343,12 +451,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
 
   const renderContent = () => {
     if (loading) {
-      return (
-        <div className="py-24 text-center">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-navy-900 border-t-transparent"></div>
-          <p className="text-sm font-bold text-navy-950 mt-4">Loading family profile...</p>
-        </div>
-      );
+      return <FamilyDetailSkeleton />;
     }
 
     if (!family) return null;
@@ -592,53 +695,82 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Fee Panel */}
               <div className="p-4 bg-slate-50 rounded-xl border border-gray-150 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Outstanding Dues</span>
-                  <span className="text-lg font-black text-navy-950">
-                    Rs. {feeSummary ? feeSummary.familyTotal.toFixed(2) : '0.00'}
-                  </span>
-                </div>
-                
-                <div className="divide-y divide-gray-100 border-t border-gray-150 pt-2 space-y-1.5 max-h-48 overflow-y-auto">
-                  {feeSummary && feeSummary.students && feeSummary.students.length > 0 ? (
-                    feeSummary.students.map((student) => (
-                      <div key={student.studentId} className="flex justify-between items-center text-xs pt-1.5">
-                        <div className="min-w-0">
-                          <span className="font-bold text-gray-700 block truncate">{student.studentName}</span>
-                          <span className="text-[10px] text-gray-400 block">{student.classSection}</span>
-                        </div>
-                        <span className="font-extrabold text-navy-900">
-                          Rs. {student.studentTotal.toFixed(2)}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-[10px] text-gray-400 italic py-2">No students or fee data available.</p>
-                  )}
-                </div>
+                {loadingFinancials ? (
+                  <div className="animate-pulse space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-5 bg-gray-300 rounded w-1/4" />
+                    </div>
+                    <div className="border-t border-gray-150 pt-2 space-y-2">
+                      <div className="h-4 bg-gray-100 rounded w-3/4" />
+                      <div className="h-4 bg-gray-100 rounded w-1/2" />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Outstanding Dues</span>
+                      <span className="text-lg font-black text-navy-950">
+                        Rs. {feeSummary ? feeSummary.familyTotal.toFixed(2) : '0.00'}
+                      </span>
+                    </div>
+                    
+                    <div className="divide-y divide-gray-100 border-t border-gray-150 pt-2 space-y-1.5 max-h-48 overflow-y-auto">
+                      {feeSummary && feeSummary.students && feeSummary.students.length > 0 ? (
+                        feeSummary.students.map((student) => (
+                          <div key={student.studentId} className="flex justify-between items-center text-xs pt-1.5">
+                            <div className="min-w-0">
+                              <span className="font-bold text-gray-700 block truncate">{student.studentName}</span>
+                              <span className="text-[10px] text-gray-400 block">{student.classSection}</span>
+                            </div>
+                            <span className="font-extrabold text-navy-900">
+                              Rs. {student.studentTotal.toFixed(2)}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[10px] text-gray-400 italic py-2">No students or fee data available.</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Books Panel */}
               <div className="p-4 bg-slate-50 rounded-xl border border-gray-150 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Books Outstanding</span>
-                  <span className="text-lg font-black text-navy-950">—</span>
-                </div>
+                {loadingFinancials ? (
+                  <div className="animate-pulse space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-5 bg-gray-300 rounded w-1/4" />
+                    </div>
+                    <div className="border-t border-gray-150 pt-2 space-y-2">
+                      <div className="h-4 bg-gray-100 rounded w-3/4" />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Books Outstanding</span>
+                      <span className="text-lg font-black text-navy-950">—</span>
+                    </div>
 
-                <div className="divide-y divide-gray-100 border-t border-gray-150 pt-2 space-y-1.5 max-h-48 overflow-y-auto">
-                  {booksSummary && booksSummary.students && booksSummary.students.length > 0 ? (
-                    booksSummary.students.map((student) => (
-                      <div key={student.studentId} className="flex justify-between items-center text-xs pt-1.5">
-                        <div className="min-w-0">
-                          <span className="font-bold text-gray-700 block truncate">{student.studentName}</span>
-                        </div>
-                        <span className="font-bold text-gray-400">—</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-[10px] text-gray-400 italic py-2">No students or books data available.</p>
-                  )}
-                </div>
+                    <div className="divide-y divide-gray-100 border-t border-gray-150 pt-2 space-y-1.5 max-h-48 overflow-y-auto">
+                      {booksSummary && booksSummary.students && booksSummary.students.length > 0 ? (
+                        booksSummary.students.map((student) => (
+                          <div key={student.studentId} className="flex justify-between items-center text-xs pt-1.5">
+                            <div className="min-w-0">
+                              <span className="font-bold text-gray-700 block truncate">{student.studentName}</span>
+                            </div>
+                            <span className="font-bold text-gray-400">—</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[10px] text-gray-400 italic py-2">No students or books data available.</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -675,11 +807,16 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                         </td>
                         <td className="p-3 text-center">
                           <button
-                            onClick={() => downloadFamilyVoucherPDF(familyId, voucher._id, `family-voucher-${voucher.voucherNumber}.pdf`)}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-navy-50 hover:bg-navy-100 text-navy-900 rounded-lg border border-navy-150 transition-colors font-bold text-[10px]"
+                            onClick={() => handleDownloadVoucherPDF(voucher._id, voucher.voucherNumber)}
+                            disabled={downloadingVoucherId === voucher._id}
+                            className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-navy-50 hover:bg-navy-100 disabled:opacity-50 text-navy-900 rounded-lg border border-navy-150 transition-colors font-bold text-[10px]"
                           >
-                            <Download className="h-3 w-3" />
-                            <span>Download PDF</span>
+                            {downloadingVoucherId === voucher._id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Download className="h-3 w-3" />
+                            )}
+                            <span>{downloadingVoucherId === voucher._id ? 'Downloading...' : 'Download PDF'}</span>
                           </button>
                         </td>
                       </tr>

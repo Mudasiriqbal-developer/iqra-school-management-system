@@ -7,11 +7,47 @@ import FamilyDetailModal from '../features/family/FamilyDetailModal';
 import { getFamilies, deleteFamily, createFamilyWithEnrollment } from '../features/family/familyService';
 import { getStudents, getClasses, getSectionsByClass } from '../features/students/studentService';
 
+// Skeletons for smooth loading visual state
+const FamilyCardSkeleton = () => (
+  <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between min-h-[220px] animate-pulse">
+    <div className="space-y-3.5">
+      {/* Header Skeleton */}
+      <div className="flex justify-between items-start gap-2">
+        <div className="h-5 bg-gray-200 rounded w-1/2" />
+        <div className="h-7 w-7 bg-gray-150 rounded-lg flex-shrink-0" />
+      </div>
+
+      {/* Guardian & Contact Skeleton */}
+      <div className="space-y-2">
+        <div className="h-3 bg-gray-150 rounded w-1/4" />
+        <div className="h-4 bg-gray-200 rounded w-1/3" />
+        <div className="h-3.5 bg-gray-100 rounded w-1/2" />
+      </div>
+
+      {/* Address Skeleton */}
+      <div className="h-3.5 bg-gray-100 rounded w-3/4" />
+
+      {/* Students count + badge Skeleton */}
+      <div className="space-y-2 pt-1">
+        <div className="h-5 bg-gray-200 rounded-full w-20" />
+        <div className="h-3 bg-gray-150 rounded w-2/3" />
+      </div>
+    </div>
+
+    {/* Combined Outstanding Skeleton */}
+    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+      <div className="h-3 bg-gray-100 rounded w-1/3" />
+      <div className="h-5 bg-gray-200 rounded w-1/4" />
+    </div>
+  </div>
+);
+
 const AdminFamilyList = () => {
   
   // State variables
   const [families, setFamilies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -64,6 +100,18 @@ const AdminFamilyList = () => {
       setLoading(false);
     }
   };
+
+  // Debounce search query updates to avoid DOM thrashing & INP blocking
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchTerm);
+      setCurrentPage(1);
+    }, 400);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchFamilies();
@@ -651,10 +699,9 @@ const AdminFamilyList = () => {
           <input
             type="text"
             placeholder="Search by family name, contact or guardian..."
-            value={searchQuery}
+            value={searchTerm}
             onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
+              setSearchTerm(e.target.value);
             }}
             className="w-full text-sm outline-hidden text-gray-800"
           />
@@ -662,9 +709,10 @@ const AdminFamilyList = () => {
 
         {/* Card Grid Content */}
         {loading ? (
-          <div className="py-24 text-center">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-navy-900 border-t-transparent"></div>
-            <p className="text-sm font-bold text-navy-950 mt-4">Loading family listings...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, idx) => (
+              <FamilyCardSkeleton key={idx} />
+            ))}
           </div>
         ) : families.length > 0 ? (
           <div className="space-y-6">
