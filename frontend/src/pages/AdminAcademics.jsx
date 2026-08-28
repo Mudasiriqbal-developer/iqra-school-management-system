@@ -345,7 +345,7 @@ const AdminAcademics = () => {
     setSections(updated);
 
     try {
-      await reorderSections(selectedClass._id, updated.map(s => s._id));
+      await reorderSections(updated.map(s => s._id));
     } catch (err) {
       toast.error('Failed to save section order');
     }
@@ -419,7 +419,7 @@ const AdminAcademics = () => {
     setSubjects(updated);
 
     try {
-      await reorderSubjects(selectedClass._id, updated.map(s => s._id));
+      await reorderSubjects(updated.map(s => s._id));
     } catch (err) {
       toast.error('Failed to save subject order');
     }
