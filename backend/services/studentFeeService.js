@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Student = require('../models/Student');
 const FeeRecord = require('../models/FeeRecord');
+const { resolveStudentMonthlyFee } = require('../utils/feeHelper');
 
 /**
  * Helper: Given a studentId, get or create the current month's FeeRecord
@@ -16,7 +17,7 @@ const getOrCreateCurrentMonthRecord = async (studentId, session = undefined) => 
   let record = await query;
 
   if (!record) {
-    let studentQuery = Student.findById(studentId);
+    let studentQuery = Student.findById(studentId).populate('classId', 'defaultFee');
     if (session) {
       studentQuery = studentQuery.session(session);
     }
@@ -24,12 +25,13 @@ const getOrCreateCurrentMonthRecord = async (studentId, session = undefined) => 
     if (!student) {
       throw new Error('Student not found');
     }
+    const resolvedFee = resolveStudentMonthlyFee(student);
     try {
       if (session) {
         const created = await FeeRecord.create([{
           studentId,
           month,
-          amountDue: student.monthlyFeeAmount || 0,
+          amountDue: resolvedFee,
           amountPaid: 0,
           status: 'pending',
           payments: [],
@@ -40,7 +42,7 @@ const getOrCreateCurrentMonthRecord = async (studentId, session = undefined) => 
         record = await FeeRecord.create({
           studentId,
           month,
-          amountDue: student.monthlyFeeAmount || 0,
+          amountDue: resolvedFee,
           amountPaid: 0,
           status: 'pending',
           payments: [],
@@ -87,19 +89,43 @@ const getStudentLedgerData = async (studentId) => {
 };
 
 /**
- * Updates the monthly fee amount for a student.
+ * Sets or clears the custom monthly fee override for a student.
+ * If customFee is null/undefined/empty string, it resets to use Class Default.
  */
-const setMonthlyFeeAmount = async (id, monthlyFeeAmount) => {
-  const student = await Student.findById(id);
+const setStudentCustomFee = async (id, { customFee, customFeeNote }) => {
+  const student = await Student.findById(id).populate('classId', 'name defaultFee');
   if (!student) {
     const error = new Error('Student not found');
     error.statusCode = 404;
     throw error;
   }
 
-  student.monthlyFeeAmount = monthlyFeeAmount;
+  if (customFee === null || customFee === undefined || customFee === '') {
+    // Reset to class default
+    student.customFee = null;
+    student.customFeeNote = null;
+    student.monthlyFeeAmount = student.classId?.defaultFee || 0;
+  } else {
+    const feeVal = Number(customFee);
+    if (isNaN(feeVal) || feeVal < 0) {
+      const error = new Error('Custom fee must be a non-negative number');
+      error.statusCode = 400;
+      throw error;
+    }
+    student.customFee = feeVal;
+    student.customFeeNote = customFeeNote !== undefined ? (customFeeNote ? customFeeNote.trim() : null) : student.customFeeNote;
+    student.monthlyFeeAmount = feeVal;
+  }
+
   await student.save();
   return student;
+};
+
+/**
+ * Updates the monthly fee amount for a student (Backwards compatible helper).
+ */
+const setMonthlyFeeAmount = async (id, monthlyFeeAmount) => {
+  return setStudentCustomFee(id, { customFee: monthlyFeeAmount });
 };
 
 /**
@@ -171,6 +197,7 @@ const getFeeSummaryByClass = async (query) => {
 };
 
 module.exports = {
+  setStudentCustomFee,
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
   getOrCreateCurrentMonthRecord,

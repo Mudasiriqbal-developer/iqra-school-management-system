@@ -12,6 +12,7 @@ const {
   generateAdmissionReceiptPDF,
 } = require('../controllers/studentPdfController');
 const {
+  setStudentCustomFee,
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
 } = require('../controllers/studentFeeController');
@@ -236,8 +237,43 @@ router.put(
 router.delete('/:id', authorize('admin'), deleteStudent);
 
 /**
+ * @route   PATCH /api/students/:id/custom-fee
+ * @desc    Set or clear custom fee override for a student
+ * @access  Private (Admin Only)
+ */
+router.patch(
+  '/:id/custom-fee',
+  authorize('admin'),
+  [
+    check('customFee', 'Custom fee must be a non-negative number if provided')
+      .optional({ nullable: true, checkFalsy: false })
+      .custom(value => value === null || (!isNaN(Number(value)) && Number(value) >= 0)),
+    check('customFeeNote', 'Custom fee note must be a string')
+      .optional({ nullable: true })
+      .isString(),
+  ],
+  validateRequest,
+  setStudentCustomFee
+);
+
+router.put(
+  '/:id/custom-fee',
+  authorize('admin'),
+  [
+    check('customFee', 'Custom fee must be a non-negative number if provided')
+      .optional({ nullable: true, checkFalsy: false })
+      .custom(value => value === null || (!isNaN(Number(value)) && Number(value) >= 0)),
+    check('customFeeNote', 'Custom fee note must be a string')
+      .optional({ nullable: true })
+      .isString(),
+  ],
+  validateRequest,
+  setStudentCustomFee
+);
+
+/**
  * @route   PATCH /api/students/:id/monthly-fee
- * @desc    Set monthly fee amount for a student
+ * @desc    Set monthly fee amount for a student (Legacy)
  * @access  Private (Admin Only)
  */
 router.patch(

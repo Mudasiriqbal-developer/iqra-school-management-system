@@ -24,6 +24,8 @@ const createStudent = async (studentData) => {
     classId,
     sectionId,
     monthlyFeeAmount,
+    customFee,
+    customFeeNote,
     status,
     photoUrl,
     admissionFee,
@@ -160,7 +162,9 @@ const createStudent = async (studentData) => {
     address,
     classId,
     sectionId,
-    monthlyFeeAmount,
+    monthlyFeeAmount: Number(monthlyFeeAmount) || 0,
+    customFee: customFee !== undefined && customFee !== null && customFee !== '' ? Number(customFee) : null,
+    customFeeNote: customFeeNote ? customFeeNote.trim() : null,
     status,
     photoUrl,
     admissionFee: Number(admissionFee) || 0,
@@ -310,7 +314,7 @@ const getAllStudents = async (query, user) => {
   // Execute query with pagination
   const total = await Student.countDocuments(filter);
   const students = await Student.find(filter)
-    .populate('classId', 'name')
+    .populate('classId', 'name gender defaultFee')
     .populate('sectionId', 'name')
     .populate('familyId', 'familyName')
     .skip(skipVal)
@@ -366,7 +370,7 @@ const getAllStudents = async (query, user) => {
  */
 const getStudentById = async (id, user) => {
   const student = await Student.findById(id)
-    .populate('classId', 'name')
+    .populate('classId', 'name gender defaultFee')
     .populate('sectionId', 'name')
     .populate('familyId', 'familyName');
 
@@ -450,6 +454,8 @@ const updateStudent = async (id, studentData) => {
     classId,
     sectionId,
     monthlyFeeAmount,
+    customFee,
+    customFeeNote,
     status,
     photoUrl,
   } = studentData;
@@ -492,6 +498,12 @@ const updateStudent = async (id, studentData) => {
   if (fatherContact) student.fatherContact = fatherContact;
   if (address !== undefined) student.address = address;
   if (monthlyFeeAmount !== undefined) student.monthlyFeeAmount = monthlyFeeAmount;
+  if (customFee !== undefined) {
+    student.customFee = (customFee === null || customFee === '') ? null : Number(customFee);
+  }
+  if (customFeeNote !== undefined) {
+    student.customFeeNote = (customFee === null || customFeeNote === null || customFeeNote === '') ? null : customFeeNote.trim();
+  }
   if (status) student.status = status;
   if (photoUrl !== undefined) student.photoUrl = photoUrl;
 

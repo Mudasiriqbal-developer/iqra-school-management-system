@@ -245,16 +245,23 @@ const StudentViewDrawer = ({ isOpen, onClose, student }) => {
               <DollarSign className="h-4 w-4 mr-2 text-navy-800" />
               Financial Status
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
               <div className="flex justify-between items-center">
                 <span className="text-gray-500 font-medium">Fee Status:</span>
                 <StatusBadge status={feeStatusProps.status} label={feeStatusProps.label} />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-500 font-medium">Due Date:</span>
-                <span className="font-bold text-navy-900 flex items-center">
-                  <CalendarCheck className="h-4 w-4 text-gray-400 mr-1.5" />
-                  {formatDate(student.feeSummary?.dueDate)}
+                <span className="text-gray-500 font-medium">Monthly Fee:</span>
+                <span className="font-bold text-navy-900">
+                  {student.customFee !== null && student.customFee !== undefined ? (
+                    <span title={student.customFeeNote ? `Note: ${student.customFeeNote}` : 'Custom Fee Override'}>
+                      Rs. {student.customFee.toLocaleString()}/mo <span className="text-[10px] text-navy-900 font-bold bg-navy-50 px-1.5 py-0.5 rounded border border-navy-150">Custom</span>
+                    </span>
+                  ) : (
+                    <span>
+                      Rs. {(student.classId?.defaultFee || 0).toLocaleString()}/mo <span className="text-[10px] text-slate-500 font-normal">(Default)</span>
+                    </span>
+                  )}
                 </span>
               </div>
             </div>

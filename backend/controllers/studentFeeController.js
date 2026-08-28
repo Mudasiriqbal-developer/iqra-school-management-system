@@ -1,7 +1,36 @@
 const studentFeeService = require('../services/studentFeeService');
 
 /**
- * @desc    Set monthly fee amount for a student
+ * @desc    Set or reset custom monthly fee override for a student
+ * @route   PATCH /api/students/:id/custom-fee
+ * @access  Private (Admin Only)
+ */
+const setStudentCustomFee = async (req, res, next) => {
+  try {
+    const { customFee, customFeeNote } = req.body;
+    const student = await studentFeeService.setStudentCustomFee(req.params.id, {
+      customFee,
+      customFeeNote
+    });
+    return res.status(200).json({
+      success: true,
+      data: student,
+      message: "Custom fee setting updated. This will apply starting next month — the current month's bill has already been set.",
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        data: null,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * @desc    Set monthly fee amount for a student (Legacy/Compatibility)
  * @route   PATCH /api/students/:id/monthly-fee
  * @access  Private (Admin Only)
  */
@@ -51,6 +80,7 @@ const getFeeSummaryByClass = async (req, res, next) => {
 };
 
 module.exports = {
+  setStudentCustomFee,
   setMonthlyFeeAmount,
   getFeeSummaryByClass,
 };

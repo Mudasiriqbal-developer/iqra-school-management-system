@@ -142,3 +142,13 @@ export const commitStudentImport = async (rows) => {
   return response.data;
 };
 
+/**
+ * Set or reset custom monthly fee override for a student.
+ * @param {string} id - Student ID
+ * @param {Object} data - { customFee: number | null, customFeeNote: string | null }
+ */
+export const setStudentCustomFee = async (id, data) => {
+  const response = await api.patch(`/students/${id}/custom-fee`, data);
+  return response.data;
+};
+

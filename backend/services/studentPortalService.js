@@ -2,6 +2,7 @@ const Student = require('../models/Student');
 const Attendance = require('../models/Attendance');
 const Assignment = require('../models/Assignment');
 const FeeRecord = require('../models/FeeRecord');
+const { resolveStudentMonthlyFee } = require('../utils/feeHelper');
 
 /**
  * Returns the student's profile details linked to their user account.
@@ -146,7 +147,7 @@ const getMyFeeHistory = async (user) => {
   const regNo = user.registrationNumber;
 
   const student = await Student.findOne({ registrationNumber: regNo })
-    .populate('classId', 'name')
+    .populate('classId', 'name defaultFee')
     .populate('sectionId', 'name');
 
   if (!student) {
@@ -173,10 +174,10 @@ const getMyFeeHistory = async (user) => {
           : (r.type === 'admission' ? 'Admission & Books' : `Monthly Tuition (${r.month})`);
 
         history.push({
-          _id: p._id,
+          paymentId: p._id,
           amount: p.amount,
-          paidOn: p.paidOn,
           method: p.method,
+          paidOn: p.paidOn,
           type: p.type,
           forMonth: r.month,
           feeType: r.type,
@@ -191,7 +192,7 @@ const getMyFeeHistory = async (user) => {
   const currentMonthStr = new Date().toISOString().slice(0, 7);
   const currentRecord = records.find(r => r.month === currentMonthStr && r.type === 'monthly') || {
     status: 'pending',
-    amountDue: student.monthlyFeeAmount || 0,
+    amountDue: resolveStudentMonthlyFee(student),
     amountPaid: 0,
   };
 

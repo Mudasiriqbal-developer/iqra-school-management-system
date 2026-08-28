@@ -29,6 +29,14 @@ const getDashboardSummary = async (req, res, next) => {
       { $match: { status: 'active' } },
       {
         $lookup: {
+          from: 'classes',
+          localField: 'classId',
+          foreignField: '_id',
+          as: 'classDoc'
+        }
+      },
+      {
+        $lookup: {
           from: 'feerecords',
           let: { studentId: '$_id' },
           pipeline: [
@@ -37,7 +45,8 @@ const getDashboardSummary = async (req, res, next) => {
                 $expr: {
                   $and: [
                     { $eq: ['$studentId', '$$studentId'] },
-                    { $eq: ['$month', currentMonth] }
+                    { $eq: ['$month', currentMonth] },
+                    { $eq: ['$type', 'monthly'] }
                   ]
                 }
               }
@@ -59,7 +68,13 @@ const getDashboardSummary = async (req, res, next) => {
             $cond: {
               if: { $gt: [{ $size: '$currentFee' }, 0] },
               then: { $arrayElemAt: ['$currentFee.amountDue', 0] },
-              else: { $ifNull: ['$monthlyFeeAmount', 0] }
+              else: {
+                $cond: {
+                  if: { $and: [{ $ne: ['$customFee', null] }, { $gte: ['$customFee', 0] }] },
+                  then: '$customFee',
+                  else: { $ifNull: [{ $arrayElemAt: ['$classDoc.defaultFee', 0] }, 0] }
+                }
+              }
             }
           }
         }

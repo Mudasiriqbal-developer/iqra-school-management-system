@@ -19,6 +19,11 @@ const classSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    defaultFee: {
+      type: Number,
+      default: 0,
+      min: [0, 'Default fee must be a non-negative number'],
+    },
   },
   {
     timestamps: true,

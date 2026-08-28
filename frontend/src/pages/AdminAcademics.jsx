@@ -84,11 +84,13 @@ const AdminAcademics = () => {
   const [isAddingClass, setIsAddingClass] = useState(false);
   const [newClassName, setNewClassName] = useState('');
   const [newClassGender, setNewClassGender] = useState('mixed');
+  const [newClassDefaultFee, setNewClassDefaultFee] = useState('');
 
   // Class editing states
   const [editingClassId, setEditingClassId] = useState(null);
   const [editClassNameValue, setEditClassNameValue] = useState('');
   const [editClassGenderValue, setEditClassGenderValue] = useState('mixed');
+  const [editClassDefaultFeeValue, setEditClassDefaultFeeValue] = useState('');
 
   const [isAddingSection, setIsAddingSection] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
@@ -410,11 +412,13 @@ const AdminAcademics = () => {
     const name = newClassName.trim();
     if (!name) return;
     try {
-      const res = await createClass({ name, gender: newClassGender });
+      const feeNum = parseFloat(newClassDefaultFee) || 0;
+      const res = await createClass({ name, gender: newClassGender, defaultFee: feeNum });
       if (res.success) {
         toast.success('Class created successfully');
         setNewClassName('');
         setNewClassGender('mixed');
+        setNewClassDefaultFee('');
         setIsAddingClass(false);
         // Refresh classes and select the newly created class
         await fetchClasses(res.data?._id);
@@ -426,13 +430,14 @@ const AdminAcademics = () => {
     }
   };
 
-  const handleUpdateClass = async (id, newName, newGender) => {
+  const handleUpdateClass = async (id, newName, newGender, newDefaultFee) => {
     try {
-      const res = await updateClass(id, { name: newName, gender: newGender });
+      const feeNum = parseFloat(newDefaultFee) || 0;
+      const res = await updateClass(id, { name: newName, gender: newGender, defaultFee: feeNum });
       if (res.success) {
         toast.success('Class updated successfully');
-        setClasses(prev => prev.map(c => c._id === id ? { ...c, name: newName, gender: newGender } : c));
-        setSelectedClass(prev => prev && prev._id === id ? { ...prev, name: newName, gender: newGender } : prev);
+        setClasses(prev => prev.map(c => c._id === id ? { ...c, name: newName, gender: newGender, defaultFee: feeNum } : c));
+        setSelectedClass(prev => prev && prev._id === id ? { ...prev, name: newName, gender: newGender, defaultFee: feeNum } : prev);
       } else {
         toast.error(res.message || 'Failed to update class');
       }
@@ -641,15 +646,25 @@ const AdminAcademics = () => {
                   className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white"
                   autoFocus
                 />
-                <select
-                  value={newClassGender}
-                  onChange={(e) => setNewClassGender(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white font-semibold text-gray-600"
-                >
-                  <option value="mixed">Mixed Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={newClassGender}
+                    onChange={(e) => setNewClassGender(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white font-semibold text-gray-600"
+                  >
+                    <option value="mixed">Mixed</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Default Fee (Rs.)"
+                    value={newClassDefaultFee}
+                    onChange={(e) => setNewClassDefaultFee(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 focus:border-navy-900 bg-white font-semibold text-gray-800"
+                  />
+                </div>
                 <div className="flex justify-end space-x-1.5">
                   <button
                     type="button"
@@ -657,6 +672,7 @@ const AdminAcademics = () => {
                       setIsAddingClass(false);
                       setNewClassName('');
                       setNewClassGender('mixed');
+                      setNewClassDefaultFee('');
                     }}
                     className="px-2.5 py-1 text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
                   >
@@ -747,7 +763,7 @@ const AdminAcademics = () => {
                               onChange={(e) => setEditClassNameValue(e.target.value)}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue);
+                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue, editClassDefaultFeeValue);
                                   setEditingClassId(null);
                                 } else if (e.key === 'Escape') {
                                   setEditingClassId(null);
@@ -757,15 +773,25 @@ const AdminAcademics = () => {
                               placeholder="Class Name"
                               autoFocus
                             />
-                            <select
-                              value={editClassGenderValue}
-                              onChange={(e) => setEditClassGenderValue(e.target.value)}
-                              className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-medium text-gray-600"
-                            >
-                              <option value="mixed">Mixed</option>
-                              <option value="male">Male</option>
-                              <option value="female">Female</option>
-                            </select>
+                            <div className="grid grid-cols-2 gap-2">
+                              <select
+                                value={editClassGenderValue}
+                                onChange={(e) => setEditClassGenderValue(e.target.value)}
+                                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-medium text-gray-600"
+                              >
+                                <option value="mixed">Mixed</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                              </select>
+                              <input
+                                type="number"
+                                min="0"
+                                placeholder="Default Fee (Rs.)"
+                                value={editClassDefaultFeeValue}
+                                onChange={(e) => setEditClassDefaultFeeValue(e.target.value)}
+                                className="w-full px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-navy-900/50 bg-white font-semibold text-gray-800"
+                              />
+                            </div>
                             <div className="flex items-center space-x-1.5 justify-end">
                               <button
                                 onClick={() => setEditingClassId(null)}
@@ -775,7 +801,7 @@ const AdminAcademics = () => {
                               </button>
                               <button
                                 onClick={() => {
-                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue);
+                                  handleUpdateClass(cls._id, editClassNameValue, editClassGenderValue, editClassDefaultFeeValue);
                                   setEditingClassId(null);
                                 }}
                                 className="px-2.5 py-1 text-[10px] font-extrabold text-white bg-navy-900 hover:bg-navy-800 rounded-md transition-colors shadow-sm"
@@ -785,65 +811,71 @@ const AdminAcademics = () => {
                             </div>
                           </div>
                         ) : (
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex items-center flex-grow truncate pr-2">
-                                <GripVertical className="h-4 w-4 text-gray-500 mr-1 cursor-grab active:cursor-grabbing flex-shrink-0 hidden sm:block" />
-                                <div className="flex items-center space-x-1 mr-2">
+                            <div className="flex flex-col w-full">
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center flex-grow truncate pr-2">
+                                  <GripVertical className="h-4 w-4 text-gray-500 mr-1 cursor-grab active:cursor-grabbing flex-shrink-0 hidden sm:block" />
+                                  <div className="flex items-center space-x-1 mr-2">
+                                    <button
+                                      type="button"
+                                      disabled={originalIndex === 0}
+                                      onClick={(e) => handleMoveClass(e, originalIndex, 'up')}
+                                      className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                      title="Move Up"
+                                    >
+                                      <ChevronUp className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={originalIndex === classes.length - 1}
+                                      onClick={(e) => handleMoveClass(e, originalIndex, 'down')}
+                                      className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
+                                      title="Move Down"
+                                    >
+                                      <ChevronDown className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                  <span className="text-sm font-semibold text-gray-800 dark:text-slate-200 mr-2">{formatClassName(cls.name)}</span>
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
+                                    cls.gender === 'male'
+                                      ? 'bg-sky-50 text-sky-600 border-sky-100/50'
+                                      : cls.gender === 'female'
+                                      ? 'bg-rose-50 text-rose-600 border-rose-100/50'
+                                      : 'bg-slate-50 text-gray-500 border-gray-100'
+                                  }`}>
+                                    {cls.gender || 'mixed'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
-                                    type="button"
-                                    disabled={originalIndex === 0}
-                                    onClick={(e) => handleMoveClass(e, originalIndex, 'up')}
-                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                    title="Move Up"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingClassId(cls._id);
+                                      setEditClassNameValue(cls.name);
+                                      setEditClassGenderValue(cls.gender || 'mixed');
+                                      setEditClassDefaultFeeValue(cls.defaultFee !== undefined && cls.defaultFee !== null ? cls.defaultFee : 0);
+                                    }}
+                                    className="p-1 text-gray-400 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                                    title="Edit Class"
                                   >
-                                    <ChevronUp className="h-3.5 w-3.5" />
+                                    <Pencil className="h-3.5 w-3.5" />
                                   </button>
                                   <button
-                                    type="button"
-                                    disabled={originalIndex === classes.length - 1}
-                                    onClick={(e) => handleMoveClass(e, originalIndex, 'down')}
-                                    className="p-1 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] text-gray-500 hover:text-navy-950 disabled:opacity-30 rounded hover:bg-slate-200 transition-colors flex items-center justify-center"
-                                    title="Move Down"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteClass(cls._id);
+                                    }}
+                                    className="p-1 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded transition-colors"
+                                    title="Delete Class"
                                   >
-                                    <ChevronDown className="h-3.5 w-3.5" />
+                                    <Trash2 className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
-                                <span className="text-sm font-semibold text-gray-800 mr-2">{formatClassName(cls.name)}</span>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize tracking-wider ${
-                                  cls.gender === 'male'
-                                    ? 'bg-sky-50 text-sky-600 border-sky-100/50'
-                                    : cls.gender === 'female'
-                                    ? 'bg-rose-50 text-rose-600 border-rose-100/50'
-                                    : 'bg-slate-50 text-gray-500 border-gray-100'
-                                }`}>
-                                  {cls.gender || 'mixed'}
-                                </span>
                               </div>
-                            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingClassId(cls._id);
-                                  setEditClassNameValue(cls.name);
-                                  setEditClassGenderValue(cls.gender || 'mixed');
-                                }}
-                                className="p-1 text-gray-400 dark:text-slate-400 hover:text-navy-950 dark:hover:text-sky-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
-                                title="Edit Class"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteClass(cls._id);
-                                }}
-                                className="p-1 text-gray-400 dark:text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-100 dark:hover:bg-rose-950/40 rounded transition-colors"
-                                title="Delete Class"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
+                              <div className="pl-7 sm:pl-9 mt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                                <span>Default Fee: <strong className="text-slate-800 dark:text-slate-200 font-bold">Rs. {(cls.defaultFee || 0).toLocaleString()}</strong>/mo</span>
+                              </div>
                             </div>
-                          </div>
                         )}
                       </div>
                     );

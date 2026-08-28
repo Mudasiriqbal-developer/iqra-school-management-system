@@ -19,6 +19,8 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     classId: '',
     sectionId: '',
     address: '',
+    customFee: '',
+    customFeeNote: '',
     monthlyFeeAmount: 0,
     status: 'active'
   });
@@ -59,6 +61,8 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           classId: student.classId?._id || student.classId || '',
           sectionId: student.sectionId?._id || student.sectionId || '',
           address: student.address || '',
+          customFee: student.customFee !== null && student.customFee !== undefined ? student.customFee : '',
+          customFeeNote: student.customFeeNote || '',
           monthlyFeeAmount: student.monthlyFeeAmount || 0,
           status: student.status || 'active'
         });
@@ -73,6 +77,8 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           classId: '',
           sectionId: '',
           address: '',
+          customFee: '',
+          customFeeNote: '',
           monthlyFeeAmount: 0,
           status: 'active'
         });
@@ -286,11 +292,11 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     if (!formData.sectionId) {
       newErrors.sectionId = 'Section is required';
     }
-    // No email validation needed
-    if (formData.monthlyFeeAmount !== undefined && formData.monthlyFeeAmount !== '') {
-      const feeVal = parseFloat(formData.monthlyFeeAmount);
+    // Custom Fee validation
+    if (formData.customFee !== undefined && formData.customFee !== '' && formData.customFee !== null) {
+      const feeVal = parseFloat(formData.customFee);
       if (isNaN(feeVal) || feeVal < 0) {
-        newErrors.monthlyFeeAmount = 'Monthly fee amount must be a non-negative number';
+        newErrors.customFee = 'Custom fee must be a non-negative number';
       }
     }
 
@@ -305,11 +311,16 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
     try {
       setSubmitting(true);
       
-      // Clean email payload if empty
+      const customFeeNum = (formData.customFee !== '' && formData.customFee !== null && formData.customFee !== undefined)
+        ? parseFloat(formData.customFee)
+        : null;
+
       const payload = {
         ...formData,
         address: formData.address.trim() || undefined,
-        monthlyFeeAmount: formData.monthlyFeeAmount ? parseFloat(formData.monthlyFeeAmount) : 0
+        customFee: customFeeNum,
+        customFeeNote: customFeeNum !== null && formData.customFeeNote ? formData.customFeeNote.trim() : null,
+        monthlyFeeAmount: customFeeNum !== null ? customFeeNum : 0
       };
 
       // Add admission fields only if section was expanded and contains data
@@ -573,27 +584,51 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
               )}
             </div>
 
-            {/* Monthly Fee Amount */}
+            {/* Custom Monthly Fee Override */}
             <div className="flex flex-col">
-              <label htmlFor="monthlyFeeAmount" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
-                Monthly Fee Amount (Rs.)
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="customFee" className="text-xs font-bold text-navy-950 uppercase">
+                  Custom Monthly Fee (Optional)
+                </label>
+                {classes.find(c => c._id === formData.classId) && (
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    Default: <strong className="text-navy-900 font-bold">Rs. {(classes.find(c => c._id === formData.classId)?.defaultFee || 0).toLocaleString()}</strong>/mo
+                  </span>
+                )}
+              </div>
               <input
-                id="monthlyFeeAmount"
+                id="customFee"
                 type="number"
-                name="monthlyFeeAmount"
+                name="customFee"
                 min="0"
-                value={formData.monthlyFeeAmount}
+                value={formData.customFee}
                 onChange={handleChange}
-                placeholder="e.g. 5000"
+                placeholder={classes.find(c => c._id === formData.classId) ? `Leave blank for Class Default (Rs. ${classes.find(c => c._id === formData.classId)?.defaultFee || 0})` : 'Leave blank for Class Default'}
                 className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
-                  errors.monthlyFeeAmount ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
+                  errors.customFee ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
                 }`}
               />
-              {errors.monthlyFeeAmount && (
-                <span className="text-red-500 text-xs font-medium mt-1">{errors.monthlyFeeAmount}</span>
+              {errors.customFee && (
+                <span className="text-red-500 text-xs font-medium mt-1">{errors.customFee}</span>
               )}
             </div>
+
+            {formData.customFee !== '' && formData.customFee !== null && formData.customFee !== undefined && (
+              <div className="flex flex-col animate-fadeIn">
+                <label htmlFor="customFeeNote" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
+                  Custom Fee Note / Reason (Optional)
+                </label>
+                <input
+                  id="customFeeNote"
+                  type="text"
+                  name="customFeeNote"
+                  value={formData.customFeeNote}
+                  onChange={handleChange}
+                  placeholder="e.g. Scholarship, Sibling Discount, Staff Child"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm"
+                />
+              </div>
+            )}
 
             {/* Status (Only in EDIT mode) */}
             {student && (

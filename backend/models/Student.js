@@ -53,6 +53,17 @@ const studentSchema = new mongoose.Schema(
     monthlyFeeAmount: {
       type: Number,
       default: 0,
+      // @deprecated: Kept for backwards compatibility. Use customFee or classId.defaultFee instead.
+    },
+    customFee: {
+      type: Number,
+      default: null,
+      min: [0, 'Custom fee must be a non-negative number'],
+    },
+    customFeeNote: {
+      type: String,
+      trim: true,
+      default: null,
     },
     status: {
       type: String,

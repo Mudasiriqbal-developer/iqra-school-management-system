@@ -5,7 +5,7 @@ import {
   Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
   AlertTriangle, Filter, BookOpen, Wallet, TrendingUp, Key, MoreVertical, Settings,
-  FileSpreadsheet, PlusCircle
+  FileSpreadsheet, PlusCircle, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -13,7 +13,16 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getStudents, getStudentById, deleteStudent, getClasses, getSectionsByClass, downloadAdmissionReceipt, resetStudentPassword } from '../features/students/studentService';
+import { 
+  getStudents, 
+  getStudentById, 
+  deleteStudent, 
+  getClasses, 
+  getSectionsByClass, 
+  downloadAdmissionReceipt, 
+  resetStudentPassword,
+  setStudentCustomFee
+} from '../features/students/studentService';
 import StudentFormModal from '../features/students/StudentFormModal';
 import StudentViewDrawer from '../features/students/StudentViewDrawer';
 import BulkStudentImportModal from '../features/students/BulkStudentImportModal';
@@ -102,6 +111,14 @@ const AdminStudents = () => {
   const [studentToResetPassword, setStudentToResetPassword] = useState(null);
   const [newPassword, setNewPassword] = useState('student123');
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+
+  // Custom Fee modal states
+  const [isCustomFeeModalOpen, setIsCustomFeeModalOpen] = useState(false);
+  const [studentForCustomFee, setStudentForCustomFee] = useState(null);
+  const [feeMode, setFeeMode] = useState('default'); // 'default' | 'custom'
+  const [customFeeAmount, setCustomFeeAmount] = useState('');
+  const [customFeeNote, setCustomFeeNote] = useState('');
+  const [isSubmittingCustomFee, setIsSubmittingCustomFee] = useState(false);
 
   // Receipt download confirmation modal states
   const [isReceiptConfirmOpen, setIsReceiptConfirmOpen] = useState(false);
@@ -281,6 +298,55 @@ const AdminStudents = () => {
       toast.error(err.response?.data?.message || 'Server error occurred during password reset');
     } finally {
       setIsResettingPassword(false);
+    }
+  };
+
+  const handleOpenCustomFeeModal = (student) => {
+    setStudentForCustomFee(student);
+    if (student.customFee !== null && student.customFee !== undefined) {
+      setFeeMode('custom');
+      setCustomFeeAmount(student.customFee.toString());
+      setCustomFeeNote(student.customFeeNote || '');
+    } else {
+      setFeeMode('default');
+      setCustomFeeAmount(student.classId?.defaultFee ? student.classId.defaultFee.toString() : '');
+      setCustomFeeNote('');
+    }
+    setIsCustomFeeModalOpen(true);
+  };
+
+  const handleCustomFeeSubmit = async (e) => {
+    e.preventDefault();
+    if (!studentForCustomFee) return;
+
+    let payload = {};
+    if (feeMode === 'default') {
+      payload = { customFee: null, customFeeNote: null };
+    } else {
+      const amount = parseFloat(customFeeAmount);
+      if (isNaN(amount) || amount < 0) {
+        toast.error('Please enter a valid non-negative custom fee amount');
+        return;
+      }
+      payload = { customFee: amount, customFeeNote: customFeeNote ? customFeeNote.trim() : null };
+    }
+
+    setIsSubmittingCustomFee(true);
+    try {
+      const res = await setStudentCustomFee(studentForCustomFee._id, payload);
+      if (res.success) {
+        toast.success(res.message || 'Custom fee setting updated successfully');
+        setIsCustomFeeModalOpen(false);
+        setStudentForCustomFee(null);
+        fetchStudentsList();
+      } else {
+        toast.error(res.message || 'Failed to update custom fee');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Server error occurred during custom fee update');
+    } finally {
+      setIsSubmittingCustomFee(false);
     }
   };
 
@@ -637,6 +703,18 @@ const AdminStudents = () => {
                                       <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
                                       Reset Password
                                     </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveDropdownId(null);
+                                        setDropdownCoords(null);
+                                        handleOpenCustomFeeModal(student);
+                                      }}
+                                      className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                    >
+                                      <Wallet className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                      Set Custom Fee
+                                    </button>
                                   </div>
                                   <div className="py-1">
                                     <button
@@ -669,6 +747,17 @@ const AdminStudents = () => {
                               ? student.classId.name + ' - ' + (student.sectionId?.name || 'N/A')
                               : 'N/A'}
                           </span>
+                          <div className="mt-0.5">
+                            {student.customFee !== null && student.customFee !== undefined ? (
+                              <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-navy-50 text-navy-900 border border-navy-150" title={student.customFeeNote ? `Custom Override: ${student.customFeeNote}` : 'Custom Fee'}>
+                                Custom: Rs. {student.customFee.toLocaleString()}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                Fee: Rs. {(student.classId?.defaultFee || 0).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div>
                           <span className="text-[10px] uppercase font-bold text-text-secondary block">Father's Contact</span>
@@ -742,7 +831,19 @@ const AdminStudents = () => {
                                     : '')
                                 : 'N/A'}
                             </div>
-                            <div className="text-xs text-text-secondary font-medium mt-0.5">{student.sectionId?.name || 'N/A'}</div>
+                            <div className="text-xs text-text-secondary font-medium mt-0.5 flex items-center space-x-1.5">
+                              <span>{student.sectionId?.name || 'N/A'}</span>
+                              <span className="text-slate-300">•</span>
+                              {student.customFee !== null && student.customFee !== undefined ? (
+                                <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded bg-navy-50 text-navy-900 border border-navy-150" title={student.customFeeNote ? `Custom Override: ${student.customFeeNote}` : 'Custom Fee'}>
+                                  Custom: Rs. {student.customFee.toLocaleString()}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  Rs. {(student.classId?.defaultFee || 0).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           <td className="hidden md:table-cell py-4 px-6 text-sm font-semibold text-text-secondary">
@@ -824,6 +925,18 @@ const AdminStudents = () => {
                                         >
                                           <Key className="h-4.5 w-4.5 text-text-secondary mr-3" />
                                           Reset Password
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleOpenCustomFeeModal(student);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <Wallet className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          Set Custom Fee
                                         </button>
                                       </div>
                                       <div className="py-1">
@@ -1116,6 +1229,151 @@ const AdminStudents = () => {
                 Yes
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Set Custom Fee Modal */}
+      {isCustomFeeModalOpen && studentForCustomFee && (
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-700 p-6 overflow-hidden animate-fadeIn">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 bg-navy-50 dark:bg-sky-950/40 text-navy-900 dark:text-sky-400 rounded-xl">
+                  <Wallet className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Set Monthly Fee</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{studentForCustomFee.fullName} ({studentForCustomFee.registrationNumber})</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCustomFeeModalOpen(false);
+                  setStudentForCustomFee(null);
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCustomFeeSubmit} className="space-y-4 pt-4">
+              
+              {/* Reference Info Card */}
+              <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700 rounded-xl p-3.5 flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Class</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    {studentForCustomFee.classId?.name || 'Assigned Class'}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Class Default Fee</span>
+                  <span className="font-bold text-navy-900 dark:text-sky-400">
+                    Rs. {(studentForCustomFee.classId?.defaultFee || 0).toLocaleString()} / month
+                  </span>
+                </div>
+              </div>
+
+              {/* Fee Mode Selection */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Fee Billing Type
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFeeMode('default')}
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col ${
+                      feeMode === 'default'
+                        ? 'border-navy-900 bg-navy-50/70 text-navy-900 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-500 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>Use Class Default</span>
+                    <span className="text-[10px] font-medium opacity-80 mt-0.5">Rs. {(studentForCustomFee.classId?.defaultFee || 0).toLocaleString()}/mo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFeeMode('custom')}
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col ${
+                      feeMode === 'custom'
+                        ? 'border-navy-900 bg-navy-50/70 text-navy-900 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-500 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>Custom Override</span>
+                    <span className="text-[10px] font-medium opacity-80 mt-0.5">Scholarship / Waiver</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Fee Fields if feeMode === 'custom' */}
+              {feeMode === 'custom' && (
+                <div className="space-y-3 p-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700 rounded-xl animate-fadeIn">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                      Custom Monthly Fee (Rs.) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      placeholder="e.g. 2500"
+                      value={customFeeAmount}
+                      onChange={(e) => setCustomFeeAmount(e.target.value)}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-navy-900/30"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+                      Reason / Note (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Scholarship, Sibling Discount, Staff Child"
+                      value={customFeeNote}
+                      onChange={(e) => setCustomFeeNote(e.target.value)}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-navy-900/30"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Helper Notice */}
+              <p className="text-[11px] text-slate-400 font-medium">
+                Note: Fee updates apply starting next month. Current and past month bills remain unchanged.
+              </p>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomFeeModalOpen(false);
+                    setStudentForCustomFee(null);
+                  }}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
+                  disabled={isSubmittingCustomFee}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingCustomFee || (feeMode === 'custom' && (!customFeeAmount || parseFloat(customFeeAmount) < 0))}
+                  className="px-5 py-2 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs disabled:opacity-50 flex items-center"
+                >
+                  {isSubmittingCustomFee ? 'Saving...' : 'Save Fee Settings'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

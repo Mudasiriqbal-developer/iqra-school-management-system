@@ -141,6 +141,12 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Teacher Assignment Engine**: Assign teachers to specific class-section-subject combinations without scheduling conflicts.
 
 ### 5. Fee Management, Student Ledgers & One-Time Charges
+- **Class Default Fee & Student Custom Override Architecture**:
+  - **Class Default Fees**: Set monthly default tuition per class in Academic Structure (`AdminAcademics.jsx`). Automatically inherited by every student in that class who does not have an override.
+  - **Student Custom Fee Overrides**: Set individualized tuition amounts and notes (e.g. "Scholarship", "Sibling Discount", "Staff Child") per student in Student Management (`AdminStudents.jsx`) or via the Student Ledger Drawer (`StudentLedgerDrawer.jsx`).
+  - **Centralized Dynamic Fee Resolver**: All fee generation, analytics, and portal billing logic resolves fees through `resolveStudentMonthlyFee` (`customFee` -> `classDoc.defaultFee` -> `0`).
+  - **Promotion Continuity**: Custom fees seamlessly persist when students are promoted to higher classes, while standard students automatically adopt the new class's default rate.
+  - **Non-Retroactive Invariant**: Updating a class's default fee or student's custom fee only affects future generated billing cycles; previously generated `FeeRecord` amounts remain permanently intact.
 - **Automated Monthly Billing**: Bulk generation of monthly fee dues for all active students.
 - **Flexible Payment Collection**: Record full, half, or custom payments with payment modes (Cash, Bank, Online), and automatic receipt numbering.
 - **Occasional / One-Time Charges System**: Issue exam fees, paper funds, activity kits, or special levies to an entire class, section, or specific hand-picked students with optional due dates.
@@ -261,6 +267,7 @@ iqra-school-management-system/
 - `GET    /api/students/:id` — Fetch complete student profile.
 - `PUT    /api/students/:id` — Update student details.
 - `DELETE /api/students/:id` — Archive / delete student record.
+- `PATCH  /api/students/:id/custom-fee` — Set or reset student custom monthly fee override and context note.
 - `POST   /api/students/import` — Upload and process `.xlsx` bulk student file.
 - `GET    /api/students/:id/admission-receipt-pdf` — Download admission receipt PDF.
 

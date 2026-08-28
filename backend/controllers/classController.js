@@ -11,8 +11,9 @@ const Assignment = require('../models/Assignment');
  */
 const createClass = async (req, res, next) => {
   try {
-    const { name, gender } = req.body;
+    const { name, gender, defaultFee } = req.body;
     const classGender = gender || 'mixed';
+    const feeValue = defaultFee !== undefined && defaultFee !== null && !isNaN(Number(defaultFee)) && Number(defaultFee) >= 0 ? Number(defaultFee) : 0;
 
     const existingClass = await Class.findOne({ name, gender: classGender });
     if (existingClass) {
@@ -23,7 +24,7 @@ const createClass = async (req, res, next) => {
       });
     }
 
-    const newClass = await Class.create({ name, gender: classGender });
+    const newClass = await Class.create({ name, gender: classGender, defaultFee: feeValue });
 
     // Automatically create default Section "A" for the new class
     try {
@@ -90,7 +91,7 @@ const getAllClasses = async (req, res, next) => {
  */
 const updateClass = async (req, res, next) => {
   try {
-    const { name, gender } = req.body;
+    const { name, gender, defaultFee } = req.body;
 
     const singleClass = await Class.findById(req.params.id);
     if (!singleClass) {
@@ -117,6 +118,12 @@ const updateClass = async (req, res, next) => {
 
     singleClass.name = targetName;
     singleClass.gender = targetGender;
+    if (defaultFee !== undefined && defaultFee !== null) {
+      const parsedFee = Number(defaultFee);
+      if (!isNaN(parsedFee) && parsedFee >= 0) {
+        singleClass.defaultFee = parsedFee;
+      }
+    }
     const updatedClass = await singleClass.save();
 
     return res.status(200).json({

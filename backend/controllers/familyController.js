@@ -224,9 +224,9 @@ const getFamilyById = async (req, res, next) => {
     const family = await Family.findById(req.params.id)
       .populate({
         path: 'students',
-        select: 'fullName registrationNumber classId sectionId status photoUrl monthlyFeeAmount',
+        select: 'fullName registrationNumber classId sectionId status photoUrl monthlyFeeAmount customFee customFeeNote',
         populate: [
-          { path: 'classId', select: 'name' },
+          { path: 'classId', select: 'name defaultFee' },
           { path: 'sectionId', select: 'name' }
         ]
       });

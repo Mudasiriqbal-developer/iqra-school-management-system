@@ -2,10 +2,11 @@ const Student = require('../models/Student');
 const FeeRecord = require('../models/FeeRecord');
 const Expense = require('../models/Expense');
 const Payroll = require('../models/Payroll');
+const { resolveStudentMonthlyFee } = require('../utils/feeHelper');
 
 // Helper to bulk generate current month fee records for active students
 const ensureCurrentMonthRecords = async (currentMonth) => {
-  const activeStudents = await Student.find({ status: 'active' });
+  const activeStudents = await Student.find({ status: 'active' }).populate('classId', 'defaultFee');
   const existingRecords = await FeeRecord.find({ month: currentMonth, type: 'monthly' }, 'studentId');
   const existingStudentIds = new Set(existingRecords.map(r => r.studentId.toString()));
 
@@ -15,7 +16,7 @@ const ensureCurrentMonthRecords = async (currentMonth) => {
       recordsToCreate.push({
         studentId: student._id,
         month: currentMonth,
-        amountDue: student.monthlyFeeAmount || 0,
+        amountDue: resolveStudentMonthlyFee(student),
         amountPaid: 0,
         status: 'pending',
         payments: [],
