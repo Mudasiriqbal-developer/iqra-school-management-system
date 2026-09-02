@@ -23,6 +23,7 @@ const settingsRoutes = require('./routes/settingsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const promotionRoutes = require('./routes/promotionRoutes');
 const familyRoutes = require('./routes/familyRoutes');
+const bookRoutes = require('./routes/bookRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -71,6 +72,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/promotion', promotionRoutes);
 app.use('/api/families', familyRoutes);
+app.use('/api/books', bookRoutes);
 
 // Centralized Error Handler Middleware (Must be after routes)
 app.use(errorHandler);

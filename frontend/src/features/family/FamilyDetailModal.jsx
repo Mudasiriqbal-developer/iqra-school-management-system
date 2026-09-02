@@ -9,6 +9,7 @@ import {
   getFamilyFeeSummary, 
   getFamilyBooksSummary, 
   payFamilyFees, 
+  payFamilyBooks,
   downloadFamilyVoucherPDF 
 } from './familyService';
 import { getStudents } from '../students/studentService';
@@ -179,7 +180,9 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
 
   // Pay modal states
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [payType, setPayType] = useState('fee'); // 'fee' | 'book'
   const [selectedFeeRecordIds, setSelectedFeeRecordIds] = useState([]);
+  const [selectedBookFeeRecordIds, setSelectedBookFeeRecordIds] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [idempotencyKey, setIdempotencyKey] = useState('');
   const [isPaying, setIsPaying] = useState(false);
@@ -264,19 +267,29 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
     }
   }, [familyId]);
 
-  const openPayModal = () => {
+  const openPayModal = (type = 'fee') => {
+    setPayType(type);
     // Generate UUID client-side when opening
     const key = (self.crypto && self.crypto.randomUUID) 
       ? self.crypto.randomUUID() 
       : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     setIdempotencyKey(key);
     
-    // Default: all checked
-    if (feeSummary && feeSummary.students) {
-      const allIds = feeSummary.students.flatMap(s => s.outstandingRecords.map(r => r.feeRecordId));
-      setSelectedFeeRecordIds(allIds);
+    // Default: all checked for the selected type
+    if (type === 'fee') {
+      if (feeSummary && feeSummary.students) {
+        const allIds = feeSummary.students.flatMap(s => s.outstandingRecords.map(r => r.feeRecordId));
+        setSelectedFeeRecordIds(allIds);
+      } else {
+        setSelectedFeeRecordIds([]);
+      }
     } else {
-      setSelectedFeeRecordIds([]);
+      if (booksSummary && booksSummary.students) {
+        const allIds = booksSummary.students.flatMap(s => s.outstandingRecords.map(r => r.bookFeeRecordId));
+        setSelectedBookFeeRecordIds(allIds);
+      } else {
+        setSelectedBookFeeRecordIds([]);
+      }
     }
     
     setPaymentMethod('cash');
@@ -287,32 +300,63 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
 
   const handleConfirmPayment = async (e) => {
     e.preventDefault();
-    if (selectedFeeRecordIds.length === 0) {
-      toast.error('Please select at least one fee record to pay');
-      return;
-    }
 
-    try {
-      setIsPaying(true);
-      const res = await payFamilyFees(familyId, {
-        feeRecordIds: selectedFeeRecordIds,
-        paymentMethod,
-        idempotencyKey
-      });
-
-      if (res.success) {
-        toast.success(res.message || 'Payment processed successfully');
-        setPaymentSuccessData(res.data);
-        // Refresh family, fee summary, books summary
-        await loadFamilyDetails();
-        await loadFinancialData();
+    if (payType === 'fee') {
+      if (selectedFeeRecordIds.length === 0) {
+        toast.error('Please select at least one fee record to pay');
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      const errMsg = err.response?.data?.message || 'Payment failed';
-      toast.error(errMsg);
-    } finally {
-      setIsPaying(false);
+
+      try {
+        setIsPaying(true);
+        const res = await payFamilyFees(familyId, {
+          feeRecordIds: selectedFeeRecordIds,
+          paymentMethod,
+          idempotencyKey
+        });
+
+        if (res.success) {
+          toast.success(res.message || 'Fee payment processed successfully');
+          setPaymentSuccessData(res.data);
+          // Refresh family, fee summary, books summary
+          await loadFamilyDetails();
+          await loadFinancialData();
+        }
+      } catch (err) {
+        console.error(err);
+        const errMsg = err.response?.data?.message || 'Payment failed';
+        toast.error(errMsg);
+      } finally {
+        setIsPaying(false);
+      }
+    } else {
+      if (selectedBookFeeRecordIds.length === 0) {
+        toast.error('Please select at least one book fee record to pay');
+        return;
+      }
+
+      try {
+        setIsPaying(true);
+        const res = await payFamilyBooks(familyId, {
+          bookFeeRecordIds: selectedBookFeeRecordIds,
+          paymentMethod,
+          idempotencyKey
+        });
+
+        if (res.success) {
+          toast.success(res.message || 'Book payment processed successfully');
+          setPaymentSuccessData(res.data);
+          // Refresh family, fee summary, books summary
+          await loadFamilyDetails();
+          await loadFinancialData();
+        }
+      } catch (err) {
+        console.error(err);
+        const errMsg = err.response?.data?.message || 'Payment failed';
+        toast.error(errMsg);
+      } finally {
+        setIsPaying(false);
+      }
     }
   };
 
@@ -678,17 +722,33 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                 <p className="text-[11px] text-gray-400 mt-0.5">Consolidated fee balance and issued assets across all siblings.</p>
               </div>
               
-              <button
-                onClick={openPayModal}
-                disabled={!feeSummary || feeSummary.familyTotal === 0}
-                className={`px-4 py-2 border rounded-xl text-xs font-extrabold flex items-center space-x-1 transition-colors ${
-                  feeSummary && feeSummary.familyTotal > 0
-                    ? 'bg-navy-900 hover:bg-navy-800 text-white border-navy-955 shadow-xs'
-                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                }`}
-              >
-                <span>Pay Combined Fees</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => openPayModal('fee')}
+                  disabled={!feeSummary || feeSummary.familyTotal === 0}
+                  className={`px-3.5 py-2 border rounded-xl text-xs font-extrabold flex items-center space-x-1 transition-colors ${
+                    feeSummary && feeSummary.familyTotal > 0
+                      ? 'bg-navy-900 hover:bg-navy-800 text-white border-navy-955 shadow-xs'
+                      : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  <DollarSign className="h-3.5 w-3.5" />
+                  <span>Pay Combined Fees</span>
+                </button>
+
+                <button
+                  onClick={() => openPayModal('book')}
+                  disabled={!booksSummary || booksSummary.familyTotal === 0}
+                  className={`px-3.5 py-2 border rounded-xl text-xs font-extrabold flex items-center space-x-1 transition-colors ${
+                    booksSummary && booksSummary.familyTotal > 0
+                      ? 'bg-sky-600 hover:bg-sky-700 text-white border-sky-700 shadow-xs'
+                      : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                  }`}
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>Pay Combined Books</span>
+                </button>
+              </div>
             </div>
 
             {/* Stat cards block */}
@@ -709,7 +769,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Outstanding Dues</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Tuition & Fee Dues</span>
                       <span className="text-lg font-black text-navy-950">
                         Rs. {feeSummary ? feeSummary.familyTotal.toFixed(2) : '0.00'}
                       </span>
@@ -746,13 +806,16 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                     </div>
                     <div className="border-t border-gray-150 pt-2 space-y-2">
                       <div className="h-4 bg-gray-100 rounded w-3/4" />
+                      <div className="h-4 bg-gray-100 rounded w-1/2" />
                     </div>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Combined Books Outstanding</span>
-                      <span className="text-lg font-black text-navy-950">—</span>
+                      <span className="text-lg font-black text-navy-950">
+                        Rs. {booksSummary ? booksSummary.familyTotal.toFixed(2) : '0.00'}
+                      </span>
                     </div>
 
                     <div className="divide-y divide-gray-100 border-t border-gray-150 pt-2 space-y-1.5 max-h-48 overflow-y-auto">
@@ -761,12 +824,15 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                           <div key={student.studentId} className="flex justify-between items-center text-xs pt-1.5">
                             <div className="min-w-0">
                               <span className="font-bold text-gray-700 block truncate">{student.studentName}</span>
+                              <span className="text-[10px] text-gray-400 block">{student.classSection}</span>
                             </div>
-                            <span className="font-bold text-gray-400">—</span>
+                            <span className="font-extrabold text-navy-900">
+                              Rs. {student.studentTotal.toFixed(2)}
+                            </span>
                           </div>
                         ))
                       ) : (
-                        <p className="text-[10px] text-gray-400 italic py-2">No students or books data available.</p>
+                        <p className="text-[10px] text-gray-400 italic py-2">No students or book dues available.</p>
                       )}
                     </div>
                   </>
@@ -975,8 +1041,14 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
               {/* Modal Header */}
               <div className="bg-navy-900 text-white p-5 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5 text-sky-400" />
-                  <h3 className="text-base font-extrabold tracking-tight">Pay Combined Fees</h3>
+                  {payType === 'book' ? (
+                    <BookOpen className="h-5 w-5 text-sky-400" />
+                  ) : (
+                    <DollarSign className="h-5 w-5 text-sky-400" />
+                  )}
+                  <h3 className="text-base font-extrabold tracking-tight">
+                    {payType === 'book' ? 'Pay Combined Books' : 'Pay Combined Fees'}
+                  </h3>
                 </div>
                 <button
                   type="button"
@@ -1007,56 +1079,106 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                     {/* Outstanding list */}
                     <div className="space-y-3">
                       <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block">
-                        Select Fees to Pay
+                        {payType === 'book' ? 'Select Book Fees to Pay' : 'Select Fees to Pay'}
                       </label>
                       
                       <div className="space-y-3.5 max-h-60 overflow-y-auto divide-y divide-gray-100 pr-1">
-                        {feeSummary && feeSummary.students && feeSummary.students.length > 0 ? (
-                          feeSummary.students.map((student) => {
-                            if (student.outstandingRecords.length === 0) return null;
-                            return (
-                              <div key={student.studentId} className="pt-3 space-y-2">
-                                <div className="text-xs font-extrabold text-navy-950 flex justify-between">
-                                  <span>{student.studentName}</span>
-                                  <span className="text-[10px] text-gray-400 font-semibold">{student.classSection}</span>
+                        {payType === 'fee' ? (
+                          feeSummary && feeSummary.students && feeSummary.students.length > 0 ? (
+                            feeSummary.students.map((student) => {
+                              if (student.outstandingRecords.length === 0) return null;
+                              return (
+                                <div key={student.studentId} className="pt-3 space-y-2">
+                                  <div className="text-xs font-extrabold text-navy-950 flex justify-between">
+                                    <span>{student.studentName}</span>
+                                    <span className="text-[10px] text-gray-400 font-semibold">{student.classSection}</span>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {student.outstandingRecords.map((record) => {
+                                      const isChecked = selectedFeeRecordIds.includes(record.feeRecordId);
+                                      return (
+                                        <label
+                                          key={record.feeRecordId}
+                                          className={`flex items-center justify-between p-2.5 border rounded-xl cursor-pointer text-xs transition-colors ${
+                                            isChecked
+                                              ? 'bg-navy-50/50 border-navy-200'
+                                              : 'bg-white border-gray-250 hover:bg-slate-50'
+                                          }`}
+                                        >
+                                          <div className="flex items-center space-x-2">
+                                            <input
+                                              type="checkbox"
+                                              checked={isChecked}
+                                              onChange={() => {
+                                                if (isChecked) {
+                                                  setSelectedFeeRecordIds(prev => prev.filter(id => id !== record.feeRecordId));
+                                                } else {
+                                                  setSelectedFeeRecordIds(prev => [...prev, record.feeRecordId]);
+                                                }
+                                              }}
+                                              className="h-4 w-4 rounded-sm text-navy-900 border-gray-300 focus:ring-navy-900"
+                                            />
+                                            <span className="font-bold text-gray-700">{record.title || record.month}</span>
+                                          </div>
+                                          <span className="font-extrabold text-navy-900">Rs. {record.amount.toFixed(2)}</span>
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  {student.outstandingRecords.map((record) => {
-                                    const isChecked = selectedFeeRecordIds.includes(record.feeRecordId);
-                                    return (
-                                      <label
-                                        key={record.feeRecordId}
-                                        className={`flex items-center justify-between p-2.5 border rounded-xl cursor-pointer text-xs transition-colors ${
-                                          isChecked
-                                            ? 'bg-navy-50/50 border-navy-200'
-                                            : 'bg-white border-gray-250 hover:bg-slate-50'
-                                        }`}
-                                      >
-                                        <div className="flex items-center space-x-2">
-                                          <input
-                                            type="checkbox"
-                                            checked={isChecked}
-                                            onChange={() => {
-                                              if (isChecked) {
-                                                setSelectedFeeRecordIds(prev => prev.filter(id => id !== record.feeRecordId));
-                                              } else {
-                                                setSelectedFeeRecordIds(prev => [...prev, record.feeRecordId]);
-                                              }
-                                            }}
-                                            className="h-4 w-4 rounded-sm text-navy-900 border-gray-300 focus:ring-navy-900"
-                                          />
-                                          <span className="font-bold text-gray-700">{record.title || record.month}</span>
-                                        </div>
-                                        <span className="font-extrabold text-navy-900">Rs. {record.amount.toFixed(2)}</span>
-                                      </label>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          })
+                              );
+                            })
+                          ) : (
+                            <p className="text-xs text-gray-400 italic py-2">No outstanding fees found.</p>
+                          )
                         ) : (
-                          <p className="text-xs text-gray-400 italic py-2">No outstanding fees found.</p>
+                          booksSummary && booksSummary.students && booksSummary.students.length > 0 ? (
+                            booksSummary.students.map((student) => {
+                              if (student.outstandingRecords.length === 0) return null;
+                              return (
+                                <div key={student.studentId} className="pt-3 space-y-2">
+                                  <div className="text-xs font-extrabold text-navy-950 flex justify-between">
+                                    <span>{student.studentName}</span>
+                                    <span className="text-[10px] text-gray-400 font-semibold">{student.classSection}</span>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {student.outstandingRecords.map((record) => {
+                                      const isChecked = selectedBookFeeRecordIds.includes(record.bookFeeRecordId);
+                                      return (
+                                        <label
+                                          key={record.bookFeeRecordId}
+                                          className={`flex items-center justify-between p-2.5 border rounded-xl cursor-pointer text-xs transition-colors ${
+                                            isChecked
+                                              ? 'bg-sky-50/60 border-sky-300'
+                                              : 'bg-white border-gray-250 hover:bg-slate-50'
+                                          }`}
+                                        >
+                                          <div className="flex items-center space-x-2">
+                                            <input
+                                              type="checkbox"
+                                              checked={isChecked}
+                                              onChange={() => {
+                                                if (isChecked) {
+                                                  setSelectedBookFeeRecordIds(prev => prev.filter(id => id !== record.bookFeeRecordId));
+                                                } else {
+                                                  setSelectedBookFeeRecordIds(prev => [...prev, record.bookFeeRecordId]);
+                                                }
+                                              }}
+                                              className="h-4 w-4 rounded-sm text-sky-700 border-gray-300 focus:ring-sky-600"
+                                            />
+                                            <span className="font-bold text-gray-700">{record.title || 'Course Books'}</span>
+                                          </div>
+                                          <span className="font-extrabold text-navy-900">Rs. {record.amount.toFixed(2)}</span>
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <p className="text-xs text-gray-400 italic py-2">No outstanding books dues found.</p>
+                          )
                         )}
                       </div>
                     </div>
@@ -1073,6 +1195,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                       >
                         <option value="cash">Cash</option>
                         <option value="bank_transfer">Bank Transfer</option>
+                        <option value="online">EasyPaisa / JazzCash</option>
                         <option value="card">Card</option>
                         <option value="other">Other</option>
                       </select>
@@ -1084,11 +1207,20 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Running Total (Selected)</span>
                         <span className="text-lg font-black text-navy-955">
                           Rs. {
-                            feeSummary?.students
-                              ?.flatMap(s => s.outstandingRecords)
-                              ?.filter(r => selectedFeeRecordIds.includes(r.feeRecordId))
-                              ?.reduce((sum, r) => sum + r.amount, 0)
-                              ?.toFixed(2) || '0.00'
+                            payType === 'fee'
+                              ? (
+                                feeSummary?.students
+                                  ?.flatMap(s => s.outstandingRecords)
+                                  ?.filter(r => selectedFeeRecordIds.includes(r.feeRecordId))
+                                  ?.reduce((sum, r) => sum + r.amount, 0)
+                                  ?.toFixed(2) || '0.00'
+                              ) : (
+                                booksSummary?.students
+                                  ?.flatMap(s => s.outstandingRecords)
+                                  ?.filter(r => selectedBookFeeRecordIds.includes(r.bookFeeRecordId))
+                                  ?.reduce((sum, r) => sum + r.amount, 0)
+                                  ?.toFixed(2) || '0.00'
+                              )
                           }
                         </span>
                       </div>
@@ -1103,7 +1235,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                         </button>
                         <button
                           type="submit"
-                          disabled={isPaying || selectedFeeRecordIds.length === 0}
+                          disabled={isPaying || (payType === 'fee' ? selectedFeeRecordIds.length === 0 : selectedBookFeeRecordIds.length === 0)}
                           className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5"
                         >
                           {isPaying && <Loader2 className="h-3.5 w-3.5 animate-spin" />}

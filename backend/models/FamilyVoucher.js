@@ -12,11 +12,28 @@ const familyVoucherSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    voucherType: {
+      type: String,
+      enum: ['fee', 'book', 'combined'],
+      default: 'fee',
+    },
     idempotencyKey: {
       type: String,
       unique: true,
       sparse: true,
     },
+    feeRecordIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'FeeRecord',
+      },
+    ],
+    bookFeeRecordIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BookFee',
+      },
+    ],
     lineItems: [
       {
         studentId: {
@@ -34,7 +51,7 @@ const familyVoucherSchema = new mongoose.Schema(
         },
         month: {
           type: String,
-          required: true,
+          default: null,
         },
         title: {
           type: String,
@@ -51,7 +68,10 @@ const familyVoucherSchema = new mongoose.Schema(
         feeRecordId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'FeeRecord',
-          required: true,
+        },
+        bookFeeRecordId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'BookFee',
         },
       },
     ],
@@ -61,7 +81,7 @@ const familyVoucherSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['cash', 'bank_transfer', 'card', 'other'],
+      enum: ['cash', 'bank_transfer', 'card', 'online', 'other'],
       default: 'cash',
     },
     paymentDate: {

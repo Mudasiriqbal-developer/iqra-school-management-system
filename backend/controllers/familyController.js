@@ -486,11 +486,17 @@ const getFamilyFeeSummary = async (req, res, next) => {
 };
 
 /**
- * Books Outstanding Summary for Phase 2 (Stub only)
+ * Books Outstanding Summary
  */
 const getFamilyBooksSummary = async (req, res, next) => {
   try {
-    const family = await Family.findById(req.params.id).populate('students', 'fullName');
+    const family = await Family.findById(req.params.id).populate({
+      path: 'students',
+      populate: [
+        { path: 'classId', select: 'name' },
+        { path: 'sectionId', select: 'name' }
+      ]
+    });
 
     if (!family) {
       return res.status(404).json({
@@ -499,18 +505,56 @@ const getFamilyBooksSummary = async (req, res, next) => {
       });
     }
 
-    const studentsData = family.students.map(student => ({
-      studentId: student._id,
-      studentName: student.fullName,
-      booksOutstanding: null,
-      tracked: false
-    }));
+    const studentsData = [];
+    let familyTotal = 0;
+
+    for (const student of family.students) {
+      const bookRecords = await BookFee.find({
+        student: student._id,
+        paymentStatus: { $ne: 'paid' }
+      }).sort({ createdAt: -1 });
+
+      const outstandingRecords = bookRecords
+        .filter(r => (r.amount - (r.amountPaid || 0)) > 0)
+        .map(r => {
+          const remaining = r.amount - (r.amountPaid || 0);
+          const title = r.items && r.items.length > 0
+            ? r.items.map(item => item.title).join(', ')
+            : 'Course Books';
+
+          return {
+            bookFeeId: r._id,
+            academicYear: r.academicYear || null,
+            title,
+            amount: remaining,
+            totalAmount: r.amount,
+            amountPaid: r.amountPaid || 0,
+            dueDate: r.dueDate || null,
+            paymentStatus: r.paymentStatus || 'pending',
+            deliveryStatus: r.deliveryStatus || 'pending'
+          };
+        });
+
+      const studentTotal = outstandingRecords.reduce((sum, r) => sum + r.amount, 0);
+      familyTotal += studentTotal;
+
+      const classSec = `${student.classId?.name || 'N/A'} / ${student.sectionId?.name || 'N/A'}`;
+
+      studentsData.push({
+        studentId: student._id,
+        studentName: student.fullName,
+        classSection: classSec,
+        outstandingRecords,
+        studentTotal
+      });
+    }
 
     return res.status(200).json({
       success: true,
       data: {
         familyId: family._id,
-        students: studentsData
+        students: studentsData,
+        familyTotal
       },
       message: 'Family books summary retrieved successfully'
     });
@@ -636,7 +680,9 @@ const payFamilyFees = async (req, res, next) => {
     const newVoucher = new FamilyVoucher({
       familyId: family._id,
       voucherNumber,
+      voucherType: 'fee',
       idempotencyKey,
+      feeRecordIds,
       lineItems,
       totalAmount,
       paymentMethod: paymentMethod || 'cash',
@@ -660,6 +706,163 @@ const payFamilyFees = async (req, res, next) => {
     return res.status(error.statusCode || 400).json({
       success: false,
       message: error.message || 'Failed to process family payment'
+    });
+  }
+};
+
+/**
+ * Record Combined Family Book Payments
+ * @route POST /api/families/:id/pay-books
+ * @access Private (Admin Only)
+ */
+const payFamilyBooks = async (req, res, next) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { id } = req.params;
+    const { bookFeeRecordIds, paymentMethod, idempotencyKey } = req.body;
+
+    if (!idempotencyKey) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        success: false,
+        message: 'Idempotency key is required'
+      });
+    }
+
+    // Idempotency check:
+    const existingVoucher = await FamilyVoucher.findOne({ idempotencyKey }).session(session);
+    if (existingVoucher) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(200).json({
+        success: true,
+        data: existingVoucher,
+        message: 'Payment already processed (idempotent response)'
+      });
+    }
+
+    const family = await Family.findById(id).session(session);
+    if (!family) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({
+        success: false,
+        message: 'Family not found'
+      });
+    }
+
+    if (!bookFeeRecordIds || !Array.isArray(bookFeeRecordIds) || bookFeeRecordIds.length === 0) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        success: false,
+        message: 'No book fee records selected for payment'
+      });
+    }
+
+    // Verify bookFeeRecordIds belong to students in this family
+    const familyStudentIds = family.students.map(sId => sId.toString());
+    const lineItems = [];
+    let totalAmount = 0;
+
+    // Generate sequential voucher number
+    const counter = await Counter.findOneAndUpdate(
+      { id: 'voucher' },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true, session }
+    );
+    const voucherNumber = `FRC-${String(counter.seq).padStart(6, '0')}`;
+
+    for (const recordId of bookFeeRecordIds) {
+      const record = await BookFee.findById(recordId).session(session);
+      if (!record) {
+        throw new Error(`Book fee record ${recordId} not found`);
+      }
+
+      if (!familyStudentIds.includes(record.student.toString())) {
+        throw new Error(`Book fee record ${recordId} does not belong to this family`);
+      }
+
+      if (record.paymentStatus === 'paid' || record.amount <= (record.amountPaid || 0)) {
+        throw new Error(`Book fee record for ${record._id} is already fully paid`);
+      }
+
+      const remaining = record.amount - (record.amountPaid || 0);
+      totalAmount += remaining;
+
+      // Fetch student details to get name and classSection
+      const student = await Student.findById(record.student)
+        .populate('classId', 'name')
+        .populate('sectionId', 'name')
+        .session(session);
+
+      const classSec = `${student.classId?.name || 'N/A'} / ${student.sectionId?.name || 'N/A'}`;
+      const itemTitle = record.items && record.items.length > 0
+        ? record.items.map(i => i.title).join(', ')
+        : 'Course Books';
+
+      lineItems.push({
+        studentId: student._id,
+        studentName: student.fullName,
+        classSection: classSec,
+        month: record.academicYear || null,
+        title: itemTitle,
+        type: 'book',
+        amount: remaining,
+        bookFeeRecordId: record._id
+      });
+
+      // Update the BookFee document
+      record.payments.push({
+        idempotencyKey: idempotencyKey || undefined,
+        receiptNumber: voucherNumber,
+        amount: remaining,
+        method: paymentMethod || 'cash',
+        paidOn: new Date(),
+        recordedBy: req.user?.id,
+        note: `Family Voucher Payment: ${voucherNumber}`
+      });
+      record.amountPaid = (record.amountPaid || 0) + remaining;
+      record.paymentStatus = 'paid';
+      record.paid = true;
+      record.paidAt = new Date();
+
+      await record.save({ session });
+    }
+
+    // Create the FamilyVoucher
+    const newVoucher = new FamilyVoucher({
+      familyId: family._id,
+      voucherNumber,
+      voucherType: 'book',
+      idempotencyKey,
+      bookFeeRecordIds,
+      lineItems,
+      totalAmount,
+      paymentMethod: paymentMethod || 'cash',
+      paymentDate: new Date(),
+      createdBy: req.user?.id
+    });
+
+    await newVoucher.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(201).json({
+      success: true,
+      data: newVoucher,
+      message: 'Family book payment recorded successfully'
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(error.statusCode || 400).json({
+      success: false,
+      message: error.message || 'Failed to process family book payment'
     });
   }
 };
@@ -708,7 +911,11 @@ const generateFamilyVoucherPDF = async (req, res, next) => {
 
     const settings = await Settings.findOne({ schoolId: 'default' });
 
-    const title = 'Family Fee Voucher';
+    const title = voucher.voucherType === 'book'
+      ? 'Family Book Fee Voucher'
+      : voucher.voucherType === 'combined'
+      ? 'Family Combined Voucher'
+      : 'Family Fee Voucher';
     const subtitle = `Voucher No: ${voucher.voucherNumber}`;
 
     // Draw first page header/footer
@@ -1200,11 +1407,19 @@ const createFamilyWithEnrollment = async (req, res, next) => {
 
         // Create BookFee record if bookFee > 0
         if (feeConfig.bookFee && feeConfig.bookFee > 0) {
+          const settingsDoc = await Settings.findOne({ schoolId: 'default' }).session(session);
           const bookFeeDoc = new BookFee({
             student: newStudent._id,
+            classId: newStudent.classId || studentData.classId || null,
+            academicYear: settingsDoc?.currentSession || null,
             amount: feeConfig.bookFee,
+            amountPaid: 0,
             dueDate: feeConfig.bookFeeDueDate ? new Date(feeConfig.bookFeeDueDate) : undefined,
             paid: false,
+            paymentStatus: 'pending',
+            deliveryStatus: 'pending',
+            items: [],
+            payments: []
           });
           await bookFeeDoc.save({ session });
         }
@@ -1323,6 +1538,7 @@ module.exports = {
   getFamilyFeeSummary,
   getFamilyBooksSummary,
   payFamilyFees,
+  payFamilyBooks,
   generateFamilyVoucherPDF,
   createFamilyWithEnrollment
 };

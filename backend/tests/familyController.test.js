@@ -10,13 +10,15 @@ const Student = require('../models/Student');
 const Family = require('../models/Family');
 const FeeRecord = require('../models/FeeRecord');
 const FamilyVoucher = require('../models/FamilyVoucher');
+const BookFee = require('../models/BookFee');
 const Counter = require('../models/Counter');
 
 const {
   getFamilies,
   getFamilyFeeSummary,
   getFamilyBooksSummary,
-  payFamilyFees
+  payFamilyFees,
+  payFamilyBooks
 } = require('../controllers/familyController');
 
 const mockRequest = (params = {}, body = {}, user = {}) => ({
@@ -42,7 +44,7 @@ const mockNext = (err) => {
   if (err) throw err;
 };
 
-test.describe('Family Pass 2 Controller Tests', () => {
+test.describe('Family Pass 2 Controller Tests', { concurrency: 1 }, () => {
   let testClass, testSection, studentA, studentB, testFamily;
 
   test.before(async () => {
@@ -71,6 +73,7 @@ test.describe('Family Pass 2 Controller Tests', () => {
       Family.deleteMany({}),
       FeeRecord.deleteMany({}),
       FamilyVoucher.deleteMany({}),
+      BookFee.deleteMany({}),
       Counter.deleteMany({})
     ]);
 
@@ -85,42 +88,40 @@ test.describe('Family Pass 2 Controller Tests', () => {
       students: []
     });
 
-    // 3. Create students
+    // 3. Create 2 students
     studentA = await Student.create({
-      registrationNumber: 'stud1',
+      registrationNumber: '26001',
       fullName: 'Ahmed Iqbal',
       fatherName: 'Iqbal',
-      gender: 'male',
-      dateOfBirth: new Date('2015-05-05'),
       fatherContact: '03001234567',
+      gender: 'male',
+      dateOfBirth: new Date('2015-01-01'),
       classId: testClass._id,
       sectionId: testSection._id,
-      monthlyFeeAmount: 5000,
+      customFee: 5000,
       familyId: testFamily._id,
       status: 'active'
     });
 
     studentB = await Student.create({
-      registrationNumber: 'stud2',
-      fullName: 'Ayesha Iqbal',
+      registrationNumber: '26002',
+      fullName: 'Fatima Iqbal',
       fatherName: 'Iqbal',
-      gender: 'female',
-      dateOfBirth: new Date('2017-08-08'),
       fatherContact: '03001234567',
+      gender: 'female',
+      dateOfBirth: new Date('2017-01-01'),
       classId: testClass._id,
       sectionId: testSection._id,
-      monthlyFeeAmount: 3000,
+      customFee: 3000,
       familyId: testFamily._id,
       status: 'active'
     });
 
-    // Link students to family
     testFamily.students = [studentA._id, studentB._id];
     await testFamily.save();
   });
 
-  test('should retrieve aggregated fee summary correctly', async () => {
-    // Generate outstanding current month fee records
+  test('should return combined fee summary with lazy-loaded records', async () => {
     const req = mockRequest({ id: testFamily._id.toString() });
     const res = mockResponse();
 
@@ -142,7 +143,28 @@ test.describe('Family Pass 2 Controller Tests', () => {
     assert.strictEqual(sB.outstandingRecords.length, 1);
   });
 
-  test('should return books summary stub', async () => {
+  test('should return aggregated family books summary', async () => {
+    // Create BookFee record for studentA (1500) and studentB (2000, 500 paid = 1500 outstanding)
+    await BookFee.create({
+      student: studentA._id,
+      classId: testClass._id,
+      academicYear: '2025-2026',
+      amount: 1500,
+      amountPaid: 0,
+      paymentStatus: 'pending',
+      items: [{ title: 'Class 1 Book Set', price: 1500, quantity: 1 }]
+    });
+
+    await BookFee.create({
+      student: studentB._id,
+      classId: testClass._id,
+      academicYear: '2025-2026',
+      amount: 2000,
+      amountPaid: 500,
+      paymentStatus: 'partial',
+      items: [{ title: 'Class 1 Full Bundle', price: 2000, quantity: 1 }]
+    });
+
     const req = mockRequest({ id: testFamily._id.toString() });
     const res = mockResponse();
 
@@ -151,8 +173,18 @@ test.describe('Family Pass 2 Controller Tests', () => {
     assert.strictEqual(res.statusCode, 200);
     assert.strictEqual(res.body.success, true);
     assert.strictEqual(res.body.data.students.length, 2);
-    assert.strictEqual(res.body.data.students[0].booksOutstanding, null);
-    assert.strictEqual(res.body.data.students[0].tracked, false);
+    assert.strictEqual(res.body.data.familyTotal, 3000); // 1500 + (2000 - 500)
+
+    const sA = res.body.data.students.find(s => s.studentId.toString() === studentA._id.toString());
+    const sB = res.body.data.students.find(s => s.studentId.toString() === studentB._id.toString());
+
+    assert.strictEqual(sA.studentTotal, 1500);
+    assert.strictEqual(sA.outstandingRecords.length, 1);
+    assert.strictEqual(sA.outstandingRecords[0].title, 'Class 1 Book Set');
+
+    assert.strictEqual(sB.studentTotal, 1500);
+    assert.strictEqual(sB.outstandingRecords.length, 1);
+    assert.strictEqual(sB.outstandingRecords[0].paymentStatus, 'partial');
   });
 
   test('should process payment transaction successfully and respect idempotency key', async () => {
@@ -388,7 +420,7 @@ test.describe('Family Pass 2 Controller Tests', () => {
       fatherContact: '03009876543',
       classId: testClass._id,
       sectionId: testSection._id,
-      monthlyFeeAmount: 4000,
+      customFee: 4000,
       familyId: familyB._id,
       status: 'active'
     });
@@ -559,5 +591,80 @@ test.describe('Family Pass 2 Controller Tests', () => {
     assert.strictEqual(famOutstanding.combinedOutstanding, 4500, 'Combined outstanding sum should match');
     // Expected outstanding: 0
     assert.strictEqual(famPaid.combinedOutstanding, 0, 'Fully paid family outstanding should be 0.00');
+  });
+
+  test('should process family book payment transaction successfully and respect idempotency key', async () => {
+    // 1. Create BookFee for studentA (1500) and studentB (2500)
+    const bookFeeA = await BookFee.create({
+      student: studentA._id,
+      classId: testClass._id,
+      academicYear: '2025-2026',
+      amount: 1500,
+      amountPaid: 0,
+      paymentStatus: 'pending',
+      items: [{ title: 'Math & English Set', price: 1500, quantity: 1 }]
+    });
+
+    const bookFeeB = await BookFee.create({
+      student: studentB._id,
+      classId: testClass._id,
+      academicYear: '2025-2026',
+      amount: 2500,
+      amountPaid: 0,
+      paymentStatus: 'pending',
+      items: [{ title: 'Science & Arts Bundle', price: 2500, quantity: 1 }]
+    });
+
+    const idempotencyKey = 'test-books-uuid-12345';
+    const payReq = mockRequest(
+      { id: testFamily._id.toString() },
+      {
+        bookFeeRecordIds: [bookFeeA._id.toString(), bookFeeB._id.toString()],
+        paymentMethod: 'bank_transfer',
+        idempotencyKey
+      }
+    );
+    const payRes = mockResponse();
+
+    await payFamilyBooks(payReq, payRes, mockNext);
+
+    assert.strictEqual(payRes.statusCode, 201);
+    assert.strictEqual(payRes.body.success, true);
+    assert.strictEqual(payRes.body.data.voucherType, 'book');
+    assert.strictEqual(payRes.body.data.totalAmount, 4000); // 1500 + 2500
+    assert.strictEqual(payRes.body.data.lineItems.length, 2);
+
+    // Verify BookFee records in DB
+    const updatedA = await BookFee.findById(bookFeeA._id);
+    const updatedB = await BookFee.findById(bookFeeB._id);
+
+    assert.strictEqual(updatedA.paymentStatus, 'paid');
+    assert.strictEqual(updatedA.amountPaid, 1500);
+    assert.strictEqual(updatedA.paid, true);
+    assert.strictEqual(updatedA.payments.length, 1);
+    assert.strictEqual(updatedA.payments[0].method, 'bank_transfer');
+
+    assert.strictEqual(updatedB.paymentStatus, 'paid');
+    assert.strictEqual(updatedB.amountPaid, 2500);
+    assert.strictEqual(updatedB.paid, true);
+    assert.strictEqual(updatedB.payments.length, 1);
+
+    // Idempotency: replay with same key
+    const replayReq = mockRequest(
+      { id: testFamily._id.toString() },
+      {
+        bookFeeRecordIds: [bookFeeA._id.toString(), bookFeeB._id.toString()],
+        paymentMethod: 'bank_transfer',
+        idempotencyKey
+      }
+    );
+    const replayRes = mockResponse();
+
+    await payFamilyBooks(replayReq, replayRes, mockNext);
+
+    assert.strictEqual(replayRes.statusCode, 200);
+    assert.strictEqual(replayRes.body.success, true);
+    assert.strictEqual(replayRes.body.message, 'Payment already processed (idempotent response)');
+    assert.strictEqual(replayRes.body.data._id.toString(), payRes.body.data._id.toString());
   });
 });

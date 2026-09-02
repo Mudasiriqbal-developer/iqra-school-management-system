@@ -10,6 +10,7 @@ import AdminStudents from './pages/AdminStudents';
 import AdminTeachers from './pages/AdminTeachers';
 import AdminAcademics from './pages/AdminAcademics';
 import AdminFees from './pages/AdminFees';
+import AdminBooks from './pages/AdminBooks';
 import AdminExpenses from './pages/AdminExpenses';
 import AdminPayroll from './pages/AdminPayroll';
 import TeacherDashboard from './pages/TeacherDashboard';
@@ -90,6 +91,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminFees />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/books"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminBooks />
             </ProtectedRoute>
           }
         />

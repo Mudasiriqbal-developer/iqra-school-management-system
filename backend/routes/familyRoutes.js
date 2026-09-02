@@ -10,6 +10,7 @@ const {
   getFamilyFeeSummary,
   getFamilyBooksSummary,
   payFamilyFees,
+  payFamilyBooks,
   generateFamilyVoucherPDF,
   createFamilyWithEnrollment
 } = require('../controllers/familyController');
@@ -32,6 +33,7 @@ router.delete('/:id', deleteFamily);
 router.get('/:id/fee-summary', getFamilyFeeSummary);
 router.get('/:id/books-summary', getFamilyBooksSummary);
 router.post('/:id/pay', payFamilyFees);
+router.post('/:id/pay-books', payFamilyBooks);
 router.get('/:familyId/vouchers/:voucherId/pdf', generateFamilyVoucherPDF);
 
 module.exports = router;

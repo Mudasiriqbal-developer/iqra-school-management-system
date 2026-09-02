@@ -75,12 +75,22 @@ export const getFamilyBooksSummary = async (id) => {
 };
 
 /**
- * Record a combined payment for the family.
+ * Record a combined payment for the family fees.
  * @param {string} id - Family MongoDB ID
- * @param {Object} data - { selectedFeeRecordIds: [], amount: number, paymentMethod: string }
+ * @param {Object} data - { feeRecordIds: [], paymentMethod: string, idempotencyKey: string }
  */
 export const payFamilyFees = async (id, data) => {
   const response = await api.post(`/families/${id}/pay`, data);
+  return response.data;
+};
+
+/**
+ * Record a combined payment for family books dues.
+ * @param {string} id - Family MongoDB ID
+ * @param {Object} data - { bookFeeRecordIds: [], paymentMethod: string, idempotencyKey: string }
+ */
+export const payFamilyBooks = async (id, data) => {
+  const response = await api.post(`/families/${id}/pay-books`, data);
   return response.data;
 };
 

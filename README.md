@@ -105,6 +105,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 | **Class & Section Setup** | Yes | View Only | View Assigned Class |
 | **Teacher Subject Assignments** | Full Access | View Assigned | View Subject Teachers |
 | **Fee Collection & Payment Records** | Full Access | No | View Own Ledger / Invoices |
+| **Books Management & Dues Collection** | Issue, Collect, Receipts | No | View Own Book Dues |
 | **One-Time Charges (Exam/Paper Fees)** | Issue, Manage, Collect | No | View Own Charges |
 | **Family Tree & Multi-Child Invoicing** | Full Access | No | View Family Summary |
 | **Expense Tracking & Categorization** | Full Access | No | No |
@@ -178,8 +179,8 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Preview & Validation**: Admin previews the promotion mapping (e.g., Class 1 -> Class 2) before executing database transactions.
 
 ### 10. Dynamic Drag-and-Drop Navigation
-- **Customizable Menu Layout**: Admins can re-order their navigation sidebar items via `@dnd-kit` drag-and-drop.
-- **Persistent Preferences**: Layout order is saved to the database in system settings.
+- **Customizable Menu Layout**: Admins can re-order their 13 navigation sidebar items (Dashboard, Students, Family Tree, Faculty, Academics, Fees, Books Management, Expenses, Payroll, Attendance, Reports, Promotion, Settings) via `@dnd-kit` drag-and-drop.
+- **Persistent & Resilient Preferences**: Layout order is saved to the MongoDB `User.navOrder` field. The system includes automatic merge logic on both backend and frontend to seamlessly append any newly introduced default items without resetting customized layouts.
 
 ### 11. Automated PDF Generation
 - **Admission Receipt PDF**: Clean, branded admission receipt with school credentials, fee details, and terms.
@@ -240,12 +241,13 @@ iqra-school-management-system/
 | **`User`** | Stores authentication credentials, `name`, `email`, `role` (`admin` / `teacher` / `student`), `password` (hashed), `isActivated`, `isActive`, `activationToken`. |
 | **`Student`** | Student records: `registrationNumber`, `admissionNumber`, `fullName`, `guardianName`, `contactNumber`, `classId`, `sectionId`, `monthlyFeeAmount`, `familyId`, `status`. |
 | **`Family`** | Groups multiple siblings under one guardian record: `familyName`, `fatherName`, `fatherCnic`, `contactNumber`, `students[]`, `discountPercentage`. |
+| **`FamilyVoucher`** | Consolidated payment voucher receipt: `familyId`, `voucherNumber`, `voucherType` (`fee`/`book`/`combined`), `idempotencyKey`, `feeRecordIds[]`, `bookFeeRecordIds[]`, `lineItems[]`, `totalAmount`, `paymentMethod`, `paymentDate`, `createdBy`. |
 | **`Teacher`** | Faculty information: `fullName`, `email`, `phone`, `qualification`, `designation`, `baseSalary`, `joiningDate`, `userId`. |
 | **`Class` & `Section`** | Academic structure hierarchy: `name`, `code`, `order`, `numericValue`, sections assigned to classes. |
 | **`Subject`** | Academic subjects: `name`, `code`, `type` (Core/Elective), `classId`. |
 | **`Assignment`** | Maps `teacherId` to `classId`, `sectionId`, and `subjectId`. |
 | **`FeeRecord`** | Financial dues & ledger records: `studentId`, `month` (`YYYY-MM`), `title` (for one-time charges), `dueDate`, `amountDue`, `amountPaid`, `status` (`paid`/`partial`/`pending`), `type` (`monthly`/`admission`/`one_time`), `payments[]`. Partial unique compound index on `{ studentId, month, type: 'monthly' }`. |
-| **`BookFee`** | Course books and curriculum kit fees charged to students. |
+| **`BookFee`** | Course books and curriculum kit fees charged to students: `student`, `classId` (ref Class), `academicYear`, `items: [{ title, price, quantity }]`, `amount`, `amountPaid`, `dueDate`, `paid` (legacy boolean), `paidAt`, `paymentStatus` (`pending`/`partial`/`paid`), `deliveryStatus` (`pending`/`partial`/`delivered`), `payments: [{ receiptNumber, amount, method, paidOn, recordedBy, note }]`. |
 | **`Expense`** | School operational expense records: `title`, `amount`, `category`, `paymentMode`, `date`, `receiptNumber`, `description`. |
 | **`Payroll`** | Staff salary disbursement ledger: `teacherId`, `month`, `baseSalary`, `allowances`, `deductions`, `netSalary`, `status` (`paid`/`pending`). |
 | **`Attendance`** | Daily student attendance records: `classId`, `sectionId`, `date`, `records: [{ studentId, status: present/absent/late/leave, remarks }]`. |
@@ -282,7 +284,9 @@ iqra-school-management-system/
 - `POST /api/families` — Create new family.
 - `POST /api/families/create-with-enrollment` — Create family and enroll children in one step.
 - `GET  /api/families/:id/fee-summary` — Sibling consolidated fee overview.
+- `GET  /api/families/:id/books-summary` — Sibling consolidated book fee & dues summary.
 - `POST /api/families/:id/pay` — Record consolidated family fee payment.
+- `POST /api/families/:id/pay-books` — Record consolidated family book fee payment with idempotency protection.
 - `GET  /api/families/:familyId/vouchers/:voucherId/pdf` — Download family voucher PDF.
 
 ### Fees & Financial Ledgers (`/api/fees` & `/api/fee-records`)
@@ -295,6 +299,13 @@ iqra-school-management-system/
 - `GET    /api/fee-records/one-time-charges` — Fetch outstanding one-time charges report with KPI metrics and multi-filter pagination.
 - `PUT    /api/fee-records/:id/one-time` — Edit unpaid one-time charge (locked once payment is recorded).
 - `DELETE /api/fee-records/:id/one-time` — Void/delete unpaid one-time charge (locked once payment is recorded).
+
+### Books & Syllabus Management (`/api/books`)
+- `GET  /api/books/summary` — Books KPI summary (Total Billed, Total Collected, Outstanding Dues, and status counts).
+- `GET  /api/books/dues` — Paginated list of student book dues with Class, Section, Payment Status, and Search filters.
+- `POST /api/books/:id/pay` — Record single student book fee payment with client UUID idempotencyKey protection.
+- `GET  /api/books/:id/receipt-pdf` — Generate and download official branded PDF receipt for a book fee record.
+- `POST /api/books/issue` — Issue book charges to an individual student or bulk assign to an entire class/section.
 
 ### Expenses & Payroll (`/api/expenses` & `/api/payroll`)
 - `GET  /api/expenses` / `POST /api/expenses` — View and record school operating expenses.
