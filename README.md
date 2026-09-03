@@ -151,7 +151,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Class Default Fee & Student Custom Override Architecture**:
   - **Class Default Fees**: Set monthly default tuition per class in Academic Structure (`AdminAcademics.jsx`). Automatically inherited by every student in that class who does not have an override.
   - **Student Custom Fee Overrides**: Set individualized tuition amounts and notes (e.g. "Scholarship", "Sibling Discount", "Staff Child") per student in Student Management (`AdminStudents.jsx`) or via the Student Ledger Drawer (`StudentLedgerDrawer.jsx`).
-  - **Centralized Dynamic Fee Resolver**: All fee generation, analytics, and portal billing logic resolves fees through `resolveStudentMonthlyFee` (`customFee` -> `classDoc.defaultFee` -> `0`).
+  - **Centralized Dynamic Fee Resolver**: All fee generation, analytics, and portal billing logic resolves fees through `resolveStudentMonthlyFee` with safe fallback hierarchy (`customFee` -> `classDoc.defaultFee (> 0)` -> `student.monthlyFeeAmount (legacy fallback)` -> `classDoc.defaultFee` -> `0`).
   - **Promotion Continuity**: Custom fees seamlessly persist when students are promoted to higher classes, while standard students automatically adopt the new class's default rate.
   - **Non-Retroactive Invariant**: Updating a class's default fee or student's custom fee only affects future generated billing cycles; previously generated `FeeRecord` amounts remain permanently intact.
 - **Automated Monthly Billing**: Bulk generation of monthly fee dues for all active students.
@@ -433,6 +433,7 @@ The backend includes automated helper seeders located in `backend/`:
 - **`node seedAdmin.js`**: Checks if an administrator exists; if not, creates the default system admin with secure password hashing.
 - **`node seedClasses.js`**: Populates standard school classes (Nursery, Prep, Class 1 through Class 10) and standard sections.
 - **`node seedBulkTestData.js`**: Generates demo teachers, students, sample fee records, and expense entries for testing.
+- **`node scripts/repairZeroFees.js`**: Maintenance script that migrates legacy student `monthlyFeeAmount` into `customFee`, establishes default class tuition rates, and recalibrates zero-amount fee records in active billing periods.
 
 ---
 

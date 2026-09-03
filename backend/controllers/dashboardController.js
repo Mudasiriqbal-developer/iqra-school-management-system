@@ -72,7 +72,19 @@ const getDashboardSummary = async (req, res, next) => {
                 $cond: {
                   if: { $and: [{ $ne: ['$customFee', null] }, { $gte: ['$customFee', 0] }] },
                   then: '$customFee',
-                  else: { $ifNull: [{ $arrayElemAt: ['$classDoc.defaultFee', 0] }, 0] }
+                  else: {
+                    $cond: {
+                      if: { $gt: [{ $ifNull: [{ $arrayElemAt: ['$classDoc.defaultFee', 0] }, 0] }, 0] },
+                      then: { $arrayElemAt: ['$classDoc.defaultFee', 0] },
+                      else: {
+                        $cond: {
+                          if: { $gt: [{ $ifNull: ['$monthlyFeeAmount', 0] }, 0] },
+                          then: '$monthlyFeeAmount',
+                          else: { $ifNull: [{ $arrayElemAt: ['$classDoc.defaultFee', 0] }, 0] }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }

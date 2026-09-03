@@ -5,6 +5,14 @@ const resolveStudentMonthlyFee = (student, classDoc = null) => {
     if (!isNaN(custom) && custom >= 0) return custom;
   }
   const cls = classDoc || (student.classId && typeof student.classId === 'object' ? student.classId : null);
+  if (cls && cls.defaultFee !== null && cls.defaultFee !== undefined && Number(cls.defaultFee) > 0) {
+    const defaultFee = Number(cls.defaultFee);
+    if (!isNaN(defaultFee)) return defaultFee;
+  }
+  if (student.monthlyFeeAmount !== null && student.monthlyFeeAmount !== undefined) {
+    const legacyFee = Number(student.monthlyFeeAmount);
+    if (!isNaN(legacyFee) && legacyFee > 0) return legacyFee;
+  }
   if (cls && cls.defaultFee !== null && cls.defaultFee !== undefined) {
     const defaultFee = Number(cls.defaultFee);
     if (!isNaN(defaultFee) && defaultFee >= 0) return defaultFee;
