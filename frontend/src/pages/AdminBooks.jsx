@@ -274,12 +274,12 @@ const AdminBooks = () => {
         </div>
 
         {/* Roster Container */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
           {/* Filter Bar */}
-          <div className="p-5 border-b border-slate-150 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+          <div className="p-5 border-b border-slate-150 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col md:flex-row md:items-center justify-between gap-3.5">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search student name or registration #..."
@@ -288,7 +288,7 @@ const AdminBooks = () => {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-10 pr-4 py-2 bg-white rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy-900 text-xs font-medium text-slate-800 shadow-sm"
+                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 shadow-sm"
               />
             </div>
 
@@ -301,7 +301,7 @@ const AdminBooks = () => {
                   setSelectedClassId(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-navy-900 shadow-sm"
+                className="px-3 py-2 bg-white dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm"
               >
                 <option value="">All Classes</option>
                 {classes.map((cls) => (
@@ -317,7 +317,7 @@ const AdminBooks = () => {
                   setPage(1);
                 }}
                 disabled={!selectedClassId}
-                className="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-navy-900 shadow-sm disabled:opacity-50 disabled:bg-slate-100"
+                className="px-3 py-2 bg-white dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-900"
               >
                 <option value="">All Sections</option>
                 {sections.map((sec) => (
@@ -332,7 +332,7 @@ const AdminBooks = () => {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-navy-900 shadow-sm"
+                className="px-3 py-2 bg-white dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm"
               >
                 <option value="all">All Payment Statuses</option>
                 <option value="pending">Pending Only</option>
@@ -346,7 +346,7 @@ const AdminBooks = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-100/75 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+                <tr className="bg-slate-100/75 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-300 font-bold uppercase tracking-wider">
                   <th className="p-3.5 pl-6">Student Information</th>
                   <th className="p-3.5">Class / Section</th>
                   <th className="p-3.5">Package / Items</th>
@@ -358,23 +358,23 @@ const AdminBooks = () => {
                   <th className="p-3.5 text-center pr-6">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/80">
                 {loading ? (
                   <tr>
-                    <td colSpan="9" className="py-16 text-center text-slate-400">
+                    <td colSpan="9" className="py-16 text-center text-slate-400 dark:text-slate-400">
                       <div className="flex flex-col items-center justify-center space-y-2">
-                        <Loader2 className="h-6 w-6 animate-spin text-navy-900" />
-                        <span className="font-semibold text-xs">Loading book dues records...</span>
+                        <Loader2 className="h-6 w-6 animate-spin text-navy-900 dark:text-sky-400" />
+                        <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">Loading book dues records...</span>
                       </div>
                     </td>
                   </tr>
                 ) : records.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="py-16 text-center text-slate-400">
+                    <td colSpan="9" className="py-16 text-center text-slate-400 dark:text-slate-400">
                       <div className="flex flex-col items-center justify-center space-y-1">
-                        <BookOpen className="h-8 w-8 text-slate-300" />
-                        <span className="font-bold text-slate-700 text-sm">No book fee records found</span>
-                        <p className="text-xs text-slate-400">Try changing the search filter or issue a new book charge.</p>
+                        <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                        <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">No book fee records found</span>
+                        <p className="text-xs text-slate-400 dark:text-slate-400">Try changing the search filter or issue a new book charge.</p>
                       </div>
                     </td>
                   </tr>
@@ -388,34 +388,34 @@ const AdminBooks = () => {
                       : 'Course Books Set';
 
                     return (
-                      <tr key={record._id} className="hover:bg-slate-50/70 transition-colors">
+                      <tr key={record._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/60 transition-colors">
                         {/* Student Info */}
                         <td className="p-3.5 pl-6">
                           <div className="flex items-center space-x-3">
-                            <div className="h-9 w-9 rounded-xl bg-navy-50 text-navy-900 font-bold flex items-center justify-center text-xs border border-navy-100 uppercase">
+                            <div className="h-9 w-9 rounded-xl bg-navy-50 dark:bg-sky-950/40 text-navy-900 dark:text-sky-300 font-bold flex items-center justify-center text-xs border border-navy-100 dark:border-sky-800/40 uppercase">
                               {student?.fullName?.charAt(0) || 'S'}
                             </div>
                             <div className="min-w-0">
-                              <span className="font-extrabold text-navy-950 block truncate max-w-[160px]">
+                              <span className="font-extrabold text-navy-950 dark:text-slate-100 block truncate max-w-[160px]">
                                 {student?.fullName || 'N/A'}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-medium">
-                                Reg: <span className="font-semibold text-slate-600">{student?.registrationNumber || 'N/A'}</span>
+                              <span className="text-[11px] text-slate-400 dark:text-slate-400 font-medium">
+                                Reg: <span className="font-semibold text-slate-600 dark:text-slate-300">{student?.registrationNumber || 'N/A'}</span>
                               </span>
                             </div>
                           </div>
                         </td>
 
                         {/* Class & Section */}
-                        <td className="p-3.5 font-bold text-slate-700">
+                        <td className="p-3.5 font-bold text-slate-700 dark:text-slate-200">
                           {student?.classId?.name || record.classId?.name || 'Class'}
-                          <span className="text-slate-400 font-medium ml-1">
+                          <span className="text-slate-400 dark:text-slate-400 font-medium ml-1">
                             {student?.sectionId?.name ? `(${student.sectionId.name})` : ''}
                           </span>
                         </td>
 
                         {/* Items */}
-                        <td className="p-3.5 text-slate-600 font-medium max-w-[180px] truncate" title={itemsLabel}>
+                        <td className="p-3.5 text-slate-600 dark:text-slate-300 font-medium max-w-[180px] truncate" title={itemsLabel}>
                           {itemsLabel}
                         </td>
 
@@ -431,18 +431,21 @@ const AdminBooks = () => {
 
                         {/* Balance */}
                         <td className="p-3.5 text-right font-black">
-                          <span className={remaining > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'}>
+                          <span className={remaining > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-400'}>
                             Rs. {remaining.toLocaleString()}
                           </span>
                         </td>
 
                         {/* Payment Status Badge */}
                         <td className="p-3.5 text-center">
-                          <StatusBadge status={record.paymentStatus || 'pending'} />
+                          <StatusBadge 
+                            status={record.paymentStatus || 'pending'} 
+                            label={record.paymentStatus ? (record.paymentStatus.charAt(0).toUpperCase() + record.paymentStatus.slice(1)) : 'Pending'} 
+                          />
                         </td>
 
                         {/* Due Date */}
-                        <td className="p-3.5 text-center text-slate-500 font-medium text-[11px]">
+                        <td className="p-3.5 text-center text-slate-500 dark:text-slate-400 font-medium text-[11px]">
                           {record.dueDate ? new Date(record.dueDate).toISOString().split('T')[0] : '—'}
                         </td>
 
@@ -456,8 +459,8 @@ const AdminBooks = () => {
                               title={isFullyPaid ? 'Fully Paid' : 'Record Payment'}
                               className={`inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                                 isFullyPaid
-                                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                                  : 'bg-navy-900 hover:bg-navy-800 text-white shadow-sm shadow-navy-950/20 active:scale-95'
+                                  ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700'
+                                  : 'bg-navy-900 hover:bg-navy-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white shadow-sm shadow-navy-950/20 active:scale-95'
                               }`}
                             >
                               <CreditCard className="h-3 w-3" />
@@ -469,10 +472,10 @@ const AdminBooks = () => {
                               onClick={() => handleDownloadReceipt(record)}
                               disabled={downloadingId === record._id}
                               title="Download PDF Receipt"
-                              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors border border-slate-200 disabled:opacity-50"
+                              className="p-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg transition-colors border border-slate-200 dark:border-slate-600 disabled:opacity-50"
                             >
                               {downloadingId === record._id ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin text-navy-900" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-navy-900 dark:text-sky-400" />
                               ) : (
                                 <Download className="h-3.5 w-3.5" />
                               )}
@@ -488,29 +491,29 @@ const AdminBooks = () => {
           </div>
 
           {/* Pagination Footer */}
-          <div className="p-4 border-t border-slate-150 bg-slate-50/60 flex items-center justify-between text-xs text-slate-500 font-medium">
+          <div className="p-4 border-t border-slate-150 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
             <span>
-              Showing <span className="font-bold text-slate-800">{records.length}</span> of{' '}
-              <span className="font-bold text-slate-800">{total}</span> records
+              Showing <span className="font-bold text-slate-800 dark:text-slate-100">{records.length}</span> of{' '}
+              <span className="font-bold text-slate-800 dark:text-slate-100">{total}</span> records
             </span>
 
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1 || loading}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
 
-              <span className="font-bold text-slate-700 px-1">
+              <span className="font-bold text-slate-700 dark:text-slate-200 px-1">
                 Page {page} of {pages}
               </span>
 
               <button
                 onClick={() => setPage((p) => Math.min(pages, p + 1))}
                 disabled={page >= pages || loading}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

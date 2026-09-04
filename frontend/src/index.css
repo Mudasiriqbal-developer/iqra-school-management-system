@@ -31,7 +31,7 @@
 }
 
 /* ==========================================
-   GLOBAL DARK MODE OVERRIDES
+   GLOBAL DARK MODE OVERRIDES & DESIGN SYSTEM
    ========================================== */
 
 .dark {
@@ -56,40 +56,161 @@
   background-color: #0f172a !important; /* slate-900 */
 }
 
-.dark .bg-gray-100 {
-  background-color: #1e293b !important; /* slate-800 */
+.dark .bg-gray-100,
+.dark .bg-slate-100 {
+  background-color: #334155 !important; /* slate-700 for chips, secondary buttons & badges */
+}
+
+.dark .bg-gray-200,
+.dark .bg-slate-200 {
+  background-color: #475569 !important; /* slate-600 */
 }
 
 .dark .bg-gray-50\/50,
-.dark .bg-slate-50\/50 {
-  background-color: rgba(15, 23, 42, 0.5) !important;
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-100\/75 {
+  background-color: rgba(15, 23, 42, 0.6) !important;
 }
 
-.dark .bg-red-50 {
-  background-color: rgba(239, 68, 68, 0.1) !important;
+/* Colored Background Tints in Dark Mode */
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/40,
+.dark .bg-emerald-50\/50,
+.dark .bg-emerald-100,
+.dark .bg-emerald-100\/70,
+.dark .bg-emerald-100\/80 {
+  background-color: rgba(16, 185, 129, 0.16) !important;
 }
 
-.dark .bg-navy-50 {
-  background-color: rgba(56, 189, 248, 0.1) !important;
+.dark .bg-amber-50,
+.dark .bg-amber-50\/50,
+.dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.16) !important;
 }
 
-/* Borders */
-.dark .border-gray-200,
+.dark .bg-rose-50,
+.dark .bg-rose-100,
+.dark .bg-red-50,
+.dark .bg-red-50\/10,
+.dark .bg-red-100 {
+  background-color: rgba(244, 63, 94, 0.16) !important;
+}
+
+.dark .bg-sky-50,
+.dark .bg-sky-50\/40,
+.dark .bg-sky-50\/50,
+.dark .bg-sky-100 {
+  background-color: rgba(56, 189, 248, 0.16) !important;
+}
+
+.dark .bg-blue-50,
+.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.16) !important;
+}
+
+.dark .bg-indigo-50,
+.dark .bg-indigo-100 {
+  background-color: rgba(99, 102, 241, 0.16) !important;
+}
+
+.dark .bg-purple-50,
+.dark .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.16) !important;
+}
+
+.dark .bg-navy-50,
+.dark .bg-navy-50\/40,
+.dark .bg-navy-50\/50,
+.dark .bg-navy-50\/80 {
+  background-color: rgba(56, 189, 248, 0.14) !important;
+}
+
+.dark .bg-\[\#00215E\]\/10,
+.dark .bg-\[\#00215E\]\/20 {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+}
+
+/* Borders in Dark Mode */
 .dark .border-gray-100,
-.dark .border-border,
-.dark .border-slate-200\/60,
+.dark .border-gray-150,
+.dark .border-gray-200,
 .dark .border-gray-200\/60,
+.dark .border-gray-200\/80,
+.dark .border-gray-300,
+.dark .border-slate-100,
+.dark .border-slate-150,
+.dark .border-slate-200,
+.dark .border-slate-200\/60,
+.dark .border-slate-200\/80,
+.dark .border-slate-300,
+.dark .border-border,
 .dark .border-white\/10 {
   border-color: #334155 !important; /* slate-700 */
 }
 
+/* Colored Borders in Dark Mode */
+.dark .border-emerald-100,
+.dark .border-emerald-200,
+.dark .border-emerald-200\/80 {
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+.dark .border-amber-100,
+.dark .border-amber-200,
+.dark .border-amber-200\/70,
+.dark .border-amber-200\/80 {
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+.dark .border-rose-100,
+.dark .border-rose-100\/50,
+.dark .border-rose-200,
+.dark .border-rose-200\/80,
+.dark .border-red-200 {
+  border-color: rgba(244, 63, 94, 0.35) !important;
+}
+
+.dark .border-sky-100,
+.dark .border-sky-100\/50,
+.dark .border-sky-200,
+.dark .border-sky-200\/80 {
+  border-color: rgba(56, 189, 248, 0.35) !important;
+}
+
+.dark .border-navy-100,
+.dark .border-navy-150 {
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+.dark .border-\[\#00215E\],
+.dark .border-\[\#00215E\]\/20,
+.dark .border-\[\#00215E\]\/30 {
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+/* Dividers */
 .dark .divide-border > * + *,
+.dark .divide-gray-100 > * + *,
 .dark .divide-gray-200 > * + *,
-.dark .divide-y > * + * {
+.dark .divide-slate-100 > * + *,
+.dark .divide-slate-200 > * + *,
+.dark .divide-y > * + *,
+.dark .divide-x > * + * {
   border-color: #334155 !important;
 }
 
-/* Text Colors */
+/* ==========================================
+   HIGH-CONTRAST TEXT COLORS IN DARK MODE
+   ========================================== */
+
+/* Primary Crisp Headings & Bold Text */
+.dark .text-slate-950,
+.dark .text-slate-900,
+.dark .text-slate-850,
+.dark .text-slate-800,
+.dark .text-gray-950,
 .dark .text-gray-900,
 .dark .text-gray-850,
 .dark .text-gray-800,
@@ -102,26 +223,35 @@
 .dark h4,
 .dark h5,
 .dark h6 {
-  color: #f8fafc !important; /* slate-50 */
+  color: #f8fafc !important; /* slate-50 - crisp bright white */
 }
 
+/* Secondary High-Contrast Body & Labels */
+.dark .text-slate-700,
+.dark .text-slate-650,
+.dark .text-slate-600,
 .dark .text-gray-700,
 .dark .text-gray-650,
 .dark .text-gray-600,
+.dark .text-text-secondary,
+.dark label {
+  color: #e2e8f0 !important; /* slate-200 - crystal clear high contrast */
+}
+
+/* Helper / Muted Supporting Text */
+.dark .text-slate-500,
+.dark .text-slate-400,
 .dark .text-gray-500,
-.dark .text-text-secondary {
-  color: #cbd5e1 !important; /* slate-300 */
-}
-
 .dark .text-gray-400 {
-  color: #cbd5e1 !important; /* slate-300 for crisp dark mode legibility */
+  color: #94a3b8 !important; /* slate-400 - clean, readable, not dim */
 }
 
-/* Accessibility contrast enhancement for light mode secondary text */
+/* Light mode fallback enhancement for secondary gray */
 :not(.dark) .text-gray-400 {
   color: #4b5563; /* slate-600 for >7:1 WCAG AA contrast on white */
 }
 
+/* Brand Navy Highlights in Dark Mode */
 .dark .text-navy-900 {
   color: #38bdf8 !important; /* sky-400 for branding/highlights */
 }
@@ -131,37 +261,89 @@
 }
 
 .dark .text-navy-800 {
-  color: #7dd3fc !important;
+  color: #7dd3fc !important; /* sky-300 */
 }
 
-/* Badges in dark mode */
-.dark .bg-sky-50 {
-  background-color: rgba(56, 189, 248, 0.1) !important;
+.dark .text-\[\#00215E\] {
+  color: #38bdf8 !important; /* sky-400 for hardcoded navy text */
+}
+
+/* Deep Status Text Colors Transformed for Dark Surfaces */
+.dark .text-emerald-950,
+.dark .text-emerald-900,
+.dark .text-emerald-800,
+.dark .text-emerald-700 {
+  color: #6ee7b7 !important; /* emerald-300 */
+}
+.dark .text-emerald-600 {
+  color: #34d399 !important; /* emerald-400 */
+}
+
+.dark .text-amber-950,
+.dark .text-amber-900,
+.dark .text-amber-800,
+.dark .text-amber-700 {
+  color: #fcd34d !important; /* amber-300 */
+}
+.dark .text-amber-600 {
+  color: #fbbf24 !important; /* amber-400 */
+}
+
+.dark .text-rose-950,
+.dark .text-rose-900,
+.dark .text-rose-800,
+.dark .text-rose-700 {
+  color: #fda4af !important; /* rose-300 */
+}
+.dark .text-rose-600,
+.dark .text-red-600,
+.dark .text-red-500,
+.dark .text-danger {
+  color: #f87171 !important; /* red-400 */
+}
+
+.dark .text-sky-950,
+.dark .text-sky-900,
+.dark .text-sky-800,
+.dark .text-sky-700 {
+  color: #7dd3fc !important; /* sky-300 */
 }
 .dark .text-sky-600 {
-  color: #38bdf8 !important;
-}
-.dark .border-sky-100\/50 {
-  border-color: rgba(56, 189, 248, 0.2) !important;
+  color: #38bdf8 !important; /* sky-400 */
 }
 
-.dark .bg-rose-50 {
-  background-color: rgba(244, 63, 94, 0.1) !important;
-}
-.dark .text-rose-600 {
-  color: #fb7185 !important;
-}
-.dark .border-rose-100\/50 {
-  border-color: rgba(244, 63, 94, 0.2) !important;
+.dark .text-blue-950,
+.dark .text-blue-900,
+.dark .text-blue-800,
+.dark .text-blue-700 {
+  color: #93c5fd !important; /* blue-300 */
 }
 
+.dark .text-indigo-950,
+.dark .text-indigo-900,
+.dark .text-indigo-800,
+.dark .text-indigo-700 {
+  color: #a5b4fc !important; /* indigo-300 */
+}
 
-/* Input Fields, Selects & Textareas */
+.dark .text-purple-950,
+.dark .text-purple-900,
+.dark .text-purple-800,
+.dark .text-purple-700 {
+  color: #d8b4fe !important; /* purple-300 */
+}
+
+/* ==========================================
+   INPUTS, SELECTS, TEXTAREAS & FORMS
+   ========================================== */
+
 .dark input[type="text"],
 .dark input[type="email"],
 .dark input[type="password"],
 .dark input[type="number"],
 .dark input[type="date"],
+.dark input[type="search"],
+.dark input[type="tel"],
 .dark select,
 .dark textarea {
   background-color: #1e293b !important;
@@ -169,19 +351,101 @@
   border-color: #334155 !important;
 }
 
+.dark select option {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
 .dark input:focus,
 .dark select:focus,
 .dark textarea:focus {
   border-color: #38bdf8 !important; /* sky-400 */
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
 }
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #64748b !important; /* slate-500 */
+  color: #94a3b8 !important; /* slate-400 - high contrast placeholder */
 }
 
-/* Table overrides */
+.dark input:disabled,
+.dark select:disabled,
+.dark textarea:disabled {
+  background-color: #0f172a !important;
+  color: #64748b !important;
+  border-color: #334155 !important;
+  opacity: 0.7;
+}
+
+/* Date picker calendar icon inversion for dark backgrounds */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.9) hue-rotate(180deg) !important;
+  cursor: pointer;
+}
+
+/* ==========================================
+   BUTTONS & INTERACTIVE PILLS IN DARK MODE
+   ========================================== */
+
+/* Primary Action Buttons (tables, modals, cards) - vibrant & visible */
+.dark button.bg-navy-900:not(aside *),
+.dark a.bg-navy-900:not(aside *),
+.dark button.bg-\[\#00215E\]:not(aside *),
+.dark a.bg-\[\#00215E\]:not(aside *) {
+  background-color: #2563eb !important; /* vibrant blue-600 */
+  color: #ffffff !important;
+  border: 1px solid rgba(147, 197, 253, 0.3) !important;
+}
+
+.dark button.bg-navy-900:hover:not(aside *),
+.dark a.bg-navy-900:hover:not(aside *),
+.dark button.bg-\[\#00215E\]:hover:not(aside *),
+.dark a.bg-\[\#00215E\]:hover:not(aside *) {
+  background-color: #1d4ed8 !important; /* blue-700 */
+}
+
+/* Secondary & Action Icon Buttons with bg-slate-100 */
+.dark button.bg-slate-100,
+.dark .bg-slate-100 button,
+.dark a.bg-slate-100 {
+  background-color: #334155 !important; /* slate-700 */
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+
+.dark button.bg-slate-100:hover,
+.dark .bg-slate-100 button:hover,
+.dark a.bg-slate-100:hover {
+  background-color: #475569 !important; /* slate-600 */
+  color: #ffffff !important;
+}
+
+/* Disabled buttons in dark mode (e.g. Paid button) */
+.dark button:disabled.bg-slate-100,
+.dark button:disabled.text-slate-400 {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+  color: #64748b !important;
+  border-color: #334155 !important;
+}
+
+/* Preset bundle pills & chips */
+.dark button.bg-slate-100.text-slate-700,
+.dark .bg-slate-100.text-slate-700 {
+  background-color: #334155 !important;
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
+}
+
+.dark button.bg-slate-100.text-slate-700:hover {
+  background-color: rgba(16, 185, 129, 0.25) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+/* ==========================================
+   TABLES & DATA GRIDS IN DARK MODE
+   ========================================== */
+
 table {
   border-color: #e2e8f0;
 }
@@ -191,7 +455,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background-color: #f1f5f9 !important; /* slate-100 - crisp, high-visibility hover in light mode */
+  background-color: #f1f5f9 !important;
 }
 
 .dark table {
@@ -200,22 +464,31 @@ tbody tr:hover {
 
 .dark thead tr {
   background-color: #0f172a !important;
-  border-bottom-color: #334155 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.dark thead th {
+  color: #cbd5e1 !important; /* slate-300 - clear, high contrast */
+  font-weight: 700 !important;
 }
 
 .dark tbody tr {
   background-color: #1e293b !important;
-  border-bottom-color: #334155 !important;
+  border-bottom: 1px solid #334155 !important;
 }
 
 .dark tbody tr:hover {
-  background-color: #334155 !important; /* slate-700 - crisp, high-visibility hover in dark mode */
+  background-color: #334155 !important; /* slate-700 - clear hover */
 }
 
-/* Modals & Dialog Backdrops */
+/* ==========================================
+   MODALS, DIALOGS & POPUPS IN DARK MODE
+   ========================================== */
+
 .dark .bg-slate-900\/40,
 .dark .bg-slate-900\/60 {
   background-color: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(4px);
 }
 
 /* Light & Dark Theme Hover Consistency Overrides */
@@ -254,13 +527,12 @@ tbody tr:hover {
   background: #475569;
 }
 
-/* Preserve Brand and Status Badges */
-.dark .bg-navy-900 {
-  background-color: #00215E !important; /* keep original brand primary */
+/* Preserve Brand Sidebar, Badges & White Text */
+.dark aside.bg-navy-primary,
+.dark aside .bg-navy-primary {
+  background-color: #00215E !important;
 }
-.dark .hover\:bg-navy-800:hover {
-  background-color: #002F87 !important;
-}
+
 .dark .text-white {
   color: #ffffff !important; /* keep white text white */
 }

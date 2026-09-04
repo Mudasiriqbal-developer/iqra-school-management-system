@@ -142,7 +142,7 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl max-w-xl w-full shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900 px-6 py-4 flex items-center justify-between text-white border-b border-navy-700">
           <div className="flex items-center space-x-2.5">
@@ -167,7 +167,7 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-5 text-left max-h-[80vh] overflow-y-auto">
           {/* Target Type Selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider block">
               Issue To
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -176,8 +176,8 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
                 onClick={() => setTargetType('class')}
                 className={`flex items-center justify-center space-x-2 p-3 rounded-xl border-2 transition-all ${
                   targetType === 'class'
-                    ? 'border-emerald-500 bg-emerald-50/40 text-emerald-900 font-bold shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 font-medium'
+                    ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 font-bold shadow-sm'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 font-medium'
                 }`}
               >
                 <Users className="h-4 w-4" />
@@ -189,8 +189,8 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
                 onClick={() => setTargetType('student')}
                 className={`flex items-center justify-center space-x-2 p-3 rounded-xl border-2 transition-all ${
                   targetType === 'student'
-                    ? 'border-emerald-500 bg-emerald-50/40 text-emerald-900 font-bold shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 font-medium'
+                    ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 font-bold shadow-sm'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 font-medium'
                 }`}
               >
                 <User className="h-4 w-4" />
@@ -202,14 +202,14 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Class and Section Selectors */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 block">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
                 Class <span className="text-red-500">*</span>
               </label>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
                 required
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 bg-white"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900"
               >
                 <option value="">-- Select Class --</option>
                 {classes.map((cls) => (
@@ -219,14 +219,14 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 block">
-                Section <span className="text-slate-400 font-normal">(Optional)</span>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
+                Section <span className="text-slate-400 dark:text-slate-400 font-normal">(Optional)</span>
               </label>
               <select
                 value={selectedSectionId}
                 onChange={(e) => setSelectedSectionId(e.target.value)}
                 disabled={!selectedClassId}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 bg-white disabled:bg-slate-100 disabled:cursor-not-allowed"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 disabled:bg-slate-100 dark:disabled:bg-slate-900/50 disabled:cursor-not-allowed"
               >
                 <option value="">All Sections</option>
                 {sections.map((sec) => (
@@ -239,7 +239,7 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Individual Student Selector */}
           {targetType === 'student' && (
             <div className="space-y-1.5 animate-in fade-in duration-150">
-              <label className="text-xs font-bold text-slate-700 block">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
                 Select Student <span className="text-red-500">*</span>
               </label>
               <select
@@ -247,7 +247,7 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
                 onChange={(e) => setSelectedStudentId(e.target.value)}
                 required
                 disabled={!selectedClassId}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 bg-white disabled:bg-slate-100"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 disabled:bg-slate-100 dark:disabled:bg-slate-900/50"
               >
                 <option value="">-- Choose Student --</option>
                 {students.map((stud) => (
@@ -261,7 +261,7 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
 
           {/* Quick Presets */}
           <div className="space-y-2">
-            <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700">
+            <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
               <span>Quick Bundle Presets</span>
             </div>
@@ -271,7 +271,7 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
                   key={i}
                   type="button"
                   onClick={() => handleSelectBundle(b)}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200 font-medium transition-colors text-slate-700"
+                  className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300 border border-slate-200 dark:border-slate-600 font-medium transition-colors text-slate-700 dark:text-slate-200"
                 >
                   {b.title} (Rs. {b.price})
                 </button>
@@ -282,7 +282,7 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Title & Amount */}
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 block">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
                 Package / Book Description <span className="text-red-500">*</span>
               </label>
               <input
@@ -291,13 +291,13 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
                 onChange={(e) => setBundleTitle(e.target.value)}
                 placeholder="e.g. Grade 5 Complete Course Set"
                 required
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 bg-white"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
                   Amount (Rs.) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -308,31 +308,31 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="2500"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-slate-800 bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block">
-                  Due Date <span className="text-slate-400 font-normal">(Optional)</span>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
+                  Due Date <span className="text-slate-400 dark:text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-medium text-slate-800 bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-medium text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900"
                 />
               </div>
             </div>
           </div>
 
           {/* Modal Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors"
+              className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>

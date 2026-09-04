@@ -24,6 +24,7 @@ A full-stack, enterprise-ready School Management System built specifically for *
    - [10. Dynamic Drag-and-Drop Navigation](#10-dynamic-drag-and-drop-navigation)
    - [11. Automated PDF Generation](#11-automated-pdf-generation)
    - [12. Helpdesk & Support Tickets](#12-helpdesk--support-tickets)
+   - [13. Dark Mode & High-Contrast Design System](#13-dark-mode--high-contrast-design-system)
 5. [Project Structure](#-project-structure)
 6. [Database Models & Schema Design](#-database-models--schema-design)
 7. [REST API Endpoints Guide](#-rest-api-endpoints-guide)
@@ -190,6 +191,16 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 ### 12. Helpdesk & Support Tickets
 - **Internal Ticket Desk**: Students and teachers can submit issue tickets with severity levels and categories.
 - **Admin Ticket Resolution**: Admins can filter, reply to, and resolve or close tickets.
+
+### 13. Dark Mode & High-Contrast Design System
+- **Universal Slate & Gray Hierarchy**: Eliminates dark-on-dark text contrast loss by systematically transforming `text-slate-*` and `text-gray-*` classes:
+  - **Primary headings & bold titles** (`text-slate-950/900/850/800`, `text-navy-950`, `text-[#00215E]`): Crisp `#f8fafc` (slate-50) and `#38bdf8` (sky-400).
+  - **Secondary labels & table content** (`text-slate-700/650/600`, `text-gray-700/600`): High-visibility `#e2e8f0` (slate-200).
+  - **Muted/supporting text** (`text-slate-500/400`, `text-gray-500/400`): Clean, readable `#94a3b8` (slate-400).
+- **Vibrant Primary & High-Contrast Action Buttons**: Interactive table actions (`Pay`, `Collect Fee`, modal saves) with `bg-navy-900` or `bg-[#00215E]` automatically adapt to vibrant `#2563eb` (blue-600) with hover `#1d4ed8`, while preserving the dark navy sidebar branding.
+- **Sleek Dark Preset Chips & Badges**: Secondary buttons and preset bundle pills (`bg-slate-100`) render as sleek `#334155` dark chips with light text `#f8fafc` and hover highlights, replacing glaring white boxes.
+- **Form Controls & Date Pickers**: All inputs, `<select>` menus, `<option>` items, and textareas feature deep `#1e293b` surfaces, crisp white text, slate-700 borders, inverted calendar picker icons, and clear `#94a3b8` placeholder text.
+- **Resilient Status Badges**: `StatusBadge` automatically derives and renders capitalized status labels (`Paid`, `Pending`, `Partial`, etc.) even if the optional `label` prop is omitted.
 
 ---
 

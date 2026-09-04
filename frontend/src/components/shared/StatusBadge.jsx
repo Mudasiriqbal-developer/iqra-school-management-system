@@ -29,10 +29,12 @@ const StatusBadge = ({ status = 'active', label }) => {
       dotStyle = 'bg-slate-400';
   }
 
+  const displayLabel = label || (typeof status === 'string' && status ? status.charAt(0).toUpperCase() + status.slice(1) : '');
+
   return (
     <span className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeStyle} select-none`}>
       <span className={`h-1.5 w-1.5 rounded-full ${dotStyle}`}></span>
-      <span>{label}</span>
+      {displayLabel && <span>{displayLabel}</span>}
     </span>
   );
 };
