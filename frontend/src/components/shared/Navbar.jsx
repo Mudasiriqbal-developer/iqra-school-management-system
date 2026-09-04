@@ -5,7 +5,15 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
 
-const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvatar = "", onToggleSidebar, onLogoutClick }) => {
+const Navbar = ({ 
+  userName = "Admin User", 
+  userRole = "Administrator", 
+  userAvatar = "", 
+  isCollapsed = false, 
+  onToggleCollapse, 
+  onToggleSidebar, 
+  onLogoutClick 
+}) => {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
@@ -122,9 +130,15 @@ const Navbar = ({ userName = "Admin User", userRole = "Administrator", userAvata
       {/* Left: Menu toggle & Live Search */}
       <div className="flex items-center space-x-3 flex-1 min-w-0 mr-4">
         <button
-          onClick={onToggleSidebar}
-          className="lg:hidden p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
-          title="Open Menu"
+          onClick={() => {
+            if (window.innerWidth >= 1024 && onToggleCollapse) {
+              onToggleCollapse();
+            } else if (onToggleSidebar) {
+              onToggleSidebar();
+            }
+          }}
+          className="p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-800 rounded-xl transition-all focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           <Menu className="h-5 w-5" />
         </button>

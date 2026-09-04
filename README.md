@@ -25,6 +25,7 @@ A full-stack, enterprise-ready School Management System built specifically for *
    - [11. Automated PDF Generation](#11-automated-pdf-generation)
    - [12. Helpdesk & Support Tickets](#12-helpdesk--support-tickets)
    - [13. Dark Mode & High-Contrast Design System](#13-dark-mode--high-contrast-design-system)
+   - [14. Collapsible Mini-Sidebar (Rail Navigation)](#14-collapsible-mini-sidebar-rail-navigation)
 5. [Project Structure](#-project-structure)
 6. [Database Models & Schema Design](#-database-models--schema-design)
 7. [REST API Endpoints Guide](#-rest-api-endpoints-guide)
@@ -89,7 +90,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 | **Tailwind CSS v3** (`^3.4.3`) | Utility-first CSS styling across all pages and modals | Enables rapid, responsive, pixel-perfect UI design with dark mode styling, custom color palettes, and zero runtime CSS overhead. |
 | **React Router v7** (`^7.18.1`) | Client-side routing and protected route wrappers (`App.jsx`, `ProtectedRoute.jsx`) | Declarative navigation, route guards by role (`admin`, `teacher`, `student`), and seamless deep-linking without page refreshes. |
 | **Axios** (`^1.18.1`) | Centralized API client (`services/api.js`) | Configured with global interceptors to automatically attach Bearer JWT tokens and gracefully redirect upon `401 Unauthorized` token expiry. |
-| **@dnd-kit (Core, Sortable, Utilities)** (`^6.3.1`, `^10.0.0`, `^3.2.2`) | Sidebar navigation customizer (`components/shared/Sidebar.jsx`, `AdminSettings.jsx`) | Modern, accessible drag-and-drop engine allowing school admins to customize and persist the order of their sidebar menu items. |
+| **@dnd-kit (Core, Sortable, Utilities)** (`^6.3.1`, `^10.0.0`, `^3.2.2`) | Sidebar navigation customizer & Collapsible Mini-Rail (`components/shared/Sidebar.jsx`, `components/shared/DashboardLayout.jsx`, `AdminSettings.jsx`) | Modern, accessible drag-and-drop engine allowing school admins to customize and persist the order of their sidebar menu items, coupled with collapsible rail navigation. |
 | **Recharts** (`^3.9.2`) | Analytical charts (`AttendanceTrendChart.jsx`, `AdminDashboard.jsx`) | Responsive SVG data visualization for student attendance trends, fee collection vs dues, and monthly revenue/expense comparisons. |
 | **Lucide React** (`^1.24.0`) | UI icons across navigation, action buttons, and status indicators | Lightweight, modern, and tree-shakeable icon set matching contemporary design standards. |
 | **React Hot Toast** (`^2.6.0`) | User notifications and feedback alerts | Non-intrusive, customizable toast messages for operations like payment creation, error handling, updates, and deletes. |
@@ -201,6 +202,16 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Sleek Dark Preset Chips & Badges**: Secondary buttons and preset bundle pills (`bg-slate-100`) render as sleek `#334155` dark chips with light text `#f8fafc` and hover highlights, replacing glaring white boxes.
 - **Form Controls & Date Pickers**: All inputs, `<select>` menus, `<option>` items, and textareas feature deep `#1e293b` surfaces, crisp white text, slate-700 borders, inverted calendar picker icons, and clear `#94a3b8` placeholder text.
 - **Resilient Status Badges**: `StatusBadge` automatically derives and renders capitalized status labels (`Paid`, `Pending`, `Partial`, etc.) even if the optional `label` prop is omitted.
+
+### 14. Collapsible Mini-Sidebar (Rail Navigation)
+- **Compact Icon Rail by Default**: The sidebar defaults to a high-density 80px (`lg:w-20`) mini-rail showing centered module icons with left cyan glow active indicators, maximizing screen real estate for wide data tables (student registries, monthly fee ledgers, exam grades).
+- **Multi-Way Toggle Controls**:
+  - **Click-to-Expand Logo**: When collapsed, clicking the top school emblem logo smoothly expands the full sidebar.
+  - **Sidebar Header Chevron**: Sleek `ChevronLeft` / `ChevronRight` button directly in the sidebar header allows instant collapse/expand.
+  - **Top Navbar Menu Button**: The hamburger menu button toggles the mini-sidebar on desktop while toggling the drawer modal on mobile viewports.
+- **Hover Floating Tooltips**: In collapsed mode, hovering over any navigation item, Support link, or Logout displays an instant high-contrast floating tooltip badge (`navy-950` with glassmorphic border) to ensure effortless discoverability.
+- **Persistent Workspace Preference**: State is automatically remembered in `localStorage` (`ihass_sidebar_collapsed`), preserving the user's preferred layout across browser refreshes and page transitions.
+- **Fluid Layout Transition**: Main content offset adjusts with synchronized 300ms cubic transitions (`lg:pl-20` vs `lg:pl-64`) without UI stutter or layout snapping.
 
 ---
 

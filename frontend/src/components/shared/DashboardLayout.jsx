@@ -8,10 +8,30 @@ import { DEFAULT_NAV_ITEMS } from '../../utils/navConstants';
 
 const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ihass_sidebar_collapsed');
+      return saved !== null ? saved === 'true' : true; // Default to collapsed as requested
+    } catch {
+      return true;
+    }
+  });
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { logout, user } = useAuth();
   const [schoolSettings, setSchoolSettings] = useState(null);
+
+  const toggleCollapse = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('ihass_sidebar_collapsed', String(next));
+      } catch (e) {
+        console.error('Failed to save sidebar state to localStorage', e);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -68,6 +88,8 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
         subtitle={subtitle} 
         navItems={displayNavItems} 
         isOpen={isSidebarOpen}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={toggleCollapse}
         onClose={() => setIsSidebarOpen(false)}
         onLogoutClick={() => setIsLogoutConfirmOpen(true)} 
         schoolName={schoolSettings?.schoolName}
@@ -75,11 +97,15 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
       />
 
       {/* Main Content Wrapper - responsive offset */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen w-full overflow-x-hidden">
+      <div className={`flex-1 ${
+        isCollapsed ? 'lg:pl-20' : 'lg:pl-64'
+      } flex flex-col min-h-screen w-full overflow-x-hidden transition-all duration-300 ease-in-out`}>
         {/* Top Navbar */}
         <Navbar 
           userName={userName} 
           userRole={userRole} 
+          isCollapsed={isCollapsed}
+          onToggleCollapse={toggleCollapse}
           onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
           onLogoutClick={() => setIsLogoutConfirmOpen(true)} 
         />
