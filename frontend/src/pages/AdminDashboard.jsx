@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Award, BookOpen, Calendar, CalendarCheck, DollarSign, BarChart3, Plus, ArrowRight, Wallet, GraduationCap, AlertCircle, RefreshCw, TrendingUp, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Award, BookOpen, Calendar, CalendarCheck, DollarSign, BarChart3, Plus, ArrowRight, Wallet, GraduationCap, AlertCircle, RefreshCw, TrendingUp, Settings, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
@@ -134,6 +134,52 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* Professional Enterprise Tip Banner */}
+        <div className="bg-gradient-to-r from-blue-900/5 via-indigo-900/5 to-white border border-blue-200/80 rounded-2xl p-4 sm:p-5 shadow-xs relative overflow-hidden">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-start space-x-3.5">
+              <div className="p-2.5 bg-navy-900 text-white rounded-xl shadow-xs flex-shrink-0 mt-0.5">
+                <Sparkles className="h-5 w-5 text-amber-300" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 bg-blue-100 text-blue-900 rounded-md border border-blue-200">
+                    Professional Tip
+                  </span>
+                  <h3 className="text-sm font-bold text-navy-950">
+                    Interactive Financial Drill-Downs & Audit Reports
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed max-w-3xl">
+                  High-level financial KPI cards connect directly to actionable popup modals and exportable PDF audit reports. Click on <span className="font-bold text-navy-900">Collected Fee</span> or <span className="font-bold text-navy-900">Partial Payments Dues</span> below to inspect student ledgers, filter in real-time, view the Quick Financial Ribbon, and generate instant row-level receipts or batch audit PDFs.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0">
+              <button
+                onClick={() => {
+                  setFeeModalType('collected');
+                  setIsFeeModalOpen(true);
+                }}
+                className="px-3.5 py-2 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-xl shadow-xs flex items-center space-x-1.5 transition-colors cursor-pointer"
+              >
+                <span>View Collections</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => {
+                  setFeeModalType('partial');
+                  setIsFeeModalOpen(true);
+                }}
+                className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center space-x-1.5 transition-colors cursor-pointer"
+              >
+                <span>View Dues</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* StatCards Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
           {loading ? (
@@ -193,6 +239,7 @@ const AdminDashboard = () => {
                   setFeeModalType('collected');
                   setIsFeeModalOpen(true);
                 }}
+                badge="Drill-down & PDF"
               />
 
               {/* 4. Partial Payments */}
@@ -201,7 +248,7 @@ const AdminDashboard = () => {
                 label="Partial Payments Dues"
                 value={
                   <div className="flex items-baseline gap-1.5 flex-wrap">
-                    <span>Rs. {(feeSummaryData?.partialAmount || 0).toLocaleString()}</span>
+                    <span>Rs. ${(feeSummaryData?.partialAmount || 0).toLocaleString()}</span>
                     <span className="text-xs font-semibold text-gray-400">({feeSummaryData?.partialCount || 0} students)</span>
                   </div>
                 }
@@ -209,6 +256,7 @@ const AdminDashboard = () => {
                   setFeeModalType('partial');
                   setIsFeeModalOpen(true);
                 }}
+                badge="Drill-down & PDF"
               />
 
               {/* 5. Profit & Loss Margin */}

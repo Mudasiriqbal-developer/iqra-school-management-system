@@ -1,6 +1,6 @@
 import React from 'react';
 
-const StatCard = ({ icon: Icon, label, value, trend, trendColor, onClick }) => {
+const StatCard = ({ icon: Icon, label, value, trend, trendColor, onClick, badge }) => {
   // Determine trend color styling classes
   let badgeClass = 'text-emerald-700 bg-emerald-50 border-emerald-200/80 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40';
   if (trendColor === 'danger') {
@@ -25,7 +25,7 @@ const StatCard = ({ icon: Icon, label, value, trend, trendColor, onClick }) => {
       onClick={onClick}
       className={`bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between transition-all duration-200 min-h-[155px] group ${
         onClick 
-          ? 'cursor-pointer hover:border-slate-300 dark:hover:border-slate-600' 
+          ? 'cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md hover:-translate-y-0.5' 
           : ''
       }`}
     >
@@ -35,6 +35,14 @@ const StatCard = ({ icon: Icon, label, value, trend, trendColor, onClick }) => {
           <div className="p-2.5 bg-navy-50/80 dark:bg-sky-950/40 text-navy-950 dark:text-sky-400 border border-navy-100/60 dark:border-sky-900/40 rounded-xl flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
             {Icon && <Icon className="h-5 w-5" />}
           </div>
+
+          {/* Drill-down Badge / Action Indicator */}
+          {(badge || onClick) && (
+            <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/50 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <span>{badge || 'Drill-down'}</span>
+              <span className="text-[11px] leading-none group-hover:translate-x-0.5 transition-transform">→</span>
+            </div>
+          )}
         </div>
 
         <div className="mt-4">
