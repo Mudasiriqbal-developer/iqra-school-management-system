@@ -17,15 +17,16 @@ A full-stack, enterprise-ready School Management System built specifically for *
    - [3. Family Accounts & Consolidated Vouchers](#3-family-accounts--consolidated-vouchers)
    - [4. Academics & Faculty Workload Management](#4-academics--faculty-workload-management)
    - [5. Fee Management, Student Ledgers & One-Time Charges](#5-fee-management-student-ledgers--one-time-charges)
-   - [6. Financial Accounting: Expenses & Payroll](#6-financial-accounting-expenses--payroll)
-   - [7. Daily Attendance & Analytics](#7-daily-attendance--analytics)
-   - [8. Examination, Grading & Report Cards](#8-examination-grading--report-cards)
-   - [9. Session Promotion Engine](#9-session-promotion-engine)
-   - [10. Dynamic Drag-and-Drop Navigation](#10-dynamic-drag-and-drop-navigation)
-   - [11. Automated PDF Generation](#11-automated-pdf-generation)
-   - [12. Helpdesk & Support Tickets](#12-helpdesk--support-tickets)
-   - [13. Dark Mode & High-Contrast Design System](#13-dark-mode--high-contrast-design-system)
-   - [14. Collapsible Mini-Sidebar (Rail Navigation)](#14-collapsible-mini-sidebar-rail-navigation)
+   - [6. Books & Syllabus Management](#6-books--syllabus-management)
+   - [7. Financial Accounting: Expenses & Payroll](#7-financial-accounting-expenses--payroll)
+   - [8. Daily Attendance & Analytics](#8-daily-attendance--analytics)
+   - [9. Examination, Grading & Report Cards](#9-examination-grading--report-cards)
+   - [10. Session Promotion Engine](#10-session-promotion-engine)
+   - [11. Dynamic Drag-and-Drop Navigation](#11-dynamic-drag-and-drop-navigation)
+   - [12. Automated PDF Generation](#12-automated-pdf-generation)
+   - [13. Helpdesk & Support Tickets](#13-helpdesk--support-tickets)
+   - [14. Dark Mode & High-Contrast Design System](#14-dark-mode--high-contrast-design-system)
+   - [15. Collapsible Mini-Sidebar (Rail Navigation)](#15-collapsible-mini-sidebar-rail-navigation)
 5. [Project Structure](#-project-structure)
 6. [Database Models & Schema Design](#-database-models--schema-design)
 7. [REST API Endpoints Guide](#-rest-api-endpoints-guide)
@@ -163,37 +164,44 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Strict Financial Audit Locks**: Once any payment (`amountPaid > 0`) is recorded against a one-time charge, its title, amount, and delete actions are permanently locked.
 - **Dynamic Ledger Drawer**: Comprehensive transaction ledger showing monthly tuition, admission dues, and one-time charges with status badges and PDF receipts.
 
-### 6. Financial Accounting: Expenses & Payroll
+### 6. Books & Syllabus Management
+- **Curriculum Packages & Charge Issuance**: Assign book packages, textbooks, and syllabus items to individual students or bulk issue to entire classes/sections with itemized quantity and unit pricing.
+- **Interactive Drill-Down KPI Cards**: Top financial cards (Total Book Billing, Collected Book Dues, Partial Book Dues, Remaining Unpaid Dues) feature bottom labels, progress trends, and instant clickability.
+- **Drill-Down Popup Windows (`BookDetailsModal`)**: Clicking any stat card launches a branded modal dialog with in-modal search, quick KPI ribbon, and student records matching that financial category (Collected, Partial, or Unpaid).
+- **Official PDF Report Generation (`/api/books/report-pdf`)**: Generate and download professional, multi-page vector PDF reports with IHASS school branding, summary analytics, tabular student dues breakdown, and administrative signature verification blocks.
+- **Row-Level Instant Receipts**: Direct download of individual branded student book fee receipts (`/api/books/:id/receipt-pdf`) with idempotency protection on payment logging.
+
+### 7. Financial Accounting: Expenses & Payroll
 - **Expense Tracker**: Log school operating costs by category (Utilities, Maintenance, Supplies, Events) with date filters and net balance analysis.
 - **Staff Payroll System**: Manage base salaries, additions/bonuses, deductions, and payment statuses (Paid/Pending) per billing cycle.
 
-### 7. Daily Attendance & Analytics
+### 8. Daily Attendance & Analytics
 - **Fast Attendance Register**: Grid-based daily marking (Present, Absent, Late, Leave) for teachers and administrators.
 - **Historical Analysis & Trend Charts**: Visualize 30-day attendance trends, average attendance percentages, and monthly student records.
 
-### 8. Examination, Grading & Report Cards
+### 9. Examination, Grading & Report Cards
 - **Mark Sheet Management**: Teachers enter marks for assigned subjects per exam term (Midterm, Final, Monthly Test).
 - **Automated Grading**: Calculation of percentages, letter grades (A+, A, B, C, F), and teacher remarks.
 - **Student Portal Grade View**: Students can inspect published exam marks and term reports.
 
-### 9. Session Promotion Engine
+### 10. Session Promotion Engine
 - **End-of-Year Batch Promotion**: Promotes eligible students to the next class and section in bulk.
 - **Preview & Validation**: Admin previews the promotion mapping (e.g., Class 1 -> Class 2) before executing database transactions.
 
-### 10. Dynamic Drag-and-Drop Navigation
+### 11. Dynamic Drag-and-Drop Navigation
 - **Customizable Menu Layout**: Admins can re-order their 13 navigation sidebar items (Dashboard, Students, Family Tree, Faculty, Academics, Fees, Books Management, Expenses, Payroll, Attendance, Reports, Promotion, Settings) via `@dnd-kit` drag-and-drop.
 - **Persistent & Resilient Preferences**: Layout order is saved to the MongoDB `User.navOrder` field. The system includes automatic merge logic on both backend and frontend to seamlessly append any newly introduced default items without resetting customized layouts.
 
-### 11. Automated PDF Generation
+### 12. Automated PDF Generation
 - **Admission Receipt PDF**: Clean, branded admission receipt with school credentials, fee details, and terms.
 - **Fee Collection Receipts**: Printable receipt with payment breakdown, discounts, and timestamp.
 - **Family Challans**: Consolidated multi-student vouchers ready for bank deposit or counter payment.
 
-### 12. Helpdesk & Support Tickets
+### 13. Helpdesk & Support Tickets
 - **Internal Ticket Desk**: Students and teachers can submit issue tickets with severity levels and categories.
 - **Admin Ticket Resolution**: Admins can filter, reply to, and resolve or close tickets.
 
-### 13. Dark Mode & High-Contrast Design System
+### 14. Dark Mode & High-Contrast Design System
 - **Universal Slate & Gray Hierarchy**: Eliminates dark-on-dark text contrast loss by systematically transforming `text-slate-*` and `text-gray-*` classes:
   - **Primary headings & bold titles** (`text-slate-950/900/850/800`, `text-navy-950`, `text-[#00215E]`): Crisp `#f8fafc` (slate-50) and `#38bdf8` (sky-400).
   - **Secondary labels & table content** (`text-slate-700/650/600`, `text-gray-700/600`): High-visibility `#e2e8f0` (slate-200).
@@ -203,7 +211,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Form Controls & Date Pickers**: All inputs, `<select>` menus, `<option>` items, and textareas feature deep `#1e293b` surfaces, crisp white text, slate-700 borders, inverted calendar picker icons, and clear `#94a3b8` placeholder text.
 - **Resilient Status Badges**: `StatusBadge` automatically derives and renders capitalized status labels (`Paid`, `Pending`, `Partial`, etc.) even if the optional `label` prop is omitted.
 
-### 14. Collapsible Mini-Sidebar (Rail Navigation)
+### 15. Collapsible Mini-Sidebar (Rail Navigation)
 - **Compact Icon Rail by Default**: The sidebar defaults to a high-density 80px (`lg:w-20`) mini-rail showing centered module icons with left cyan glow active indicators, maximizing screen real estate for wide data tables (student registries, monthly fee ledgers, exam grades).
 - **Multi-Way Toggle Controls**:
   - **Click-to-Expand Logo**: When collapsed, clicking the top school emblem logo smoothly expands the full sidebar.
@@ -325,6 +333,7 @@ iqra-school-management-system/
 ### Books & Syllabus Management (`/api/books`)
 - `GET  /api/books/summary` — Books KPI summary (Total Billed, Total Collected, Outstanding Dues, and status counts).
 - `GET  /api/books/dues` — Paginated list of student book dues with Class, Section, Payment Status, and Search filters.
+- `GET  /api/books/report-pdf` — Generate and stream official multi-page branded PDF report for book dues by type (`collected`, `partial`, `pending`, `all`), class, and search query.
 - `POST /api/books/:id/pay` — Record single student book fee payment with client UUID idempotencyKey protection.
 - `GET  /api/books/:id/receipt-pdf` — Generate and download official branded PDF receipt for a book fee record.
 - `POST /api/books/issue` — Issue book charges to an individual student or bulk assign to an entire class/section.

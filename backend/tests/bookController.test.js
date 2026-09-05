@@ -15,8 +15,11 @@ const {
   getBookSummary,
   getBookDues,
   recordBookPayment,
+  generateBookReceiptPDF,
+  generateBookReportPDF,
   issueBookCharge
 } = require('../controllers/bookController');
+const { PassThrough } = require('stream');
 
 const mockRequest = (params = {}, body = {}, query = {}, user = {}) => ({
   params,
@@ -26,17 +29,20 @@ const mockRequest = (params = {}, body = {}, query = {}, user = {}) => ({
 });
 
 const mockResponse = () => {
-  const res = {};
-  res.status = (code) => {
-    res.statusCode = code;
-    return res;
+  const pt = new PassThrough();
+  pt.headers = {};
+  pt.status = (code) => {
+    pt.statusCode = code;
+    return pt;
   };
-  res.json = (data) => {
-    res.body = data;
-    return res;
+  pt.json = (data) => {
+    pt.body = data;
+    return pt;
   };
-  res.setHeader = () => {};
-  return res;
+  pt.setHeader = (key, val) => {
+    pt.headers[key] = val;
+  };
+  return pt;
 };
 
 const mockNext = (err) => {
@@ -255,5 +261,60 @@ test.describe('Book Controller Integration Tests', { concurrency: 1 }, () => {
 
     const countInDb = await BookFee.countDocuments({ classId: testClass._id });
     assert.strictEqual(countInDb, 2);
+  });
+
+  test('should support getBookDues with collected, partial, and pending filters', async () => {
+    // Seed one paid, one partial, one pending
+    await BookFee.deleteMany({});
+    await BookFee.create([
+      {
+        student: studentA._id,
+        classId: testClass._id,
+        amount: 2000,
+        amountPaid: 2000,
+        paymentStatus: 'paid'
+      },
+      {
+        student: studentB._id,
+        classId: testClass._id,
+        amount: 2000,
+        amountPaid: 800,
+        paymentStatus: 'partial'
+      }
+    ]);
+
+    // Filter: collected (records where amountPaid > 0)
+    const collectedReq = mockRequest({}, {}, { status: 'collected' });
+    const collectedRes = mockResponse();
+    await getBookDues(collectedReq, collectedRes, mockNext);
+    assert.strictEqual(collectedRes.body.data.records.length, 2);
+
+    // Filter: partial
+    const partialReq = mockRequest({}, {}, { status: 'partial' });
+    const partialRes = mockResponse();
+    await getBookDues(partialReq, partialRes, mockNext);
+    assert.strictEqual(partialRes.body.data.records.length, 1);
+    assert.strictEqual(partialRes.body.data.records[0].paymentStatus, 'partial');
+
+    // Filter: pending
+    const pendingReq = mockRequest({}, {}, { status: 'pending' });
+    const pendingRes = mockResponse();
+    await getBookDues(pendingReq, pendingRes, mockNext);
+    assert.strictEqual(pendingRes.body.data.records.length, 0);
+  });
+
+  test('should stream a valid PDF report for book dues', async () => {
+    const pdfReq = mockRequest({}, {}, { type: 'collected' });
+    const pdfRes = mockResponse();
+
+    let chunksReceived = 0;
+    pdfRes.on('data', (chunk) => {
+      if (chunk && chunk.length > 0) chunksReceived++;
+    });
+
+    await generateBookReportPDF(pdfReq, pdfRes, mockNext);
+
+    assert.strictEqual(pdfRes.headers['Content-Type'], 'application/pdf');
+    assert.ok(pdfRes.headers['Content-Disposition'].includes('collected-books-report'));
   });
 });

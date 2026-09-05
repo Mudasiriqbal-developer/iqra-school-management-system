@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, CheckCircle2, Loader2, DollarSign, CreditCard } from 'lucide-react';
+import { X, BookOpen, CheckCircle2, Loader2, DollarSign, CreditCard, RefreshCw } from 'lucide-react';
 import { recordBookPayment } from './bookService';
 import { toast } from 'react-hot-toast';
 
@@ -77,6 +77,18 @@ const RecordBookPaymentModal = ({ isOpen, record, onSuccess, onClose }) => {
     }
   };
 
+  const handleResetForm = () => {
+    setPaymentType('full');
+    setCustomAmount('');
+    setMethod('cash');
+    setNote('');
+    const key = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    setIdempotencyKey(key);
+    toast.success('Payment form refreshed');
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
@@ -91,13 +103,24 @@ const RecordBookPaymentModal = ({ isOpen, record, onSuccess, onClose }) => {
               <p className="text-xs text-slate-300">Issue official receipt & update ledger</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            disabled={loading}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={handleResetForm}
+              disabled={loading}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 active:rotate-180 transition-all duration-300 cursor-pointer"
+              title="Refresh / reset form"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Form Body */}

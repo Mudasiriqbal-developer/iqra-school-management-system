@@ -4,6 +4,7 @@ const {
   getBookDues,
   recordBookPayment,
   generateBookReceiptPDF,
+  generateBookReportPDF,
   issueBookCharge
 } = require('../controllers/bookController');
 const { protect, authorize } = require('../middleware/authMiddleware');
@@ -16,6 +17,7 @@ router.use(authorize('admin'));
 
 router.get('/summary', getBookSummary);
 router.get('/dues', getBookDues);
+router.get('/report-pdf', generateBookReportPDF);
 router.post('/issue', issueBookCharge);
 router.post('/:id/pay', recordBookPayment);
 router.get('/:id/receipt-pdf', generateBookReceiptPDF);

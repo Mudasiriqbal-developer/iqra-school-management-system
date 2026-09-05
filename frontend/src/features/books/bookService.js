@@ -50,6 +50,28 @@ export const downloadBookReceipt = async (id, filename = 'book-fee-receipt.pdf')
 };
 
 /**
+ * Download official Book Fees & Dues PDF Report.
+ * @param {Object} params - { type, classId, search, academicYear }
+ * @param {string} filename - Filename for download
+ */
+export const downloadBookReportPDF = async (params = {}, filename = 'book-dues-report.pdf') => {
+  const response = await api.get('/books/report-pdf', {
+    params,
+    responseType: 'blob'
+  });
+
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+/**
  * Issue new book charge to single student or entire class.
  * @param {Object} data - { targetType, studentId, classId, sectionId, amount, dueDate, items, academicYear }
  */

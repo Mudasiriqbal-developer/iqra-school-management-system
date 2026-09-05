@@ -27,8 +27,35 @@ const getBookSummary = async (req, res, next) => {
           pendingCount: {
             $sum: { $cond: [{ $eq: ['$paymentStatus', 'pending'] }, 1, 0] }
           },
+          pendingAmount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$paymentStatus', 'pending'] },
+                '$amount',
+                0
+              ]
+            }
+          },
           partialCount: {
             $sum: { $cond: [{ $eq: ['$paymentStatus', 'partial'] }, 1, 0] }
+          },
+          partialCollected: {
+            $sum: {
+              $cond: [
+                { $eq: ['$paymentStatus', 'partial'] },
+                '$amountPaid',
+                0
+              ]
+            }
+          },
+          partialRemaining: {
+            $sum: {
+              $cond: [
+                { $eq: ['$paymentStatus', 'partial'] },
+                { $subtract: ['$amount', '$amountPaid'] },
+                0
+              ]
+            }
           },
           paidCount: {
             $sum: { $cond: [{ $eq: ['$paymentStatus', 'paid'] }, 1, 0] }
@@ -43,7 +70,10 @@ const getBookSummary = async (req, res, next) => {
       totalCollected: 0,
       totalOutstanding: 0,
       pendingCount: 0,
+      pendingAmount: 0,
       partialCount: 0,
+      partialCollected: 0,
+      partialRemaining: 0,
       paidCount: 0,
       totalCount: 0
     };
@@ -83,7 +113,19 @@ const getBookDues = async (req, res, next) => {
     const filter = {};
 
     if (status && status !== 'all') {
-      filter.paymentStatus = status;
+      if (status === 'collected') {
+        filter.amountPaid = { $gt: 0 };
+      } else if (status === 'partial') {
+        filter.paymentStatus = 'partial';
+      } else if (status === 'pending' || status === 'unpaid') {
+        filter.paymentStatus = 'pending';
+      } else if (status === 'remaining' || status === 'outstanding') {
+        filter.$or = [{ paymentStatus: 'pending' }, { paymentStatus: 'partial' }];
+      } else if (status === 'paid') {
+        filter.paymentStatus = 'paid';
+      } else {
+        filter.paymentStatus = status;
+      }
     }
 
     if (classId && classId !== '') {
@@ -651,10 +693,266 @@ const issueBookCharge = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Generate PDF report for book dues (collected, partial, pending/remaining, or all)
+ * @route   GET /api/books/report-pdf
+ * @access  Private (Admin Only)
+ */
+const generateBookReportPDF = async (req, res, next) => {
+  try {
+    const { type = 'all', classId, search, academicYear } = req.query;
+
+    const filter = {};
+    let reportTitle = 'Book Fees & Dues Summary Report';
+    let reportSubtitle = 'Complete roster of student book billing';
+
+    if (type === 'collected') {
+      filter.amountPaid = { $gt: 0 };
+      reportTitle = 'Collected Book Dues Report';
+      reportSubtitle = 'Students with realized payments';
+    } else if (type === 'partial') {
+      filter.paymentStatus = 'partial';
+      reportTitle = 'Partial Book Dues Report';
+      reportSubtitle = 'Students with remaining partial balances';
+    } else if (type === 'pending' || type === 'remaining' || type === 'unpaid') {
+      filter.paymentStatus = 'pending';
+      reportTitle = 'Remaining Unpaid Book Dues Report';
+      reportSubtitle = 'Students with outstanding book charges';
+    } else if (type === 'outstanding') {
+      filter.$or = [{ paymentStatus: 'pending' }, { paymentStatus: 'partial' }];
+      reportTitle = 'Total Outstanding Book Dues Report';
+      reportSubtitle = 'All pending and partial student dues';
+    }
+
+    if (classId && classId !== '') {
+      filter.classId = classId;
+    }
+
+    if (academicYear && academicYear !== '') {
+      filter.academicYear = academicYear;
+    }
+
+    // Student search
+    if (search && search.trim() !== '') {
+      const matchingStudents = await Student.find({
+        $or: [
+          { fullName: { $regex: search.trim(), $options: 'i' } },
+          { registrationNumber: { $regex: search.trim(), $options: 'i' } }
+        ]
+      }).select('_id');
+      const studentIds = matchingStudents.map(s => s._id);
+      filter.student = { $in: studentIds };
+    }
+
+    const records = await BookFee.find(filter)
+      .populate({
+        path: 'student',
+        select: 'fullName registrationNumber classId sectionId fatherName fatherContact',
+        populate: [
+          { path: 'classId', select: 'name' },
+          { path: 'sectionId', select: 'name' }
+        ]
+      })
+      .populate('classId', 'name')
+      .sort({ createdAt: -1 });
+
+    const settings = await Settings.findOne({ schoolId: 'default' }).catch(() => null);
+
+    const safeFilename = `${type}-books-report-${new Date().toISOString().split('T')[0]}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
+
+    const doc = new PDFDocument({
+      margins: { top: 125, bottom: 60, left: 40, right: 40 },
+      bufferPages: true
+    });
+    doc.pipe(res);
+
+    // Draw first page header & footer
+    drawBrandedHeader(doc, reportTitle, reportSubtitle, settings);
+    drawFooter(doc);
+
+    // Listener for subsequent pages
+    doc.on('pageAdded', () => {
+      drawBrandedHeader(doc, reportTitle, reportSubtitle, settings);
+      drawFooter(doc);
+    });
+
+    // Compute totals
+    const totalRecords = records.length;
+    const totalBilled = records.reduce((sum, r) => sum + (r.amount || 0), 0);
+    const totalCollected = records.reduce((sum, r) => sum + (r.amountPaid || 0), 0);
+    const totalRemaining = Math.max(0, totalBilled - totalCollected);
+
+    let currentY = 125;
+
+    // Summary Box
+    doc.save();
+    doc.rect(40, currentY, 532, 45).fillAndStroke('#F8FAFC', '#CBD5E1');
+    doc.fillColor('#00215E').font('Helvetica-Bold').fontSize(8.5);
+
+    doc.text('Total Students:', 55, currentY + 11);
+    doc.font('Helvetica').fillColor('#1E293B').text(`${totalRecords} Record(s)`, 130, currentY + 11);
+
+    doc.font('Helvetica-Bold').fillColor('#00215E').text('Generated On:', 55, currentY + 26);
+    doc.font('Helvetica').fillColor('#1E293B').text(new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), 130, currentY + 26);
+
+    doc.font('Helvetica-Bold').fillColor('#00215E').text('Total Billed:', 240, currentY + 11);
+    doc.font('Helvetica').fillColor('#1E293B').text(`Rs. ${totalBilled.toLocaleString()}`, 310, currentY + 11);
+
+    doc.font('Helvetica-Bold').fillColor('#16A34A').text('Collected:', 240, currentY + 26);
+    doc.font('Helvetica-Bold').fillColor('#16A34A').text(`Rs. ${totalCollected.toLocaleString()}`, 310, currentY + 26);
+
+    doc.font('Helvetica-Bold').fillColor('#DC2626').text('Remaining Due:', 415, currentY + 16);
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('#DC2626').text(`Rs. ${totalRemaining.toLocaleString()}`, 490, currentY + 14, { align: 'right', width: 70 });
+    doc.restore();
+
+    currentY += 58;
+
+    // Table Column Coordinates & Widths
+    const colX = {
+      index: 40,
+      student: 65,
+      classSec: 185,
+      package: 265,
+      totalDue: 355,
+      paid: 415,
+      balance: 475,
+      status: 525
+    };
+    const colW = {
+      index: 22,
+      student: 118,
+      classSec: 78,
+      package: 88,
+      totalDue: 58,
+      paid: 58,
+      balance: 48,
+      status: 45
+    };
+
+    const drawTableHeader = (y) => {
+      doc.save();
+      doc.rect(40, y, 532, 22).fill('#00215E');
+      doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(7.5);
+      doc.text('#', colX.index + 2, y + 7, { width: colW.index });
+      doc.text('Student Details', colX.student, y + 7, { width: colW.student });
+      doc.text('Class / Sec', colX.classSec, y + 7, { width: colW.classSec });
+      doc.text('Package / Items', colX.package, y + 7, { width: colW.package });
+      doc.text('Total Due', colX.totalDue, y + 7, { width: colW.totalDue, align: 'right' });
+      doc.text('Paid', colX.paid, y + 7, { width: colW.paid, align: 'right' });
+      doc.text('Balance', colX.balance, y + 7, { width: colW.balance, align: 'right' });
+      doc.text('Status', colX.status, y + 7, { width: colW.status, align: 'center' });
+      doc.restore();
+    };
+
+    drawTableHeader(currentY);
+    let yPos = currentY + 24;
+    const maxAllowedY = 680;
+
+    if (records.length === 0) {
+      doc.save();
+      doc.fillColor('#64748B').font('Helvetica-Oblique').fontSize(9);
+      doc.text('No matching book fee records found.', 40, yPos + 15, { align: 'center', width: 532 });
+      doc.restore();
+      yPos += 45;
+    } else {
+      records.forEach((record, idx) => {
+        if (yPos + 26 > maxAllowedY) {
+          doc.addPage();
+          yPos = 125;
+          drawTableHeader(yPos);
+          yPos += 24;
+        }
+
+        // Alternating row background
+        if (idx % 2 === 1) {
+          doc.save();
+          doc.rect(40, yPos - 2, 532, 24).fill('#F8FAFC');
+          doc.restore();
+        }
+
+        const studentName = record.student?.fullName || 'N/A';
+        const regNo = record.student?.registrationNumber || 'N/A';
+        const className = record.student?.classId?.name || record.classId?.name || '-';
+        const sectionName = record.student?.sectionId?.name || '-';
+        const classSec = `${className} (${sectionName})`;
+        const itemsSummary = record.items && record.items.length > 0
+          ? record.items.map(i => i.title).join(', ')
+          : 'Standard Book Package';
+        const balance = Math.max(0, (record.amount || 0) - (record.amountPaid || 0));
+
+        doc.save();
+        doc.fillColor('#1E293B').font('Helvetica').fontSize(7.5);
+
+        // Index
+        doc.fillColor('#64748B').text(String(idx + 1), colX.index + 2, yPos + 3, { width: colW.index });
+
+        // Student Name & Reg
+        doc.fillColor('#00215E').font('Helvetica-Bold').text(studentName, colX.student, yPos + 2, { width: colW.student, lineBreak: false });
+        doc.fillColor('#64748B').font('Helvetica').fontSize(6.5).text(`Reg: ${regNo}`, colX.student, yPos + 12, { width: colW.student, lineBreak: false });
+
+        // Class & Sec
+        doc.font('Helvetica').fontSize(7.5).fillColor('#1E293B').text(classSec, colX.classSec, yPos + 5, { width: colW.classSec, lineBreak: false });
+
+        // Package
+        doc.fontSize(7).fillColor('#475569').text(itemsSummary, colX.package, yPos + 5, { width: colW.package, lineBreak: false });
+
+        // Total Due
+        doc.fontSize(7.5).font('Helvetica-Bold').fillColor('#1E293B').text(`Rs. ${(record.amount || 0).toLocaleString()}`, colX.totalDue, yPos + 5, { width: colW.totalDue, align: 'right', lineBreak: false });
+
+        // Paid
+        doc.fillColor('#16A34A').text(`Rs. ${(record.amountPaid || 0).toLocaleString()}`, colX.paid, yPos + 5, { width: colW.paid, align: 'right', lineBreak: false });
+
+        // Balance
+        const balanceColor = balance > 0 ? '#DC2626' : '#64748B';
+        doc.fillColor(balanceColor).text(`Rs. ${balance.toLocaleString()}`, colX.balance, yPos + 5, { width: colW.balance, align: 'right', lineBreak: false });
+
+        // Status badge text
+        const statusText = (record.paymentStatus || 'pending').toUpperCase();
+        let statusTextColor = '#DC2626';
+        if (record.paymentStatus === 'paid') statusTextColor = '#16A34A';
+        else if (record.paymentStatus === 'partial') statusTextColor = '#D97706';
+
+        doc.fontSize(7).font('Helvetica-Bold').fillColor(statusTextColor).text(statusText, colX.status, yPos + 5, { width: colW.status, align: 'center', lineBreak: false });
+
+        doc.restore();
+
+        // Divider
+        doc.moveTo(40, yPos + 22).lineTo(572, yPos + 22).strokeColor('#E2E8F0').lineWidth(0.5).stroke();
+        yPos += 24;
+      });
+    }
+
+    // Signatures block
+    const requiredFooterHeight = 85;
+    if (yPos + requiredFooterHeight > maxAllowedY) {
+      doc.addPage();
+      yPos = 125;
+    }
+
+    yPos += 15;
+    doc.save();
+    doc.moveTo(60, yPos + 35).lineTo(200, yPos + 35).strokeColor('#94A3B8').lineWidth(0.8).stroke();
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#475569').text('Accounts Officer / Incharge', 60, yPos + 40, { width: 140, align: 'center' });
+
+    doc.moveTo(410, yPos + 35).lineTo(550, yPos + 35).strokeColor('#94A3B8').lineWidth(0.8).stroke();
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#475569').text('Principal / Administrator', 410, yPos + 40, { width: 140, align: 'center' });
+    doc.restore();
+
+    // Finish PDF document with page numbers
+    addPageNumbers(doc);
+    doc.end();
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getBookSummary,
   getBookDues,
   recordBookPayment,
   generateBookReceiptPDF,
+  generateBookReportPDF,
   issueBookCharge
 };

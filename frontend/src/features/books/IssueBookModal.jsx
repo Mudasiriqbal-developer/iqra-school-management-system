@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, PlusCircle, Users, User, Calendar, BookOpen, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, PlusCircle, Users, User, Calendar, BookOpen, Loader2, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getClasses, getSectionsByClass, getStudents, issueBookCharge } from './bookService';
 
@@ -154,13 +154,24 @@ const IssueBookModal = ({ isOpen, onClose, onSuccess }) => {
               <p className="text-xs text-slate-300">Assign book sets to students or classes</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            disabled={submitting}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={loadClasses}
+              disabled={loading || submitting}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 active:rotate-180 transition-all duration-300 cursor-pointer"
+              title="Refresh classes data"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-sky-400' : ''}`} />
+            </button>
+            <button
+              onClick={onClose}
+              disabled={submitting}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Body */}

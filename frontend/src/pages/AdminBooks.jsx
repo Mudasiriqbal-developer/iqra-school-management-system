@@ -41,6 +41,7 @@ import {
 
 import RecordBookPaymentModal from '../features/books/RecordBookPaymentModal';
 import IssueBookModal from '../features/books/IssueBookModal';
+import BookDetailsModal from '../features/books/BookDetailsModal';
 
 const AdminBooks = () => {
   // Navigation sidebar configuration
@@ -91,6 +92,13 @@ const AdminBooks = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [detailsModalType, setDetailsModalType] = useState('all');
+
+  const handleOpenDetailsModal = (type) => {
+    setDetailsModalType(type);
+    setIsDetailsModalOpen(true);
+  };
 
   // Load Classes
   useEffect(() => {
@@ -241,35 +249,39 @@ const AdminBooks = () => {
         {/* KPI Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Total Book Billing"
-            value={`Rs. ${summary.totalBilled.toLocaleString()}`}
+            label="Total Book Billing"
+            value={`Rs. ${(summary.totalBilled || 0).toLocaleString()}`}
             icon={BookOpen}
-            color="bg-sky-500/10 text-sky-600 border border-sky-200"
-            description="Total invoiced book fees"
+            trend={`${summary.totalCount || 0} Total Records`}
+            trendColor="info"
+            onClick={() => handleOpenDetailsModal('all')}
           />
 
           <StatCard
-            title="Total Collected"
-            value={`Rs. ${summary.totalCollected.toLocaleString()}`}
+            label="Collected Book Dues"
+            value={`Rs. ${(summary.totalCollected || 0).toLocaleString()}`}
             icon={DollarSign}
-            color="bg-emerald-500/10 text-emerald-600 border border-emerald-200"
-            description="Realized cash & online receipts"
+            trend={`${summary.paidCount || 0} Paid Records`}
+            trendColor="active"
+            onClick={() => handleOpenDetailsModal('collected')}
           />
 
           <StatCard
-            title="Outstanding Dues"
-            value={`Rs. ${summary.totalOutstanding.toLocaleString()}`}
+            label="Partial Book Dues"
+            value={`Rs. ${(summary.partialRemaining || 0).toLocaleString()}`}
+            icon={Clock}
+            trend={`${summary.partialCount || 0} Partial Students`}
+            trendColor="pending"
+            onClick={() => handleOpenDetailsModal('partial')}
+          />
+
+          <StatCard
+            label="Remaining Unpaid Dues"
+            value={`Rs. ${(summary.pendingAmount !== undefined && summary.pendingAmount > 0 ? summary.pendingAmount : (summary.totalOutstanding || 0)).toLocaleString()}`}
             icon={AlertCircle}
-            color="bg-amber-500/10 text-amber-600 border border-amber-200"
-            description="Pending student book balances"
-          />
-
-          <StatCard
-            title="Payment Progress"
-            value={`${summary.paidCount} / ${summary.totalCount}`}
-            icon={PackageCheck}
-            color="bg-indigo-500/10 text-indigo-600 border border-indigo-200"
-            description={`${summary.pendingCount} Pending | ${summary.partialCount} Partial`}
+            trend={`${summary.pendingCount || 0} Unpaid Students`}
+            trendColor="danger"
+            onClick={() => handleOpenDetailsModal('pending')}
           />
         </div>
 
@@ -539,6 +551,12 @@ const AdminBooks = () => {
             loadSummary();
             loadRecords();
           }}
+        />
+
+        <BookDetailsModal
+          isOpen={isDetailsModalOpen}
+          type={detailsModalType}
+          onClose={() => setIsDetailsModalOpen(false)}
         />
       </div>
     </DashboardLayout>
