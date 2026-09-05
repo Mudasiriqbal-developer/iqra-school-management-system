@@ -135,9 +135,10 @@ const AdminDashboard = () => {
         )}
 
         {/* StatCards Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-6">
           {loading ? (
             <>
+              <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
@@ -150,6 +151,7 @@ const AdminDashboard = () => {
               <StatCard icon={Wallet} label="Total Fee Expected" value="--" />
               <StatCard icon={DollarSign} label="Fees Collected" value="--" />
               <StatCard icon={RefreshCw} label="Partial Payments Dues" value="--" />
+              <StatCard icon={AlertCircle} label="Total Remaining Fee" value="--" />
               <StatCard icon={TrendingUp} label="Net P&L" value="--" />
             </>
           ) : (
@@ -213,7 +215,32 @@ const AdminDashboard = () => {
                 badge="Drill-down & PDF"
               />
 
-              {/* 5. Profit & Loss Margin */}
+              {/* 5. Total Remaining Fee */}
+              <StatCard
+                icon={AlertCircle}
+                label="Total Remaining Fee"
+                value={
+                  <div className="flex items-baseline gap-1.5 flex-wrap">
+                    <span className="text-rose-600">
+                      Rs. {(
+                        feeSummaryData?.remainingAmount !== undefined
+                          ? feeSummaryData.remainingAmount
+                          : Math.max(0, (feeSummaryData?.totalFeeExpected || 0) - (feeSummaryData?.totalCollected || 0))
+                      ).toLocaleString()}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-400">
+                      ({feeSummaryData?.remainingCount !== undefined ? feeSummaryData.remainingCount : (feeSummaryData?.partialCount || 0)} students)
+                    </span>
+                  </div>
+                }
+                onClick={() => {
+                  setFeeModalType('remaining');
+                  setIsFeeModalOpen(true);
+                }}
+                badge="Drill-down & PDF"
+              />
+
+              {/* 6. Profit & Loss Margin */}
               <StatCard
                 icon={TrendingUp}
                 label="Net P&L (Profit/Loss)"

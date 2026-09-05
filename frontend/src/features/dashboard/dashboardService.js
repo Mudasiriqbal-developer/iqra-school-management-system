@@ -40,7 +40,7 @@ export const downloadStudentReceiptPDF = async (studentId, regNo) => {
 
 /**
  * Download batch fee audit report as PDF.
- * @param {'collected'|'partial'} type
+ * @param {'collected'|'partial'|'remaining'} type
  * @param {string} [search]
  */
 export const downloadBatchAuditPDF = async (type, search = '') => {
@@ -56,7 +56,13 @@ export const downloadBatchAuditPDF = async (type, search = '') => {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', `${type === 'collected' ? 'collected-fees' : 'partial-dues'}-audit-report.pdf`);
+  const filename =
+    type === 'collected'
+      ? 'collected-fees-audit-report.pdf'
+      : type === 'partial'
+      ? 'partial-dues-audit-report.pdf'
+      : 'remaining-fee-dues-audit-report.pdf';
+  link.setAttribute('download', filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

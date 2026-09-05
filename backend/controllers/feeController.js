@@ -89,6 +89,24 @@ const getFeeSummary = async (req, res, next) => {
                 else: 0
               }
             }
+          },
+          remainingAmount: {
+            $sum: {
+              $cond: {
+                if: { $ne: ['$status', 'paid'] },
+                then: { $subtract: ['$amountDue', '$amountPaid'] },
+                else: 0
+              }
+            }
+          },
+          remainingCount: {
+            $sum: {
+              $cond: {
+                if: { $ne: ['$status', 'paid'] },
+                then: 1,
+                else: 0
+              }
+            }
           }
         }
       }
@@ -98,6 +116,8 @@ const getFeeSummary = async (req, res, next) => {
     const totalCollected = feeAgg.length > 0 ? (feeAgg[0].totalCollected || 0) : 0;
     const partialAmount = feeAgg.length > 0 ? (feeAgg[0].partialAmount || 0) : 0;
     const partialCount = feeAgg.length > 0 ? (feeAgg[0].partialCount || 0) : 0;
+    const remainingAmount = feeAgg.length > 0 ? (feeAgg[0].remainingAmount || 0) : 0;
+    const remainingCount = feeAgg.length > 0 ? (feeAgg[0].remainingCount || 0) : 0;
 
     // 3. Net P&L Calculations (fees collected minus expenses, as currently calculated)
     const expenseAgg = await Expense.aggregate([
@@ -122,6 +142,8 @@ const getFeeSummary = async (req, res, next) => {
         totalCollected,
         partialAmount,
         partialCount,
+        remainingAmount,
+        remainingCount,
         netPL
       },
       message: 'Fee summary fetched successfully'
@@ -427,14 +449,159 @@ const getPartialStudents = async (req, res, next) => {
 };
 
 /**
+ * @desc    Get remaining / unpaid fee students
+ * @route   GET /api/fees/remaining-students
+ * @access  Private (Admin Only)
+ */
+const getRemainingStudents = async (req, res, next) => {
+  try {
+    const pageVal = parseInt(req.query.page, 10) || 1;
+    const limitVal = parseInt(req.query.limit, 10) || 10;
+    const skipVal = (pageVal - 1) * limitVal;
+    const searchVal = req.query.search ? req.query.search.trim() : '';
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    let studentQuery = { status: 'active' };
+    if (searchVal) {
+      studentQuery.$or = [
+        { fullName: { $regex: searchVal, $options: 'i' } },
+        { registrationNumber: { $regex: searchVal, $options: 'i' } }
+      ];
+    }
+    const activeStudents = await Student.find(studentQuery).select('_id');
+    const activeStudentIds = activeStudents.map(s => s._id);
+
+    const pipeline = [
+      {
+        $match: {
+          studentId: { $in: activeStudentIds },
+          month: currentMonth,
+          type: 'monthly',
+          status: { $ne: 'paid' }
+        }
+      },
+      {
+        $addFields: {
+          remainingDue: { $subtract: ['$amountDue', '$amountPaid'] },
+          lastPaymentDate: {
+            $cond: {
+              if: { $gt: [{ $size: '$payments' }, 0] },
+              then: { $max: '$payments.paidOn' },
+              else: null
+            }
+          }
+        }
+      },
+      {
+        $sort: { remainingDue: -1 }
+      },
+      {
+        $facet: {
+          metadata: [
+            {
+              $group: {
+                _id: null,
+                total: { $sum: 1 },
+                totalBilled: { $sum: '$amountDue' },
+                totalCollected: { $sum: '$amountPaid' },
+                totalRemaining: { $sum: '$remainingDue' }
+              }
+            }
+          ],
+          data: [
+            { $skip: skipVal },
+            { $limit: limitVal },
+            {
+              $lookup: {
+                from: 'students',
+                localField: 'studentId',
+                foreignField: '_id',
+                as: 'studentInfo'
+              }
+            },
+            { $unwind: '$studentInfo' },
+            {
+              $lookup: {
+                from: 'classes',
+                localField: 'studentInfo.classId',
+                foreignField: '_id',
+                as: 'classInfo'
+              }
+            },
+            { $unwind: { path: '$classInfo', preserveNullAndEmptyArrays: true } },
+            {
+              $lookup: {
+                from: 'sections',
+                localField: 'studentInfo.sectionId',
+                foreignField: '_id',
+                as: 'sectionInfo'
+              }
+            },
+            { $unwind: { path: '$sectionInfo', preserveNullAndEmptyArrays: true } }
+          ]
+        }
+      }
+    ];
+
+    const results = await FeeRecord.aggregate(pipeline);
+    const meta = results[0]?.metadata?.[0] || {
+      total: 0,
+      totalBilled: 0,
+      totalCollected: 0,
+      totalRemaining: 0
+    };
+    const total = meta.total || 0;
+    const records = results[0]?.data || [];
+
+    const students = records.map(r => {
+      return {
+        studentId: r.studentId,
+        name: r.studentInfo?.fullName || 'Unknown Student',
+        registrationNumber: r.studentInfo?.registrationNumber || 'N/A',
+        class: r.classInfo?.name || 'N/A',
+        section: r.sectionInfo?.name || 'N/A',
+        totalDue: r.amountDue || 0,
+        amountPaid: r.amountPaid || 0,
+        remainingDue: r.remainingDue || 0,
+        lastPaymentDate: r.lastPaymentDate
+      };
+    });
+
+    const pages = Math.ceil(total / limitVal) || 1;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        students,
+        total,
+        summary: {
+          totalStudents: total,
+          totalBilled: meta.totalBilled || 0,
+          totalCollected: meta.totalCollected || 0,
+          totalRemaining: meta.totalRemaining || 0
+        },
+        page: pageVal,
+        pages
+      },
+      message: 'Remaining fee students fetched successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Export fee drilldown list as PDF audit report
  * @route   GET /api/fees/drilldown/export-pdf
  * @access  Private (Admin Only)
  */
 const exportDrillDownPDF = async (req, res, next) => {
   try {
-    const { type, search } = req.query; // 'collected' or 'partial'
+    const { type, search } = req.query; // 'collected', 'partial', or 'remaining'
     const isCollected = type === 'collected';
+    const isPartial = type === 'partial';
     const searchVal = search ? search.trim() : '';
 
     const now = new Date();
@@ -458,8 +625,10 @@ const exportDrillDownPDF = async (req, res, next) => {
 
     if (isCollected) {
       matchQuery.amountPaid = { $gt: 0 };
-    } else {
+    } else if (isPartial) {
       matchQuery.status = 'partial';
+    } else {
+      matchQuery.status = { $ne: 'paid' };
     }
 
     const records = await FeeRecord.find(matchQuery)
@@ -479,8 +648,16 @@ const exportDrillDownPDF = async (req, res, next) => {
 
     const settings = await Settings.findOne({ schoolId: 'default' }).catch(() => null);
 
-    const reportTitle = isCollected ? 'Collected Fees Audit Report' : 'Partial Payments Dues Report';
-    const filename = isCollected ? `collected-fees-${currentMonth}.pdf` : `partial-dues-${currentMonth}.pdf`;
+    const reportTitle = isCollected 
+      ? 'Collected Fees Audit Report' 
+      : isPartial 
+      ? 'Partial Payments Dues Report' 
+      : 'Remaining Fee Dues Audit Report';
+    const filename = isCollected 
+      ? `collected-fees-${currentMonth}.pdf` 
+      : isPartial 
+      ? `partial-dues-${currentMonth}.pdf` 
+      : `remaining-fee-dues-${currentMonth}.pdf`;
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -609,5 +786,6 @@ module.exports = {
   getFeeSummary,
   getCollectedStudents,
   getPartialStudents,
+  getRemainingStudents,
   exportDrillDownPDF
 };

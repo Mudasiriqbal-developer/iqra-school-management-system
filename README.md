@@ -164,12 +164,12 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Strict Financial Audit Locks**: Once any payment (`amountPaid > 0`) is recorded against a one-time charge, its title, amount, and delete actions are permanently locked.
 - **Dynamic Ledger Drawer**: Comprehensive transaction ledger showing monthly tuition, admission dues, and one-time charges with status badges and PDF receipts.
 - **Interactive Financial KPI Drill-Downs**:
-  - **Actionable Financial Cards**: Admin Dashboard cards (`Collected Fee`, `Partial Payments Dues`) feature interactive drill-down indicators and badges.
+  - **Actionable Financial Cards**: Admin Dashboard cards (`Collected Fee`, `Partial Payments Dues`, `Total Remaining Fee`) feature interactive drill-down indicators and badges.
   - **Actionable Fee Drill-Down Popup Modal (`FeeDetailsModal.jsx`)**:
     - **In-Modal Search & Filter**: Find students instantly by name or registration number inside the popup without closing it.
     - **Quick Financial Ribbon**: Real-time 4-metric summary ribbon at the top of the popup displaying Total Students, Total Billed, Total Collected, and Total Remaining.
     - **Row-Level Instant Receipts**: Download individual official student PDF receipts directly from any row in the table.
-    - **Full Batch PDF Audit Report**: Export comprehensive, multi-page vector PDF audit reports with IHASS school branding, financial summary box, and itemized records.
+    - **Full Batch PDF Audit Report**: Export comprehensive, multi-page vector PDF audit reports (`collected`, `partial`, `remaining`) with IHASS school branding, financial summary box, and itemized records.
     - **Live Refresh Icon**: Quick refresh button with spin animations in the modal header to reload data instantly.
 
 ### 6. Books & Syllabus Management
@@ -328,10 +328,11 @@ iqra-school-management-system/
 - `GET  /api/families/:familyId/vouchers/:voucherId/pdf` — Download family voucher PDF.
 
 ### Fees & Financial Ledgers (`/api/fees` & `/api/fee-records`)
-- `GET    /api/fees/summary` — Global fee KPI summary (Total, Collected, Pending, Overdue).
+- `GET    /api/fees/summary` — Global fee KPI summary (Total, Collected, Pending, Overdue, Remaining).
 - `GET    /api/fees/collected-students` — Paginated list of students who paid fees with search (`?search=`), pagination, and Quick Financial Ribbon metrics (`summary`).
 - `GET    /api/fees/partial-students` — Paginated list of students with partial payments dues with search (`?search=`), pagination, and Quick Financial Ribbon metrics (`summary`).
-- `GET    /api/fees/drilldown/export-pdf` — Generate and stream official multi-page branded PDF audit report for drill-down cohorts (`type=collected` or `type=partial`) with search filter support.
+- `GET    /api/fees/remaining-students` — Paginated list of all students with outstanding balances (pending and partial) with search (`?search=`), pagination, and Quick Financial Ribbon metrics (`summary`).
+- `GET    /api/fees/drilldown/export-pdf` — Generate and stream official multi-page branded PDF audit report for drill-down cohorts (`type=collected`, `type=partial`, or `type=remaining`) with search filter support.
 - `GET    /api/fee-records/current-month` — Active monthly tuition records for the current billing cycle.
 - `GET    /api/fee-records/student/:studentId` — Full transaction ledger for a student (monthly, admission, and one-time charges).
 - `POST   /api/fee-records/:id/pay` — Submit full, half, or custom payment against any fee record.

@@ -54,7 +54,12 @@ const FeeDetailsModal = ({ isOpen, type, onClose }) => {
       setLoading(true);
       setError(null);
 
-      const endpoint = type === 'collected' ? '/fees/collected-students' : '/fees/partial-students';
+      const endpoint =
+        type === 'collected'
+          ? '/fees/collected-students'
+          : type === 'partial'
+          ? '/fees/partial-students'
+          : '/fees/remaining-students';
       const params = { page, limit };
       if (debouncedSearch) {
         params.search = debouncedSearch;
@@ -95,7 +100,12 @@ const FeeDetailsModal = ({ isOpen, type, onClose }) => {
   if (!isOpen) return null;
 
   const isCollectedType = type === 'collected';
-  const modalTitle = isCollectedType ? 'Collected Fees Drill-Down' : 'Partial Payments Dues Drill-Down';
+  const isPartialType = type === 'partial';
+  const modalTitle = isCollectedType
+    ? 'Collected Fees Drill-Down'
+    : isPartialType
+    ? 'Partial Payments Dues Drill-Down'
+    : 'Remaining Fee Dues Drill-Down';
 
   // Format date helper
   const formatDate = (dateString) => {
@@ -166,7 +176,9 @@ const FeeDetailsModal = ({ isOpen, type, onClose }) => {
             <p className="text-xs text-slate-300 mt-0.5">
               {isCollectedType 
                 ? 'Student-by-student ledger of confirmed fee collections for the current active period.' 
-                : 'Prioritized arrears ledger sorted by outstanding balance descending.'}
+                : isPartialType
+                ? 'Prioritized arrears ledger sorted by outstanding balance descending.'
+                : 'Complete roster of all students with outstanding balances (pending and partial) for the current active period.'}
             </p>
           </div>
 
