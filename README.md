@@ -163,9 +163,8 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Outstanding One-Time Charges Hub**: Dedicated reporting view and KPI dashboard tracking one-time billings, collections, and dues independently from monthly tuition.
 - **Strict Financial Audit Locks**: Once any payment (`amountPaid > 0`) is recorded against a one-time charge, its title, amount, and delete actions are permanently locked.
 - **Dynamic Ledger Drawer**: Comprehensive transaction ledger showing monthly tuition, admission dues, and one-time charges with status badges and PDF receipts.
-- **Interactive Financial KPI Drill-Downs & Dashboard Tip**:
+- **Interactive Financial KPI Drill-Downs**:
   - **Actionable Financial Cards**: Admin Dashboard cards (`Collected Fee`, `Partial Payments Dues`) feature interactive drill-down indicators and badges.
-  - **Professional Enterprise Tip Banner**: Informative guidance banner highlighting the single-click drill-down workflow and features.
   - **Actionable Fee Drill-Down Popup Modal (`FeeDetailsModal.jsx`)**:
     - **In-Modal Search & Filter**: Find students instantly by name or registration number inside the popup without closing it.
     - **Quick Financial Ribbon**: Real-time 4-metric summary ribbon at the top of the popup displaying Total Students, Total Billed, Total Collected, and Total Remaining.
