@@ -910,11 +910,11 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
       <>
         {/* Edit Family Info Modal */}
         {isEditModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 overflow-y-auto">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-lg w-full flex flex-col overflow-hidden my-8" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 overflow-y-auto backdrop-blur-xs">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-lg w-full flex flex-col overflow-hidden max-h-[90vh] my-auto" onClick={(e) => e.stopPropagation()}>
               
               {/* Modal Header */}
-              <div className="bg-navy-900 text-white p-5 flex items-center justify-between">
+              <div className="bg-navy-900 text-white p-5 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center space-x-2">
                   <Edit2 className="h-5 w-5 text-sky-400" />
                   <h3 className="text-base font-extrabold tracking-tight">Edit Family Details</h3>
@@ -929,10 +929,11 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
               </div>
 
               {/* Modal Body */}
-              <form onSubmit={handleUpdateFamily} className="p-6 space-y-4 text-left">
-                <div>
-                  <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1">
-                    Family Name <span className="text-red-500">*</span>
+              <form onSubmit={handleUpdateFamily} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="p-6 space-y-4 text-left overflow-y-auto flex-1">
+                  <div>
+                    <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1">
+                      Family Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -999,19 +1000,21 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                   />
                 </div>
 
+                </div>
+
                 {/* Form Buttons */}
-                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-150">
+                <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-5 py-3 border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs"
+                    className="px-5 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={updating}
-                    className="px-5 py-3 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 flex items-center space-x-1"
+                    className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 flex items-center space-x-1"
                   >
                     {updating && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                     <span>Save Changes</span>
@@ -1035,11 +1038,11 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
 
         {/* Pay as Family Modal */}
         {isPayModalOpen && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-slate-900/60 overflow-y-auto">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-xl w-full flex flex-col overflow-hidden my-8" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-55 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 overflow-y-auto backdrop-blur-xs">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-xl w-full flex flex-col overflow-hidden max-h-[90vh] my-auto" onClick={(e) => e.stopPropagation()}>
               
               {/* Modal Header */}
-              <div className="bg-navy-900 text-white p-5 flex items-center justify-between">
+              <div className="bg-navy-900 text-white p-5 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center space-x-2">
                   {payType === 'book' ? (
                     <BookOpen className="h-5 w-5 text-sky-400" />
@@ -1060,9 +1063,10 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 {!paymentSuccessData ? (
-                  <form onSubmit={handleConfirmPayment} className="space-y-5 text-left">
+                  <form onSubmit={handleConfirmPayment} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 space-y-5 text-left overflow-y-auto flex-1">
                     
                     {/* Header info */}
                     <div className="p-3.5 bg-slate-50 border border-gray-150 rounded-xl text-xs space-y-1">
@@ -1201,8 +1205,10 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                       </select>
                     </div>
 
+                    </div>
+
                     {/* Running Total & Submit */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-150">
+                    <div className="flex items-center justify-between p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
                       <div>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Running Total (Selected)</span>
                         <span className="text-lg font-black text-navy-955">
@@ -1229,7 +1235,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                         <button
                           type="button"
                           onClick={() => setIsPayModalOpen(false)}
-                          className="px-4 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs"
+                          className="px-4 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs"
                         >
                           Cancel
                         </button>
@@ -1246,7 +1252,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                   </form>
                 ) : (
                   // Success State View
-                  <div className="py-6 text-center space-y-5">
+                  <div className="p-6 overflow-y-auto flex-1 py-6 text-center space-y-5">
                     <div className="h-14 w-14 bg-green-50 border border-green-200 rounded-full flex items-center justify-center mx-auto text-green-600">
                       <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -1319,9 +1325,9 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs overflow-y-auto" onClick={onClose}>
       <div 
-        className="bg-white w-full max-w-6xl rounded-3xl shadow-2xl border border-gray-150 overflow-hidden flex flex-col max-h-[90vh] my-8 animate-in fade-in zoom-in-95 duration-250"
+        className="bg-white w-full max-w-6xl rounded-3xl shadow-2xl border border-gray-150 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in fade-in zoom-in-95 duration-250"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

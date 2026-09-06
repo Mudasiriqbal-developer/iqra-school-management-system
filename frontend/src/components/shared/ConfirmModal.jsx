@@ -33,26 +33,28 @@ const ConfirmModal = ({
   }[type];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
       <div 
-        className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-700 p-6 overflow-hidden transform animate-modal-zoom"
+        className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto transform animate-modal-zoom"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start space-x-4">
-          <div className={`p-3 rounded-xl border ${iconColor} shrink-0`}>
-            <IconComponent className="h-5 w-5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">
-              {title}
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-              {message}
-            </p>
+        <div className="p-6 overflow-y-auto flex-1">
+          <div className="flex items-start space-x-4">
+            <div className={`p-3 rounded-xl border ${iconColor} shrink-0`}>
+              <IconComponent className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">
+                {title}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                {message}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-end space-x-2.5 mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/80">
+        <div className="flex items-center justify-end space-x-2.5 p-4 px-6 border-t border-slate-100 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/80 flex-shrink-0">
           <button
             onClick={onCancel || onClose}
             className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none"

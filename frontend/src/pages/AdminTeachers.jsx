@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { 
   Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, BookOpen, Wallet, TrendingUp, MailPlus, MoreVertical, Settings
+  AlertTriangle, BookOpen, Wallet, TrendingUp, MailPlus, MoreVertical, Settings, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -887,22 +887,35 @@ const AdminTeachers = () => {
 
       {/* Delete/Deactivate Confirmation Modal */}
       {isDeleteConfirmOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden">
-            <div className="flex items-center space-x-3 text-amber-600 mb-4">
-              <AlertTriangle className="h-6 w-6" />
-              <h3 className="text-lg font-bold text-navy-950">Confirm Deactivation</h3>
-            </div>
-            <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to deactivate <span className="font-bold text-navy-950">{teacherToDelete?.userId?.name}</span>? This is a soft delete and will disable their account login. This can be reversed by an admin later.
-            </p>
-            <div className="flex items-center justify-end space-x-3">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 flex-shrink-0">
+              <div className="flex items-center space-x-3 text-amber-600">
+                <AlertTriangle className="h-6 w-6" />
+                <h3 className="text-lg font-bold text-navy-950">Confirm Deactivation</h3>
+              </div>
               <button
                 onClick={() => {
                   setIsDeleteConfirmOpen(false);
                   setTeacherToDelete(null);
                 }}
-                className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors"
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1">
+              <p className="text-sm text-gray-500">
+                Are you sure you want to deactivate <span className="font-bold text-navy-950">{teacherToDelete?.userId?.name}</span>? This is a soft delete and will disable their account login. This can be reversed by an admin later.
+              </p>
+            </div>
+            <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+              <button
+                onClick={() => {
+                  setIsDeleteConfirmOpen(false);
+                  setTeacherToDelete(null);
+                }}
+                className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-100 transition-colors"
               >
                 Cancel
               </button>

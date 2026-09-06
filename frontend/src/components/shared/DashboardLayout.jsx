@@ -118,7 +118,7 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
 
       {/* Logout Confirmation Modal */}
       {isLogoutConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-slate-900/60 transition-opacity duration-300"
@@ -126,7 +126,7 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
           />
           
           {/* Modal Card */}
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-sm w-full p-6 relative z-10 transform transition-all duration-300 scale-100 flex flex-col items-center text-center">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-sm w-full p-6 relative z-10 transform transition-all duration-300 scale-100 flex flex-col items-center text-center my-auto max-h-[90vh] overflow-y-auto">
             {/* Warning Icon Container */}
             <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 mb-4">
               <LogOut className="h-6 w-6" />

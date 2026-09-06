@@ -170,11 +170,11 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
   if (!isOpen || !teacher) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100">
+    <div className="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Header */}
-        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white">
+        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
           <div>
             <h2 className="text-base font-bold">Assign Class & Subject</h2>
             <p className="text-[10px] text-slate-300 font-semibold uppercase mt-0.5">
@@ -191,7 +191,8 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 overflow-y-auto flex-1 space-y-5">
           {/* Class Select */}
           <div className="flex flex-col">
             <label htmlFor="classId" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
@@ -277,19 +278,21 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
             )}
           </div>
 
-          {/* Footer Actions */}
-          <div className="pt-4 border-t border-gray-100 flex justify-end space-x-3">
+          </div>
+
+          {/* Footer Actions (Pinned at bottom) */}
+          <div className="px-6 py-4 border-t border-gray-100 bg-slate-50 flex justify-end space-x-3 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors focus:outline-none"
+              className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors focus:outline-none cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="bg-navy-900 hover:bg-navy-800 text-white font-bold py-2 px-4 rounded-xl flex items-center transition-colors text-sm shadow-sm focus:outline-none disabled:opacity-50"
+              className="bg-navy-900 hover:bg-navy-800 text-white font-bold py-2 px-4 rounded-xl flex items-center transition-colors text-sm shadow-sm focus:outline-none disabled:opacity-50 cursor-pointer"
             >
               {submitting ? (
                 <>

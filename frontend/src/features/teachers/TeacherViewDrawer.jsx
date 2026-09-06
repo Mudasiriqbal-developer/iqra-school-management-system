@@ -78,11 +78,11 @@ const TeacherViewDrawer = ({ isOpen, onClose, teacher, assignments = [], onRefre
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 my-8">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Header Banner */}
-        <div className="relative bg-navy-900 px-6 py-6 text-white flex justify-between items-start">
+        <div className="relative bg-navy-900 px-6 py-5 text-white flex justify-between items-start flex-shrink-0">
           <div className="flex items-center space-x-4">
             {/* Initials Fallback Avatar */}
             <div className={`h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold border-2 border-white/80 shadow-md ${avatarBg}`}>
@@ -109,7 +109,7 @@ const TeacherViewDrawer = ({ isOpen, onClose, teacher, assignments = [], onRefre
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 max-h-[65vh] overflow-y-auto">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           
           {/* Main Info Blocks */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -242,7 +242,7 @@ const TeacherViewDrawer = ({ isOpen, onClose, teacher, assignments = [], onRefre
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-gray-100 flex justify-end">
+        <div className="px-6 py-4 bg-slate-50 border-t border-gray-100 flex justify-end flex-shrink-0">
           <button
             onClick={onClose}
             className="px-5 py-2 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-bold transition-colors focus:outline-none"

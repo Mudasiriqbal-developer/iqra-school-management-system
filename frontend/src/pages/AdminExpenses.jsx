@@ -672,10 +672,10 @@ const AdminExpenses = () => {
 
       {/* Record/Edit Expense Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl border border-gray-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-gray-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
             {/* Modal Header */}
-            <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
               <h2 className="font-extrabold text-navy-950 text-base">
                 {selectedExpense ? 'Edit Expense Record' : 'Record New Expense'}
               </h2>
@@ -688,7 +688,8 @@ const AdminExpenses = () => {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
               {/* Expense Title */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
@@ -789,12 +790,14 @@ const AdminExpenses = () => {
                 />
               </div>
 
+              </div>
+
               {/* Action Buttons */}
-              <div className="pt-2 flex justify-end space-x-3">
+              <div className="p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex justify-end space-x-3 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   Cancel
                 </button>

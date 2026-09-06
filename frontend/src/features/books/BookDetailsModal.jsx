@@ -193,8 +193,8 @@ const BookDetailsModal = ({ isOpen, type, onClose }) => {
   const IconComponent = config.icon;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/75 z-50 flex items-center justify-center p-3 sm:p-5 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 bg-slate-900/75 z-50 flex items-center justify-center p-3 sm:p-5 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh] my-auto">
         
         {/* Branded Navy Header */}
         <div className="relative bg-gradient-to-r from-navy-950 via-navy-900 to-slate-900 px-6 py-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0 border-b border-white/10">

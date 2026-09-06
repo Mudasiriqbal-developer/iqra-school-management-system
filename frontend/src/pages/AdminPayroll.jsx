@@ -408,10 +408,10 @@ const AdminPayroll = () => {
 
       {/* Salary Payout Modal */}
       {isPayoutModalOpen && targetTeacher && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-2xl border border-gray-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-gray-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
             {/* Modal Header */}
-            <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
               <h2 className="font-extrabold text-navy-950 text-base">
                 Disburse Monthly Salary
               </h2>
@@ -424,7 +424,8 @@ const AdminPayroll = () => {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handlePayoutSubmit} className="p-6 space-y-4">
+            <form onSubmit={handlePayoutSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
               {/* Teacher Info Summary */}
               <div className="p-4 bg-navy-50/50 rounded-xl border border-navy-100/30">
                 <div className="text-xxs font-bold text-navy-primary uppercase tracking-wide">Paying Faculty</div>
@@ -518,13 +519,14 @@ const AdminPayroll = () => {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="pt-2 flex justify-end space-x-3">
+            {/* Action Buttons */}
+              <div className="p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex justify-end space-x-3 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsPayoutModalOpen(false)}
-                  className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   Cancel
                 </button>
@@ -545,7 +547,7 @@ const AdminPayroll = () => {
       {isHistoryDrawerOpen && targetTeacher && (
         <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white border-l border-gray-200 shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300">
           {/* Drawer Header */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
             <div>
               <h2 className="font-extrabold text-navy-950 text-base">Salary Payout Logs</h2>
               <p className="text-xxs text-gray-500 font-semibold">{targetTeacher.fullName}</p>

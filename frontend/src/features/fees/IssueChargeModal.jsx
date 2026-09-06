@@ -223,11 +223,11 @@ const IssueChargeModal = ({ isOpen, onClose, onSuccess }) => {
   });
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-150 dark:border-slate-700 overflow-hidden transform transition-all my-8">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-150 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Header */}
-        <div className="bg-navy-900 px-6 py-5 text-white flex justify-between items-center">
+        <div className="bg-navy-900 px-6 py-5 text-white flex justify-between items-center flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-white/10 rounded-xl">
               <PlusCircle className="h-5 w-5 text-sky-400" />
@@ -248,7 +248,8 @@ const IssueChargeModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         {/* Body Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 space-y-6 overflow-y-auto flex-1">
 
           {/* Charge Title & Suggestions */}
           <div className="space-y-2">
@@ -506,8 +507,10 @@ const IssueChargeModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
           </div>
 
+          </div>
+
           {/* Footer Actions */}
-          <div className="flex justify-end space-x-3 pt-2">
+          <div className="flex justify-end space-x-3 p-4 px-6 border-t border-slate-100 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-800/80 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

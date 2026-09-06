@@ -390,11 +390,11 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 my-8">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Modal Header */}
-        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white">
+        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
           <h2 className="text-lg font-bold">
             {student ? 'Edit Student Record' : 'Add New Student'}
           </h2>
@@ -408,7 +408,8 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
         </div>
 
         {/* Modal Body / Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             
             {/* Registration Number (System Auto-Assigned) */}
@@ -912,20 +913,22 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
             </div>
           )}
 
-          {/* Form Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
+          </div>
+
+          {/* Form Actions (Pinned at bottom) */}
+          <div className="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-2.5 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors focus:outline-none disabled:opacity-50"
+              className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-white transition-colors focus:outline-none disabled:opacity-50 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-colors focus:outline-none disabled:bg-navy-900/70"
+              className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-colors focus:outline-none disabled:bg-navy-900/70 shadow-sm cursor-pointer"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>{submitting ? 'Saving...' : 'Save Record'}</span>

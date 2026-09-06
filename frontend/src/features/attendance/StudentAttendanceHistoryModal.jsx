@@ -75,11 +75,11 @@ const StudentAttendanceHistoryModal = ({ isOpen, onClose, student }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 my-8">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Modal Header */}
-        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white">
+        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-white/10 rounded-lg">
               <Award className="h-5 w-5 text-white" />
@@ -101,7 +101,7 @@ const StudentAttendanceHistoryModal = ({ isOpen, onClose, student }) => {
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Date Picker Section */}
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 grid grid-cols-2 gap-4">
             <div>
@@ -217,7 +217,7 @@ const StudentAttendanceHistoryModal = ({ isOpen, onClose, student }) => {
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-100">
+        <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-100 flex-shrink-0">
           <button
             type="button"
             onClick={onClose}

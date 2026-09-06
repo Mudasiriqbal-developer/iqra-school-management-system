@@ -839,8 +839,8 @@ const AdminFamilyList = () => {
 
         {/* Add Family Modal / Wizard */}
         {isAddModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 overflow-y-auto">
-            <div className={`bg-white rounded-2xl border border-gray-100 shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden my-8 transition-all duration-300 ${step === 1 ? 'max-w-2xl' : 'max-w-5xl'}`}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 overflow-y-auto backdrop-blur-xs">
+            <div className={`bg-white rounded-2xl border border-gray-100 shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden my-auto transition-all duration-300 ${step === 1 ? 'max-w-2xl' : 'max-w-5xl'}`}>
               
               {/* Modal Header */}
               <div className="bg-navy-900 text-white p-5 flex items-center justify-between flex-shrink-0">
@@ -858,92 +858,104 @@ const AdminFamilyList = () => {
               </div>
 
               {/* Modal Body / Wizard Forms */}
-              <form onSubmit={handleSubmitWizard} className="flex flex-col flex-grow overflow-hidden">
+              <form onSubmit={handleSubmitWizard} className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 
                 {/* Step 1: Family Meta Details */}
                 {step === 1 && (
-                  <div className="flex-grow overflow-y-auto p-6 space-y-6">
-                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                      <span className="text-xs font-bold text-navy-900 bg-navy-50 px-3 py-1 rounded-full uppercase tracking-wider">Step 1 of 2: Family Profile</span>
-                      <span className="text-xs font-semibold text-gray-400">Next: Sibling Members</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-5">
-                      <div>
-                        <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
-                          Family Name <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Mudasir Household"
-                          value={familyName}
-                          onBlur={() => setTouchedStep1(prev => ({ ...prev, familyName: true }))}
-                          onChange={(e) => {
-                            setFamilyName(e.target.value);
-                            if (errorsStep1.familyName) {
-                              setErrorsStep1(prev => ({ ...prev, familyName: '' }));
-                            }
-                          }}
-                          className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
-                            (touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-navy-900'
-                          }`}
-                        />
-                        {(touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName && (
-                          <p className="text-red-500 text-xs font-medium mt-1">{errorsStep1.familyName}</p>
-                        )}
+                  <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                      <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <span className="text-xs font-bold text-navy-900 bg-navy-50 px-3 py-1 rounded-full uppercase tracking-wider">Step 1 of 2: Family Profile</span>
+                        <span className="text-xs font-semibold text-gray-400">Next: Sibling Members</span>
                       </div>
 
-                      <div>
-                        <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block mb-1.5">
-                          Contact Number <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. +92 300 1234567"
-                          value={contactInfo}
-                          onBlur={() => setTouchedStep1(prev => ({ ...prev, contactInfo: true }))}
-                          onChange={(e) => {
-                            setContactInfo(e.target.value);
-                            if (errorsStep1.contactInfo) {
-                              setErrorsStep1(prev => ({ ...prev, contactInfo: '' }));
-                            }
-                          }}
-                          className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
-                            (touchedStep1.contactInfo || submitAttemptedStep1) && errorsStep1.contactInfo ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-navy-900'
-                          }`}
-                        />
-                        {(touchedStep1.contactInfo || submitAttemptedStep1) && errorsStep1.contactInfo && (
-                          <p className="text-red-500 text-xs font-medium mt-1">{errorsStep1.contactInfo}</p>
-                        )}
-                      </div>
+                      <div className="grid grid-cols-1 gap-5">
+                        <div>
+                          <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
+                            Family Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Mudasir Household"
+                            value={familyName}
+                            onBlur={() => setTouchedStep1(prev => ({ ...prev, familyName: true }))}
+                            onChange={(e) => {
+                              setFamilyName(e.target.value);
+                              if (errorsStep1.familyName) {
+                                setErrorsStep1(prev => ({ ...prev, familyName: '' }));
+                              }
+                            }}
+                            className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
+                              (touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName
+                                ? 'border-red-400 focus:border-red-500 bg-red-50/10'
+                                : 'border-gray-200 focus:border-navy-900 bg-white'
+                            }`}
+                          />
+                          {(touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName && (
+                            <p className="text-red-500 text-xs font-semibold mt-1 flex items-center">
+                              <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+                              {errorsStep1.familyName}
+                            </p>
+                          )}
+                        </div>
 
-                      <div>
-                        <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
-                          Residential Address
-                        </label>
-                        <textarea
-                          placeholder="House, Street, Area, City"
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
-                          rows={3}
-                          className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors resize-none"
-                        />
+                        <div>
+                          <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
+                            Primary Contact <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="03001234567"
+                            value={contactNumber}
+                            onBlur={() => setTouchedStep1(prev => ({ ...prev, contactNumber: true }))}
+                            onChange={(e) => {
+                              setContactNumber(e.target.value);
+                              if (errorsStep1.contactNumber) {
+                                setErrorsStep1(prev => ({ ...prev, contactNumber: '' }));
+                              }
+                            }}
+                            className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
+                              (touchedStep1.contactNumber || submitAttemptedStep1) && errorsStep1.contactNumber
+                                ? 'border-red-400 focus:border-red-500 bg-red-50/10'
+                                : 'border-gray-200 focus:border-navy-900 bg-white'
+                            }`}
+                          />
+                          {(touchedStep1.contactNumber || submitAttemptedStep1) && errorsStep1.contactNumber && (
+                            <p className="text-red-500 text-xs font-semibold mt-1 flex items-center">
+                              <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+                              {errorsStep1.contactNumber}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
+                            Residential Address
+                          </label>
+                          <textarea
+                            placeholder="House, Street, Area, City"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            rows={3}
+                            className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors resize-none"
+                          />
+                        </div>
                       </div>
                     </div>
 
                     {/* Navigation buttons */}
-                    <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-150">
+                    <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
                       <button
                         type="button"
                         onClick={() => setIsAddModalOpen(false)}
-                        className="px-5 py-3 border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs"
+                        className="px-5 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs"
                       >
                         Cancel
                       </button>
                       <button
                         type="button"
                         onClick={handleNextStep}
-                        className="px-5 py-3 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md flex items-center space-x-1.5"
+                        className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md flex items-center space-x-1.5"
                       >
                         <span>Next: Add Members</span>
                         <ChevronRight className="h-3.5 w-3.5" />
@@ -954,21 +966,22 @@ const AdminFamilyList = () => {
 
                 {/* Step 2: Sibling Members Row Manager */}
                 {step === 2 && (
-                  <div className="flex-grow p-6 flex flex-col overflow-hidden">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 border-b border-gray-100 mb-4 gap-2">
-                      <span className="text-xs font-bold text-navy-900 bg-navy-50 px-3 py-1 rounded-full uppercase tracking-wider">Step 2 of 2: Family Sibling Members</span>
-                      <button
-                        type="button"
-                        onClick={() => setStep(1)}
-                        className="text-xs font-bold text-navy-900 hover:underline flex items-center space-x-1"
-                      >
-                        <ChevronLeft className="h-3.5 w-3.5" />
-                        <span>Back to Family details</span>
-                      </button>
-                    </div>
+                  <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 pb-2 flex flex-col flex-1 min-h-0 overflow-hidden">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 border-b border-gray-100 mb-4 gap-2 flex-shrink-0">
+                        <span className="text-xs font-bold text-navy-900 bg-navy-50 px-3 py-1 rounded-full uppercase tracking-wider">Step 2 of 2: Family Sibling Members</span>
+                        <button
+                          type="button"
+                          onClick={() => setStep(1)}
+                          className="text-xs font-bold text-navy-900 hover:underline flex items-center space-x-1"
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                          <span>Back to Family details</span>
+                        </button>
+                      </div>
 
-                    {/* Repeatable List Section */}
-                    <div className="flex-grow overflow-y-auto pr-1.5 space-y-6 mb-4">
+                      {/* Repeatable List Section */}
+                      <div className="flex-1 overflow-y-auto pr-1.5 space-y-6 mb-2">
                       {members.map((member, idx) => {
                         const hasDuplicateError = !!member.errors.duplicate;
 
@@ -1388,13 +1401,14 @@ const AdminFamilyList = () => {
                         <span>Add Sibling Member</span>
                       </button>
                     </div>
+                  </div>
 
-                    {/* Step 2 Form Buttons */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-150 flex-shrink-0">
+                  {/* Step 2 Form Buttons */}
+                    <div className="flex items-center justify-between p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
                       <button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="px-4 py-2.5 border border-gray-200 text-gray-600 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs flex items-center space-x-1 shadow-3xs"
+                        className="px-4 py-2.5 border border-gray-200 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs flex items-center space-x-1 shadow-3xs"
                       >
                         <ChevronLeft className="h-4 w-4" />
                         <span>Back</span>
@@ -1404,7 +1418,7 @@ const AdminFamilyList = () => {
                         <button
                           type="button"
                           onClick={() => setIsAddModalOpen(false)}
-                          className="px-5 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs shadow-3xs"
+                          className="px-5 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs shadow-3xs"
                         >
                           Cancel
                         </button>

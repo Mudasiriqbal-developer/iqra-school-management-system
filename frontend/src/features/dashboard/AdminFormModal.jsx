@@ -42,29 +42,23 @@ const AdminFormModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-navy-950/40 transition-opacity" 
-        onClick={onClose}
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white text-left shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] my-auto">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 p-6 pb-4 flex-shrink-0">
+          <h3 className="text-lg font-bold text-navy-950">Invite New Administrator</h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-2xl transition-all border border-gray-100">
-          
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-            <h3 className="text-lg font-bold text-navy-950">Invite New Administrator</h3>
-            <button 
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 space-y-4 overflow-y-auto flex-1">
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
                 Full Name
@@ -123,32 +117,32 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                 />
               </div>
             </div>
+          </div>
 
-            <div className="flex space-x-3 justify-end pt-4 border-t border-gray-100 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="py-2.5 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="py-2.5 px-4 rounded-xl bg-navy-900 text-white hover:bg-navy-800 text-sm font-bold shadow-md shadow-navy-900/10 flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Inviting...</span>
-                  </>
-                ) : (
-                  <span>Send Invitation</span>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex space-x-3 justify-end p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="py-2 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="py-2 px-4 rounded-xl bg-navy-900 text-white hover:bg-navy-800 text-sm font-bold shadow-md shadow-navy-900/10 flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Inviting...</span>
+                </>
+              ) : (
+                <span>Send Invitation</span>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

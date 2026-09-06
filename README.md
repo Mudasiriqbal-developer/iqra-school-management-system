@@ -27,6 +27,7 @@ A full-stack, enterprise-ready School Management System built specifically for *
    - [13. Helpdesk & Support Tickets](#13-helpdesk--support-tickets)
    - [14. Dark Mode & High-Contrast Design System](#14-dark-mode--high-contrast-design-system)
    - [15. Collapsible Mini-Sidebar (Rail Navigation)](#15-collapsible-mini-sidebar-rail-navigation)
+   - [16. Universal Modal Layout & Viewport Scroll Standard](#16-universal-modal-layout--viewport-scroll-standard)
 5. [Project Structure](#-project-structure)
 6. [Database Models & Schema Design](#-database-models--schema-design)
 7. [REST API Endpoints Guide](#-rest-api-endpoints-guide)
@@ -229,6 +230,16 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Hover Floating Tooltips**: In collapsed mode, hovering over any navigation item, Support link, or Logout displays an instant high-contrast floating tooltip badge (`navy-950` with glassmorphic border) to ensure effortless discoverability.
 - **Persistent Workspace Preference**: State is automatically remembered in `localStorage` (`ihass_sidebar_collapsed`), preserving the user's preferred layout across browser refreshes and page transitions.
 - **Fluid Layout Transition**: Main content offset adjusts with synchronized 300ms cubic transitions (`lg:pl-20` vs `lg:pl-64`) without UI stutter or layout snapping.
+
+### 16. Universal Modal Layout & Viewport Scroll Standard
+- **Problem Solved**: Standardized popup dialog behavior across all screen resolutions and zoom levels to permanently prevent top close buttons (`X`) or bottom action buttons (`Cancel`, `Submit`) from getting clipped or pushed out of viewport bounds.
+- **Architectural Standards Enforced**:
+  - **Backdrop / Overlay**: Centered flexbox overlay (`fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs`) allowing graceful window-level fallback scrolling if required.
+  - **Modal Card**: Viewport-bounded card (`flex flex-col max-h-[90vh] my-auto overflow-hidden ...`) ensuring popups never overflow beyond 90% of screen height.
+  - **Pinned Header (`flex-shrink-0`)**: Dialog title and close `X` button stay permanently locked and clickable at the top.
+  - **Scrollable Body (`overflow-y-auto flex-1`)**: Form inputs, tables, and records scroll smoothly within their dedicated interior container without affecting header or footer positioning.
+  - **Pinned Footer (`flex-shrink-0`)**: Action buttons (`Cancel`, `Submit`, `Back`, `Confirm`) stay permanently accessible at the bottom of the dialog.
+- **Standardized Across Components**: Applied to all 29 modal components and popup dialogs across Student Management, Academic Hierarchy, Teacher Profiles & Workload, Books & Inventory, Family Billing, Expenses, Payroll, and Dashboard Drill-downs.
 
 ---
 

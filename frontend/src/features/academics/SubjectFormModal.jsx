@@ -62,11 +62,11 @@ const SubjectFormModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-700 p-6 overflow-hidden animate-fadeIn">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="p-2.5 bg-navy-50 dark:bg-sky-950/40 text-navy-900 dark:text-sky-400 rounded-xl">
               <BookMarked className="h-5 w-5" />
@@ -89,7 +89,8 @@ const SubjectFormModal = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmitForm} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmitForm} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-5 space-y-4 overflow-y-auto flex-1">
           
           {/* Subject Name */}
           <div className="space-y-1.5">
@@ -147,8 +148,10 @@ const SubjectFormModal = ({
             </div>
           )}
 
+          </div>
+
           {/* Footer Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-2">
+          <div className="flex items-center justify-end space-x-3 p-4 px-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

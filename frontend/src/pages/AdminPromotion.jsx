@@ -741,75 +741,88 @@ const AdminPromotion = () => {
 
         {/* Confirmation Modal */}
         {showConfirmModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-xs animate-fadeIn">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-navy-950/60 backdrop-blur-xs overflow-y-auto animate-fadeIn">
+            <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] my-auto overflow-hidden">
               
               {/* Modal Header */}
-              <div className="flex items-center gap-3.5">
-                <div className={`p-3 rounded-2xl ${
-                  previewData?.isGraduation ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-[#00215E]'
-                }`}>
-                  {previewData?.isGraduation ? <GraduationCap className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6 text-[#00215E]" />}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-navy-950">
-                    {previewData?.isGraduation ? 'Confirm Student Graduation' : 'Confirm Cohort Promotion'}
-                  </h3>
-                  <p className="text-xs text-gray-500">Please review the summary below before executing</p>
-                </div>
-              </div>
-
-              {/* Action Summary Card */}
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3 text-xs">
-                
-                <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
-                  <span className="text-gray-500 font-semibold">Source Class</span>
-                  <span className="font-bold text-navy-950">{sourceClassNameFormatted}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
-                  <span className="text-gray-500 font-semibold">Destination</span>
-                  <span className={`font-bold ${previewData?.isGraduation ? 'text-emerald-700' : 'text-[#00215E]'}`}>
-                    {previewData?.isGraduation ? '🎓 Class 10 Graduation (Alumni)' : targetClassNameFormatted}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
-                  <span className="text-gray-500 font-semibold">
-                    {previewData?.isGraduation ? 'Graduating Students' : 'Advancing Students'}
-                  </span>
-                  <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                    {promotingCount} Student(s)
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-500 font-semibold">Retaining in {sourceClassNameFormatted}</span>
-                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                    {retainingCount} Student(s)
-                  </span>
-                </div>
-
-              </div>
-
-              {/* Retained Students Callout (if any) */}
-              {repeatingStudents.length > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-1.5">
-                  <span className="text-xs font-bold text-amber-900 block">
-                    ⚠️ {repeatingStudents.length} student(s) will NOT be promoted (Repeating):
-                  </span>
-                  <div className="text-[11px] text-amber-800 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-                    {repeatingStudents.map(s => (
-                      <span key={s._id} className="bg-white/80 border border-amber-300/80 px-2 py-0.5 rounded font-medium">
-                        {s.fullName} ({s.registrationNumber})
-                      </span>
-                    ))}
+              <div className="flex items-center justify-between p-6 sm:p-7 pb-4 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center gap-3.5">
+                  <div className={`p-3 rounded-2xl ${
+                    previewData?.isGraduation ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-[#00215E]'
+                  }`}>
+                    {previewData?.isGraduation ? <GraduationCap className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6 text-[#00215E]" />}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-navy-950">
+                      {previewData?.isGraduation ? 'Confirm Student Graduation' : 'Confirm Cohort Promotion'}
+                    </h3>
+                    <p className="text-xs text-gray-500">Please review the summary below before executing</p>
                   </div>
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  disabled={isExecuting}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 sm:p-7 space-y-6 overflow-y-auto flex-1">
+                {/* Action Summary Card */}
+                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3 text-xs">
+                  
+                  <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
+                    <span className="text-gray-500 font-semibold">Source Class</span>
+                    <span className="font-bold text-navy-950">{sourceClassNameFormatted}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
+                    <span className="text-gray-500 font-semibold">Destination</span>
+                    <span className={`font-bold ${previewData?.isGraduation ? 'text-emerald-700' : 'text-[#00215E]'}`}>
+                      {previewData?.isGraduation ? '🎓 Class 10 Graduation (Alumni)' : targetClassNameFormatted}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1 border-b border-slate-200/60">
+                    <span className="text-gray-500 font-semibold">
+                      {previewData?.isGraduation ? 'Graduating Students' : 'Advancing Students'}
+                    </span>
+                    <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                      {promotingCount} Student(s)
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-gray-500 font-semibold">Retaining in {sourceClassNameFormatted}</span>
+                    <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+                      {retainingCount} Student(s)
+                    </span>
+                  </div>
+
+                </div>
+
+                {/* Retained Students Callout (if any) */}
+                {repeatingStudents.length > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-1.5">
+                    <span className="text-xs font-bold text-amber-900 block">
+                      ⚠️ {repeatingStudents.length} student(s) will NOT be promoted (Repeating):
+                    </span>
+                    <div className="text-[11px] text-amber-800 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                      {repeatingStudents.map(s => (
+                        <span key={s._id} className="bg-white/80 border border-amber-300/80 px-2 py-0.5 rounded font-medium">
+                          {s.fullName} ({s.registrationNumber})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Bottom Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="flex items-center justify-end gap-3 p-4 px-6 sm:px-7 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowConfirmModal(false)}

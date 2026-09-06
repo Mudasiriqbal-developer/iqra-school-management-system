@@ -141,11 +141,11 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 my-8">
+    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Modal Header */}
-        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white">
+        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
           <h2 className="text-lg font-bold">
             {teacher ? 'Edit Teacher Profile' : 'Add New Teacher'}
           </h2>
@@ -159,7 +159,8 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
         </div>
 
         {/* Modal Body / Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             
             {/* Full Name */}
@@ -302,9 +303,10 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
             </div>
 
           </div>
+          </div>
 
-          {/* Modal Actions */}
-          <div className="bg-slate-50 border-t border-gray-100 -mx-6 -mb-6 px-6 py-4 flex justify-end space-x-3">
+          {/* Modal Actions (Pinned at bottom) */}
+          <div className="bg-slate-50 border-t border-gray-100 px-6 py-4 flex justify-end space-x-3 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

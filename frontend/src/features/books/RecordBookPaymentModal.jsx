@@ -90,10 +90,10 @@ const RecordBookPaymentModal = ({ isOpen, record, onSuccess, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900 px-6 py-4 flex items-center justify-between text-white border-b border-navy-700">
+        <div className="bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900 px-6 py-4 flex items-center justify-between text-white border-b border-navy-700 flex-shrink-0">
           <div className="flex items-center space-x-2.5">
             <div className="h-9 w-9 bg-sky-500/20 rounded-xl flex items-center justify-center text-sky-400 border border-sky-400/30">
               <BookOpen className="h-5 w-5" />
@@ -124,7 +124,8 @@ const RecordBookPaymentModal = ({ isOpen, record, onSuccess, onClose }) => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 text-left">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-6 space-y-5 text-left overflow-y-auto flex-1">
           {/* Student Info Card */}
           <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700 rounded-xl p-3.5 space-y-2">
             <div className="flex justify-between items-start">
@@ -256,8 +257,10 @@ const RecordBookPaymentModal = ({ isOpen, record, onSuccess, onClose }) => {
             <span className="truncate max-w-[200px]" title={idempotencyKey}>{idempotencyKey}</span>
           </div>
 
+          </div>
+
           {/* Modal Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

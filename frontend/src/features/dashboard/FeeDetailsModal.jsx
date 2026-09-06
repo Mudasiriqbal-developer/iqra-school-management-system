@@ -161,8 +161,8 @@ const FeeDetailsModal = ({ isOpen, type, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/65 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs">
-      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-150 overflow-hidden transform transition-all scale-100 flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 bg-slate-900/65 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-150 overflow-hidden transform transition-all scale-100 flex flex-col max-h-[92vh] my-auto">
         
         {/* Modal Header */}
         <div className="relative bg-navy-900 px-6 py-4 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-3 flex-shrink-0">
