@@ -132,7 +132,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Route Guards**: `ProtectedRoute` checks active tokens and restricts routes according to the user's role.
 
 ### 2. Student Information System (SIS) & Bulk Excel Import
-- **Automated Sequential Registration Numbers**: Registration numbers are automatically assigned by the backend (starting from `26001+`) using atomic MongoDB `Counter` sequences. Manual entry and editing by administrators are locked in the user interface to ensure sequential integrity, eliminate manual guesswork, and prevent duplicate roll numbers.
+- **Automated Dynamic Academic Year Registration Numbers**: Registration numbers follow the standard format `[YY][NNN]` (2-digit academic year prefix + 3-digit sequential number, e.g., `26001` for the 2026-2027 session). The system dynamically derives the year prefix from `Settings.currentSession`, automatically advancing when the academic year changes (e.g. `27001` for 2027-2028) with isolated atomic per-year sequence tracking in MongoDB (`Counter`).
 - **Comprehensive Profiles**: Tracks personal info, guardian contacts, emergency details, blood group, admission date, and monthly fee amount.
 - **Excel (.xlsx / .xls) Bulk Import With Automatic Numbers**: Spreadsheets no longer require manual registration numbers. The template generator omits the column, and the commit engine automatically allocates collision-safe sequential numbers in bulk during import, previewed dynamically in the validation table.
 - **Student Ledger & History**: View complete financial transaction history, dues, and payment breakdown per student.
@@ -492,6 +492,7 @@ The backend includes automated helper seeders located in `backend/`:
 - **`node seedClasses.js`**: Populates standard school classes (Nursery, Prep, Class 1 through Class 10) and standard sections.
 - **`node seedBulkTestData.js`**: Generates demo teachers, students, sample fee records, and expense entries for testing.
 - **`node scripts/repairZeroFees.js`**: Maintenance script that migrates legacy student `monthlyFeeAmount` into `customFee`, establishes default class tuition rates, and recalibrates zero-amount fee records in active billing periods.
+- **`node scripts/wipeDatabase.js`**: Complete database wipe and reset utility. Wipes students, teachers, other admin accounts, fees, book fees, expenses, attendance, grades, assignments, payroll, family accounts, and academic structure while safely preserving the primary system administrator account (`iqbal@ihass.edu`) and school profile settings. Atomically resets registration sequences so subsequent admissions start at `26001`.
 
 ---
 

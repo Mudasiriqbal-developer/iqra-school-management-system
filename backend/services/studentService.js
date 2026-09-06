@@ -7,47 +7,102 @@ const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
 const FeeRecord = require('../models/FeeRecord');
 const Counter = require('../models/Counter');
+const Settings = require('../models/Settings');
 const checkTeacherStudentAccess = require('../middleware/checkTeacherStudentAccess');
 const studentFeeService = require('./studentFeeService');
+
+/**
+ * Helper to retrieve current academic session short year (e.g. '26' for '2026-2027', '27' for '2027-2028')
+ */
+const getAcademicYearShort = async () => {
+  try {
+    const settings = await Settings.findOne({ schoolId: 'default' }).lean();
+    if (settings?.currentSession) {
+      const match = settings.currentSession.match(/^(\d{4})/);
+      if (match) {
+        return match[1].slice(-2);
+      }
+      const shortMatch = settings.currentSession.match(/^(\d{2})/);
+      if (shortMatch) {
+        return shortMatch[1];
+      }
+    }
+  } catch (err) {
+    // fallback
+  }
+  return String(new Date().getFullYear()).slice(-2);
+};
+
+/**
+ * Format registration number given a short year and sequence number.
+ * e.g. shortYear '26', seq 1 => '26001'
+ * e.g. shortYear '27', seq 1 => '27001'
+ */
+const formatRegistrationNumber = (shortYear, seq) => {
+  return `${shortYear}${String(seq).padStart(3, '0')}`;
+};
+
+/**
+ * Synchronize and get current sequence for the given academic year.
+ */
+const getYearSeq = async (shortYear, session = null) => {
+  const counterId = `student_registration_${shortYear}`;
+  let findQuery = Counter.findOne({ id: counterId });
+  if (session) findQuery = findQuery.session(session);
+  const counter = await findQuery;
+  let seq = counter ? counter.seq : 0;
+
+  // Defensive sync check against current DB max for this specific year
+  const yearPattern = new RegExp(`^${shortYear}(\\d{3,})$`);
+  const students = await Student.find({ registrationNumber: yearPattern }, 'registrationNumber').lean();
+  let maxSeq = 0;
+  students.forEach(s => {
+    const m = String(s.registrationNumber).match(yearPattern);
+    if (m) {
+      const num = parseInt(m[1], 10);
+      if (!isNaN(num) && num > maxSeq) maxSeq = num;
+    }
+  });
+
+  const users = await User.find({ role: 'student', registrationNumber: yearPattern }, 'registrationNumber').lean();
+  users.forEach(u => {
+    const m = String(u.registrationNumber).match(yearPattern);
+    if (m) {
+      const num = parseInt(m[1], 10);
+      if (!isNaN(num) && num > maxSeq) maxSeq = num;
+    }
+  });
+
+  if (seq < maxSeq) {
+    seq = maxSeq;
+    const updateOpts = { upsert: true };
+    if (session) updateOpts.session = session;
+    await Counter.findOneAndUpdate(
+      { id: counterId },
+      { $set: { seq: maxSeq } },
+      updateOpts
+    );
+  }
+
+  return { counterId, seq };
+};
 
 /**
  * Synchronize and preview the next available student registration number.
  */
 const peekNextRegistrationNumber = async () => {
-  let counter = await Counter.findOne({ id: 'student_registration' });
-  let seq = counter ? counter.seq : 0;
-
-  // Defensive sync check against current DB max
-  const students = await Student.find({}, 'registrationNumber').lean();
-  let maxReg = 0;
-  students.forEach(s => {
-    const num = parseInt(s.registrationNumber, 10);
-    if (!isNaN(num) && num > maxReg) maxReg = num;
-  });
-
-  const users = await User.find({ role: 'student' }, 'registrationNumber').lean();
-  users.forEach(u => {
-    const num = parseInt(u.registrationNumber, 10);
-    if (!isNaN(num) && num > maxReg) maxReg = num;
-  });
-
-  const expectedSeq = Math.max(0, maxReg - 26000);
-  if (seq < expectedSeq) {
-    seq = expectedSeq;
-    await Counter.findOneAndUpdate(
-      { id: 'student_registration' },
-      { $set: { seq: expectedSeq } },
-      { upsert: true }
-    );
-  }
-
-  return String(26000 + seq + 1);
+  const shortYear = await getAcademicYearShort();
+  const { seq } = await getYearSeq(shortYear);
+  return formatRegistrationNumber(shortYear, seq + 1);
 };
 
 /**
  * Atomically reserve the next unique registration number.
  */
 const reserveNextRegistrationNumber = async (session = null) => {
+  const shortYear = await getAcademicYearShort();
+  const { counterId } = await getYearSeq(shortYear, session);
+
   let attempts = 0;
   while (attempts < 50) {
     attempts++;
@@ -55,12 +110,19 @@ const reserveNextRegistrationNumber = async (session = null) => {
     if (session) options.session = session;
 
     const counter = await Counter.findOneAndUpdate(
-      { id: 'student_registration' },
+      { id: counterId },
       { $inc: { seq: 1 } },
       options
     );
 
-    const regNumber = String(26000 + counter.seq);
+    // Also keep legacy single counter in sync
+    await Counter.findOneAndUpdate(
+      { id: 'student_registration' },
+      { $set: { seq: counter.seq } },
+      options
+    );
+
+    const regNumber = formatRegistrationNumber(shortYear, counter.seq);
 
     const query = { registrationNumber: regNumber };
     const userExistsQuery = User.findOne(query);
@@ -651,4 +713,6 @@ module.exports = {
   resetStudentPassword,
   peekNextRegistrationNumber,
   reserveNextRegistrationNumber,
+  getAcademicYearShort,
+  formatRegistrationNumber,
 };

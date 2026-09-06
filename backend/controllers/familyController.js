@@ -14,6 +14,7 @@ const bcrypt = require('bcryptjs');
 const { checkDuplicateStudent } = require('../services/studentImportService');
 const Class = require('../models/Class');
 const Section = require('../models/Section');
+const { reserveNextRegistrationNumber } = require('../services/studentService');
 
 /**
  * Helper: Validates and links students to a family with transaction safety.
@@ -1344,28 +1345,8 @@ const createFamilyWithEnrollment = async (req, res, next) => {
         const parentName = studentData.parentName || studentData.fatherName;
         const fatherContact = studentData.fatherContact || contactInfo;
 
-        // RESERVING REGISTRATION NUMBER INSIDE THE TRANSACTION SESSION
-        // -------------------------------------------------------------
-        const counter = await Counter.findOneAndUpdate(
-          { id: 'student_registration' },
-          { $inc: { seq: 1 } },
-          { new: true, upsert: true, session }
-        );
-        // -------------------------------------------------------------
-        
-        const regNumber = String(26000 + counter.seq);
-
-        // Defensive check: verify registration number is not already in use by any User or Student
-        const existingUser = await User.findOne({ registrationNumber: regNumber }).session(session);
-        const existingStudent = await Student.findOne({ registrationNumber: regNumber }).session(session);
-        if (existingUser || existingStudent) {
-          const conflictingName = existingStudent ? existingStudent.fullName : existingUser ? existingUser.name : 'Unknown';
-          throw new Error(
-            `registration number ${regNumber} is already assigned to an existing user account (${conflictingName}). ` +
-            `This likely means student data was deleted without cleaning up the associated user account, or the registration counter is out of sync — please resolve this before continuing.`
-          );
-        }
-
+        // Atomically reserve registration number inside the transaction session
+        const regNumber = await reserveNextRegistrationNumber(session);
 
         // Create student User account using same role/default password logic as single student path
         await User.insertMany(

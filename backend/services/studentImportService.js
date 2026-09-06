@@ -7,8 +7,7 @@ const Student = require('../models/Student');
 const User = require('../models/User');
 const Class = require('../models/Class');
 const Section = require('../models/Section');
-const Counter = require('../models/Counter');
-const { peekNextRegistrationNumber } = require('./studentService');
+const { peekNextRegistrationNumber, getAcademicYearShort, formatRegistrationNumber } = require('./studentService');
 
 /**
  * Standardizes date parsing from Excel serial numbers, Date instances, or string formats.
@@ -685,35 +684,52 @@ const commitImport = async (rows) => {
   }
 
   // 3. Synchronize Counter and atomically reserve sequential block of registration numbers
-  const allStudentsReg = await Student.find({}, 'registrationNumber').lean();
-  let maxReg = 0;
+  const shortYear = await getAcademicYearShort();
+  const counterId = `student_registration_${shortYear}`;
+  const yearPattern = new RegExp(`^${shortYear}(\\d{3,})$`);
+
+  const allStudentsReg = await Student.find({ registrationNumber: yearPattern }, 'registrationNumber').lean();
+  let maxSeq = 0;
   allStudentsReg.forEach(s => {
-    const num = parseInt(s.registrationNumber, 10);
-    if (!isNaN(num) && num > maxReg) maxReg = num;
+    const m = String(s.registrationNumber).match(yearPattern);
+    if (m) {
+      const num = parseInt(m[1], 10);
+      if (!isNaN(num) && num > maxSeq) maxSeq = num;
+    }
   });
-  const allUsersReg = await User.find({ role: 'student' }, 'registrationNumber').lean();
+  const allUsersReg = await User.find({ role: 'student', registrationNumber: yearPattern }, 'registrationNumber').lean();
   allUsersReg.forEach(u => {
-    const num = parseInt(u.registrationNumber, 10);
-    if (!isNaN(num) && num > maxReg) maxReg = num;
+    const m = String(u.registrationNumber).match(yearPattern);
+    if (m) {
+      const num = parseInt(m[1], 10);
+      if (!isNaN(num) && num > maxSeq) maxSeq = num;
+    }
   });
 
-  const currentCounter = await Counter.findOne({ id: 'student_registration' });
+  const Counter = require('../models/Counter');
+  const currentCounter = await Counter.findOne({ id: counterId });
   let currentSeq = currentCounter ? currentCounter.seq : 0;
-  const minRequiredSeq = Math.max(0, maxReg - 26000);
-  if (currentSeq < minRequiredSeq) {
-    currentSeq = minRequiredSeq;
+  if (currentSeq < maxSeq) {
+    currentSeq = maxSeq;
     await Counter.findOneAndUpdate(
-      { id: 'student_registration' },
-      { $set: { seq: minRequiredSeq } },
+      { id: counterId },
+      { $set: { seq: maxSeq } },
       { upsert: true }
     );
   }
 
   // Atomically increment counter by rowsToInsert.length
   const updatedCounter = await Counter.findOneAndUpdate(
-    { id: 'student_registration' },
+    { id: counterId },
     { $inc: { seq: rowsToInsert.length } },
     { new: true, upsert: true }
+  );
+
+  // Keep legacy single counter in sync as well
+  await Counter.findOneAndUpdate(
+    { id: 'student_registration' },
+    { $set: { seq: updatedCounter.seq } },
+    { upsert: true }
   );
 
   const endSeq = updatedCounter.seq;
@@ -721,7 +737,7 @@ const commitImport = async (rows) => {
 
   // Assign allocated registration numbers to rowsToInsert
   rowsToInsert.forEach((row, idx) => {
-    row.allocatedRegistrationNumber = String(26000 + startSeq + idx);
+    row.allocatedRegistrationNumber = formatRegistrationNumber(shortYear, startSeq + idx);
   });
 
   // 4. Batch commit inside MongoDB transaction session
