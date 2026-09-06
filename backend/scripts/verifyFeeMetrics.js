@@ -1,4 +1,10 @@
-require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+const dotenv = require('dotenv');
+
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
 const mongoose = require('mongoose');
 
 async function verify() {

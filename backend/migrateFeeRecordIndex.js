@@ -1,8 +1,12 @@
-﻿const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const path = require('path');
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
+
+const mongoose = require('mongoose');
 
 const FeeRecord = require('./models/FeeRecord');
 

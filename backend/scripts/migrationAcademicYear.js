@@ -2,7 +2,13 @@
  * One-time migration script to backfill academicYear on Attendance and Grade records.
  * Run manually: node scripts/migrationAcademicYear.js
  */
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
 const mongoose = require('mongoose');
 const connectDB = require('../config/db');
 const Settings = require('../models/Settings');

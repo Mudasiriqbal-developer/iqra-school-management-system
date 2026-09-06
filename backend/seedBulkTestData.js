@@ -5,9 +5,15 @@
  * =========================================================================================
  */
 
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const path = require('path');
+
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
+
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const Class = require('./models/Class');
@@ -20,9 +26,6 @@ const FeeRecord = require('./models/FeeRecord');
 const Attendance = require('./models/Attendance');
 const Grade = require('./models/Grade');
 const Assignment = require('./models/Assignment');
-
-// Load environment variables from backend/.env
-dotenv.config({ path: path.join(__dirname, '.env') });
 
 console.log('\n=========================================================================================');
 console.log('WARNING: This bulk seed script is for LOCAL TESTING ONLY.');

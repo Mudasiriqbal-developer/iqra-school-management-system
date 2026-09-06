@@ -79,7 +79,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 | **Multer** (`^2.2.0`) | Multipart form-data handling (`routes/studentRoutes.js`) | Safely handles in-memory buffer streaming for spreadsheet file uploads during bulk imports. |
 | **Nodemailer** (`^9.0.3`) | Email delivery service (`utils/emailService.js`) | Dispatches automated account activation links, password recovery tokens, and transactional notifications via SMTP. |
 | **Express-Validator & Zod** (`^7.1.0`, `^4.4.3`) | Incoming payload validation & sanitization (`middleware/validationMiddleware.js`) | Validates route params, queries, and request bodies before reaching controller logic, guarding against bad inputs and injection attacks. |
-| **Morgan & Dotenv** (`^1.10.0`, `^16.4.5`) | HTTP logging and environment configuration | Provides clean request/response logging for debugging and isolates sensitive secrets (`JWT_SECRET`, `MONGO_URI`, SMTP keys). |
+| **Morgan & Dotenv** (`^1.10.0`, `^16.4.5`) | HTTP logging and environment configuration | Provides clean request/response logging for debugging and isolates sensitive secrets (`JWT_SECRET`, `MONGODB_URI` / `MONGO_URI`, SMTP keys) with dynamic `.env.local` / `.env.production` switching based on `NODE_ENV`. |
 
 ---
 
@@ -385,9 +385,13 @@ iqra-school-management-system/
 
 ## ⚙️ Environment Configuration (.env)
 
-### 1. Backend Configuration (`backend/.env`)
+The backend employs environment-based configuration switching based on `NODE_ENV`:
+- When `NODE_ENV === 'production'`, `backend/.env.production` is automatically loaded (points to the MongoDB Atlas cluster).
+- When in development/offline mode (`NODE_ENV !== 'production'`), `backend/.env.local` is loaded (points to local MongoDB `mongodb://localhost:27017/ihass`).
 
-Create a file named `.env` in the `backend/` directory:
+### 1. Backend Local Development (`backend/.env.local`)
+
+Create `.env.local` in `backend/` for local development and offline use:
 
 ```env
 # Server Port
@@ -399,26 +403,57 @@ NODE_ENV=development
 # Frontend URL (for CORS allowance)
 FRONTEND_URL=http://localhost:5173
 
-# MongoDB Connection String
-MONGO_URI=mongodb://localhost:27017/iqra_school_cms
-# Or Atlas: mongodb+srv://<user>:<password>@cluster.mongodb.net/iqra_school_cms
+# Local MongoDB Connection String
+MONGODB_URI=mongodb://localhost:27017/ihass
+MONGO_URI=mongodb://localhost:27017/ihass
 
 # JWT Authentication Secret
 JWT_SECRET=your_super_secret_jwt_key_here_minimum_32_characters
+JWT_EXPIRES_IN=7d
 
 # Email Service (SMTP) Configuration (for Activation & Password Reset)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_app_password
-EMAIL_FROM=no-reply@iqraschool.edu
+EMAIL_APP_PASSWORD=your_email_app_password
+EMAIL_FROM_NAME="IHASS - Iqra Hadiqa Tul Atfal School"
 
 # Default Seeder Credentials (Optional)
 SEED_ADMIN_EMAIL=admin@ihass.edu
 SEED_ADMIN_PASSWORD=admin123456
 ```
 
-### 2. Frontend Configuration (`frontend/.env`)
+### 2. Backend Production (`backend/.env.production`)
+
+Create `.env.production` in `backend/` for production deployments or when `NODE_ENV=production`:
+
+```env
+# Server Port
+PORT=5000
+
+# Node Environment
+NODE_ENV=production
+
+# Frontend URL (for CORS allowance)
+FRONTEND_URL=https://your-production-domain.com
+
+# MongoDB Atlas Connection String
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/iqra_school_management?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/iqra_school_management?retryWrites=true&w=majority
+
+# JWT Authentication Secret
+JWT_SECRET=your_super_secret_jwt_key_here_minimum_32_characters
+JWT_EXPIRES_IN=7d
+
+# Email Service (SMTP) Configuration
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@gmail.com
+EMAIL_APP_PASSWORD=your_email_app_password
+EMAIL_FROM_NAME="IHASS - Iqra Hadiqa Tul Atfal School"
+```
+
+### 3. Frontend Configuration (`frontend/.env`)
 
 Create a file named `.env` in the `frontend/` directory:
 

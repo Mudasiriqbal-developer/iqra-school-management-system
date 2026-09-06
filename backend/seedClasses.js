@@ -1,12 +1,15 @@
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const path = require('path');
+
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
+
+const mongoose = require('mongoose');
 const Class = require('./models/Class');
 const Section = require('./models/Section');
 const Subject = require('./models/Subject');
-
-// Load environment variables from backend/.env
-dotenv.config({ path: path.join(__dirname, '.env') });
 
 const defaultClasses = [
   'Nursery',

@@ -1,4 +1,10 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
 const mongoose = require('mongoose');
 const Class = require('../models/Class');
 const Student = require('../models/Student');

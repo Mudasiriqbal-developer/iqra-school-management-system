@@ -6,10 +6,13 @@ node_modules/
 # Environment files
 .env
 .env.local
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
 /backend/.env
+/backend/.env.local
+/backend/.env.production
 /frontend/.env
 
 # Build outputs
