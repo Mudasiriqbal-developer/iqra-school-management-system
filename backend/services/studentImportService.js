@@ -7,6 +7,8 @@ const Student = require('../models/Student');
 const User = require('../models/User');
 const Class = require('../models/Class');
 const Section = require('../models/Section');
+const Counter = require('../models/Counter');
+const { peekNextRegistrationNumber } = require('./studentService');
 
 /**
  * Standardizes date parsing from Excel serial numbers, Date instances, or string formats.
@@ -129,9 +131,7 @@ const HEADER_MAPPING = {
  * Zod schema for single row structure validation.
  */
 const rowZodSchema = z.object({
-  registrationNumber: z.string({ required_error: 'Registration number is required' })
-    .min(1, 'Registration number is required')
-    .max(50, 'Registration number too long'),
+  registrationNumber: z.string().max(50, 'Registration number too long').optional(),
   fullName: z.string({ required_error: 'Full name is required' })
     .min(1, 'Full name is required')
     .max(100, 'Full name too long'),
@@ -163,9 +163,8 @@ const generateImportTemplate = async () => {
   const classes = await Class.find().sort({ orderIndex: 1, name: 1 }).lean();
   const sections = await Section.find().populate('classId', 'name').sort({ orderIndex: 1, name: 1 }).lean();
 
-  // Template columns
+  // Template columns (Registration numbers are auto-assigned sequentially by the system)
   const templateHeaders = [
-    'Registration Number *',
     'Full Name *',
     'Father Name *',
     'Gender *',
@@ -185,7 +184,6 @@ const generateImportTemplate = async () => {
 
   const sampleRows = [
     [
-      '26001',
       'Muhammad Hamza',
       'Tariq Mahmood',
       'male',
@@ -198,7 +196,6 @@ const generateImportTemplate = async () => {
       'active',
     ],
     [
-      '26002',
       'Fatima Zahra',
       'Usman Ghani',
       'female',
@@ -217,7 +214,6 @@ const generateImportTemplate = async () => {
 
   // Set column widths
   templateSheet['!cols'] = [
-    { wch: 22 }, // Registration Number
     { wch: 22 }, // Full Name
     { wch: 22 }, // Father Name
     { wch: 12 }, // Gender
@@ -254,9 +250,9 @@ const generateImportTemplate = async () => {
   // Instructions sheet
   const instructionData = [
     ['Bulk Student Import Instructions'],
+    ['* Registration numbers are automatically generated and assigned sequentially by the school system.'],
     [''],
     ['Field Name', 'Required', 'Accepted Values / Format', 'Description'],
-    ['Registration Number', 'Yes', 'Unique alphanumeric string (e.g. 26001)', 'Student roll/admission number. Must be unique in system.'],
     ['Full Name', 'Yes', 'Text (e.g. Abdullah Khan)', 'Student legal name.'],
     ['Father Name', 'Yes', 'Text (e.g. Imran Khan)', "Father's / Guardian's name."],
     ['Gender', 'Yes', 'male / female / other', 'Case-insensitive gender value.'],
@@ -332,14 +328,13 @@ const validateImportFile = async (fileBuffer) => {
     }
   });
 
-  // Verify mandatory columns exist in header
+  // Verify mandatory columns exist in header (registrationNumber is auto-assigned by system)
   const detectedFields = Object.values(headerMap);
-  const mandatoryFields = ['registrationNumber', 'fullName', 'fatherName', 'gender', 'dateOfBirth', 'fatherContact', 'className', 'sectionName'];
+  const mandatoryFields = ['fullName', 'fatherName', 'gender', 'dateOfBirth', 'fatherContact', 'className', 'sectionName'];
   const missingHeaders = mandatoryFields.filter(f => !detectedFields.includes(f));
 
   if (missingHeaders.length > 0) {
     const humanNames = {
-      registrationNumber: 'Registration Number',
       fullName: 'Full Name',
       fatherName: 'Father Name',
       gender: 'Gender',
@@ -352,6 +347,16 @@ const validateImportFile = async (fileBuffer) => {
     const error = new Error(`Missing required column headers: ${missingHuman}. Please download the official template.`);
     error.statusCode = 400;
     throw error;
+  }
+
+  // Determine starting preview sequence for automatic registration numbers
+  let nextPreviewSeq = 26001;
+  try {
+    const previewNext = await peekNextRegistrationNumber();
+    const parsed = parseInt(previewNext, 10);
+    if (!isNaN(parsed)) nextPreviewSeq = parsed;
+  } catch (err) {
+    // fallback if needed
   }
 
   // Fetch DB Reference Data (Classes & Sections)
@@ -542,9 +547,11 @@ const validateImportFile = async (fileBuffer) => {
       }
     }
 
+    const assignedRegPreview = registrationNumber || String(nextPreviewSeq + validRows.length);
+
     const rowPayload = {
       rowNumber,
-      registrationNumber,
+      registrationNumber: assignedRegPreview,
       fullName,
       fatherName,
       gender: genderRaw || 'male',
@@ -606,19 +613,14 @@ const commitImport = async (rows) => {
   // 2. Fetch fresh DB state for TOCTOU Re-Validation via bulk $in queries before transaction opens
   const incomingClassIds = [...new Set(rows.map(r => r.classId).filter(Boolean))];
   const incomingSectionIds = [...new Set(rows.map(r => r.sectionId).filter(Boolean))];
-  const incomingRegNumbers = [...new Set(rows.map(r => (r.registrationNumber || '').trim().toLowerCase()).filter(Boolean))];
   const incomingFullNames = [...new Set(rows.map(r => (r.fullName || '').trim()).filter(Boolean))];
 
-  const [classes, sections, existingStudents, existingUsers] = await Promise.all([
+  const [classes, sections, existingStudents] = await Promise.all([
     Class.find({ _id: { $in: incomingClassIds } }).lean(),
     Section.find({ _id: { $in: incomingSectionIds } }).lean(),
     Student.find({
-      $or: [
-        { registrationNumber: { $in: incomingRegNumbers } },
-        { fullName: { $in: incomingFullNames.map(name => new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) } },
-      ],
+      fullName: { $in: incomingFullNames.map(name => new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) }
     }, 'registrationNumber fullName dateOfBirth fatherContact').lean(),
-    User.find({ registrationNumber: { $in: incomingRegNumbers } }, 'registrationNumber').lean(),
   ]);
 
   const classMap = new Map();
@@ -627,16 +629,7 @@ const commitImport = async (rows) => {
   const sectionMap = new Map();
   sections.forEach(s => sectionMap.set(s._id.toString(), s));
 
-  const existingRegNumbers = new Set();
-  existingStudents.forEach(s => {
-    if (s.registrationNumber) existingRegNumbers.add(s.registrationNumber.trim().toLowerCase());
-  });
-  existingUsers.forEach(u => {
-    if (u.registrationNumber) existingRegNumbers.add(u.registrationNumber.trim().toLowerCase());
-  });
-
-  // Track within-batch items to prevent intra-payload collisions
-  const batchRegNumbers = new Set();
+  // Track within-batch items to prevent intra-payload duplicate student submissions
   const batchFingerprints = new Set();
 
   const rowsToInsert = [];
@@ -645,17 +638,6 @@ const commitImport = async (rows) => {
   // TOCTOU Validation pass
   for (const row of rows) {
     const errors = [];
-    const regKey = (row.registrationNumber || '').trim().toLowerCase();
-
-    if (!regKey) {
-      errors.push('Registration number is missing');
-    } else {
-      if (batchRegNumbers.has(regKey) || existingRegNumbers.has(regKey)) {
-        errors.push(`Registration number "${row.registrationNumber}" already exists in the system (detected at commit time).`);
-      } else {
-        batchRegNumbers.add(regKey);
-      }
-    }
 
     if (!row.classId || !classMap.has(row.classId.toString())) {
       errors.push(`Assigned Class is no longer available in the database.`);
@@ -685,7 +667,7 @@ const commitImport = async (rows) => {
     if (errors.length > 0) {
       failedRows.push({
         rowNumber: row.rowNumber || 0,
-        registrationNumber: row.registrationNumber,
+        registrationNumber: row.registrationNumber || 'N/A',
         fullName: row.fullName,
         errors,
       });
@@ -702,7 +684,47 @@ const commitImport = async (rows) => {
     };
   }
 
-  // 3. Batch commit inside MongoDB transaction session
+  // 3. Synchronize Counter and atomically reserve sequential block of registration numbers
+  const allStudentsReg = await Student.find({}, 'registrationNumber').lean();
+  let maxReg = 0;
+  allStudentsReg.forEach(s => {
+    const num = parseInt(s.registrationNumber, 10);
+    if (!isNaN(num) && num > maxReg) maxReg = num;
+  });
+  const allUsersReg = await User.find({ role: 'student' }, 'registrationNumber').lean();
+  allUsersReg.forEach(u => {
+    const num = parseInt(u.registrationNumber, 10);
+    if (!isNaN(num) && num > maxReg) maxReg = num;
+  });
+
+  const currentCounter = await Counter.findOne({ id: 'student_registration' });
+  let currentSeq = currentCounter ? currentCounter.seq : 0;
+  const minRequiredSeq = Math.max(0, maxReg - 26000);
+  if (currentSeq < minRequiredSeq) {
+    currentSeq = minRequiredSeq;
+    await Counter.findOneAndUpdate(
+      { id: 'student_registration' },
+      { $set: { seq: minRequiredSeq } },
+      { upsert: true }
+    );
+  }
+
+  // Atomically increment counter by rowsToInsert.length
+  const updatedCounter = await Counter.findOneAndUpdate(
+    { id: 'student_registration' },
+    { $inc: { seq: rowsToInsert.length } },
+    { new: true, upsert: true }
+  );
+
+  const endSeq = updatedCounter.seq;
+  const startSeq = endSeq - rowsToInsert.length + 1;
+
+  // Assign allocated registration numbers to rowsToInsert
+  rowsToInsert.forEach((row, idx) => {
+    row.allocatedRegistrationNumber = String(26000 + startSeq + idx);
+  });
+
+  // 4. Batch commit inside MongoDB transaction session
   try {
     session = await mongoose.startSession();
     session.startTransaction();
@@ -722,7 +744,7 @@ const commitImport = async (rows) => {
 
       // Prepare Student records
       const studentDocs = chunk.map(r => ({
-        registrationNumber: r.registrationNumber.trim().toLowerCase(),
+        registrationNumber: r.allocatedRegistrationNumber,
         fullName: r.fullName.trim(),
         fatherName: r.fatherName.trim(),
         gender: r.gender,
@@ -745,7 +767,7 @@ const commitImport = async (rows) => {
       // Prepare User accounts
       const userDocs = chunk.map(r => ({
         name: r.fullName.trim(),
-        registrationNumber: r.registrationNumber.trim().toLowerCase(),
+        registrationNumber: r.allocatedRegistrationNumber,
         password: hashedPassword,
         role: 'student',
         phone: r.fatherContact.trim(),

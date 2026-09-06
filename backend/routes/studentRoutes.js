@@ -7,6 +7,7 @@ const {
   updateStudent,
   deleteStudent,
   resetStudentPassword,
+  getNextRegistrationNumber,
 } = require('../controllers/studentController');
 const {
   generateAdmissionReceiptPDF,
@@ -149,6 +150,13 @@ router.get('/me/fees', authorize('student'), getMyFeeHistory);
 router.get('/:id/admission-receipt-pdf', authorize('admin'), generateAdmissionReceiptPDF);
 
 /**
+ * @route   GET /api/students/next-registration-number
+ * @desc    Get preview of the next available sequential registration number
+ * @access  Private (Admin Only)
+ */
+router.get('/next-registration-number', authorize('admin'), getNextRegistrationNumber);
+
+/**
  * @route   GET /api/students/:id
  * @desc    Get student by ID
  * @access  Private (Admin, Teacher)
@@ -164,7 +172,7 @@ router.post(
   '/',
   authorize('admin'),
   [
-    check('registrationNumber', 'Registration number is required').trim().notEmpty(),
+    check('registrationNumber', 'Invalid registration number').optional({ nullable: true, checkFalsy: true }).trim(),
     check('fullName', 'Full name is required').trim().notEmpty(),
     check('fatherName', 'Father name is required').trim().notEmpty(),
     check('gender', 'Gender must be male, female, or other').isIn(['male', 'female', 'other']),

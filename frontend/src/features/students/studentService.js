@@ -19,6 +19,14 @@ export const getStudentById = async (id) => {
 };
 
 /**
+ * Fetch preview of the next sequential registration number.
+ */
+export const getNextRegistrationNumber = async () => {
+  const response = await api.get('/students/next-registration-number');
+  return response.data;
+};
+
+/**
  * Create a new student record.
  * @param {Object} data - Student details payload
  */

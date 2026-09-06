@@ -148,6 +148,31 @@ const resetStudentPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get the next available sequential registration number
+ * @route   GET /api/students/next-registration-number
+ * @access  Private (Admin)
+ */
+const getNextRegistrationNumber = async (req, res, next) => {
+  try {
+    const nextReg = await studentService.peekNextRegistrationNumber();
+    return res.status(200).json({
+      success: true,
+      data: { nextRegistrationNumber: nextReg },
+      message: 'Next registration number preview fetched successfully',
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        data: null,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   createStudent,
   getAllStudents,
@@ -155,4 +180,5 @@ module.exports = {
   updateStudent,
   deleteStudent,
   resetStudentPassword,
+  getNextRegistrationNumber,
 };

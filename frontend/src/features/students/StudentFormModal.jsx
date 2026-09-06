@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { X, Loader2, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { X, Loader2, ChevronDown, ChevronUp, Plus, Trash2, Lock } from 'lucide-react';
 import {
   createStudent,
   updateStudent,
   getClasses,
-  getSectionsByClass
+  getSectionsByClass,
+  getNextRegistrationNumber,
 } from './studentService';
 
 const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
@@ -31,6 +32,10 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Auto-assigned registration number states
+  const [autoRegNumber, setAutoRegNumber] = useState('');
+  const [loadingRegNumber, setLoadingRegNumber] = useState(false);
+
   // States for optional admission details (Create mode only)
   const [isAdmissionExpanded, setIsAdmissionExpanded] = useState(false);
   const [admissionFee, setAdmissionFee] = useState('');
@@ -50,6 +55,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
       setAdmissionPaymentStatus('');
       setAdmissionAmountPaid('');
       if (student) {
+        setAutoRegNumber(student.registrationNumber || '');
         setFormData({
           registrationNumber: student.registrationNumber || '',
           fullName: student.fullName || '',
@@ -65,6 +71,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           status: student.status || 'active'
         });
       } else {
+        setAutoRegNumber('');
         setFormData({
           registrationNumber: '',
           fullName: '',
@@ -79,6 +86,23 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           customFeeNote: '',
           status: 'active'
         });
+
+        // Fetch upcoming registration number preview
+        const fetchNextRegNumber = async () => {
+          try {
+            setLoadingRegNumber(true);
+            const res = await getNextRegistrationNumber();
+            if (res.success && res.data?.nextRegistrationNumber) {
+              setAutoRegNumber(res.data.nextRegistrationNumber);
+              setFormData(prev => ({ ...prev, registrationNumber: res.data.nextRegistrationNumber }));
+            }
+          } catch (err) {
+            console.error('Failed to preview next registration number:', err);
+          } finally {
+            setLoadingRegNumber(false);
+          }
+        };
+        fetchNextRegNumber();
       }
     }
   }, [student, isOpen]);
@@ -263,9 +287,6 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.registrationNumber.trim()) {
-      newErrors.registrationNumber = 'Registration number is required';
-    }
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Full name is required';
     }
@@ -390,25 +411,37 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             
-            {/* Registration Number */}
+            {/* Registration Number (System Auto-Assigned) */}
             <div className="flex flex-col">
-              <label htmlFor="registrationNumber" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
-                Registration Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="registrationNumber"
-                type="text"
-                name="registrationNumber"
-                value={formData.registrationNumber}
-                onChange={handleChange}
-                placeholder="e.g. 26001"
-                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
-                  errors.registrationNumber ? 'border-red-400 focus:border-red-500 bg-red-50/10' : 'border-gray-200 focus:border-navy-700'
-                }`}
-              />
-              {errors.registrationNumber && (
-                <span className="text-red-500 text-xs font-medium mt-1">{errors.registrationNumber}</span>
-              )}
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="registrationNumber" className="text-xs font-bold text-navy-950 uppercase flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-navy-600" />
+                  <span>Registration Number</span>
+                </label>
+                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                  {student ? 'System Assigned' : 'Auto-Assigned on Save'}
+                </span>
+              </div>
+              <div className="relative">
+                <input
+                  id="registrationNumber"
+                  type="text"
+                  name="registrationNumber"
+                  value={
+                    loadingRegNumber
+                      ? 'Allocating next number...'
+                      : (student ? (formData.registrationNumber || '') : (autoRegNumber || 'Auto-generated'))
+                  }
+                  readOnly
+                  disabled
+                  className="w-full px-4 py-2 border border-gray-200 bg-slate-100 text-slate-700 rounded-xl font-mono font-bold text-sm cursor-not-allowed select-none opacity-90 shadow-2xs"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                {student
+                  ? 'Registration numbers are permanent and managed automatically by the school system.'
+                  : 'Assigned automatically by the system. Administrators do not need to enter this manually.'}
+              </p>
             </div>
 
             {/* Full Name */}

@@ -412,11 +412,11 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 text-gray-700">
-                      <tr>
+                      <tr className="bg-emerald-50/30">
                         <td className="py-2 px-4 font-bold text-navy-900">Registration Number</td>
-                        <td className="py-2 px-4"><span className="text-red-600 font-bold">Yes *</span></td>
-                        <td className="py-2 px-4">Unique alphanumeric string</td>
-                        <td className="py-2 px-4 font-mono text-gray-500">26001</td>
+                        <td className="py-2 px-4"><span className="text-emerald-700 font-bold bg-emerald-100/80 px-2 py-0.5 rounded text-[10px]">Auto-Generated</span></td>
+                        <td className="py-2 px-4 text-emerald-900">Assigned sequentially by system (Omit from sheet)</td>
+                        <td className="py-2 px-4 font-mono text-emerald-700 font-semibold">Automatic</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 font-bold text-navy-900">Full Name</td>
@@ -656,7 +656,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                         <thead className="sticky top-0 bg-gray-50 z-10 border-b border-gray-200 text-gray-500 font-bold">
                           <tr>
                             <th className="py-2.5 px-4">Row #</th>
-                            <th className="py-2.5 px-4">Reg No</th>
+                            <th className="py-2.5 px-4">Reg No (Auto)</th>
                             <th className="py-2.5 px-4">Full Name</th>
                             <th className="py-2.5 px-4">Father Name</th>
                             <th className="py-2.5 px-4">Gender</th>
@@ -671,7 +671,10 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                           {validationData.validRows.map((row, idx) => (
                             <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
                               <td className="py-2 px-4 font-mono font-bold text-navy-900">{row.rowNumber}</td>
-                              <td className="py-2 px-4 font-mono font-bold text-navy-900">{row.registrationNumber}</td>
+                              <td className="py-2 px-4">
+                                <span className="font-mono font-bold text-navy-900">{row.registrationNumber}</span>
+                                <span className="ml-1.5 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200/60 uppercase">Auto</span>
+                              </td>
                               <td className="py-2 px-4 font-semibold">{row.fullName}</td>
                               <td className="py-2 px-4 text-gray-600">{row.fatherName}</td>
                               <td className="py-2 px-4 capitalize">{row.gender}</td>

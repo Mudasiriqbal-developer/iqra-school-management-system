@@ -131,8 +131,9 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Route Guards**: `ProtectedRoute` checks active tokens and restricts routes according to the user's role.
 
 ### 2. Student Information System (SIS) & Bulk Excel Import
+- **Automated Sequential Registration Numbers**: Registration numbers are automatically assigned by the backend (starting from `26001+`) using atomic MongoDB `Counter` sequences. Manual entry and editing by administrators are locked in the user interface to ensure sequential integrity, eliminate manual guesswork, and prevent duplicate roll numbers.
 - **Comprehensive Profiles**: Tracks personal info, guardian contacts, emergency details, blood group, admission date, and monthly fee amount.
-- **Excel (.xlsx / .xls) Bulk Import**: Drag-and-drop spreadsheet upload with preview, header mapping, validation error reporting, and bulk creation.
+- **Excel (.xlsx / .xls) Bulk Import With Automatic Numbers**: Spreadsheets no longer require manual registration numbers. The template generator omits the column, and the commit engine automatically allocates collision-safe sequential numbers in bulk during import, previewed dynamically in the validation table.
 - **Student Ledger & History**: View complete financial transaction history, dues, and payment breakdown per student.
 
 ### 3. Family Accounts & Consolidated Vouchers
@@ -309,12 +310,15 @@ iqra-school-management-system/
 
 ### Students & Admissions (`/api/students`)
 - `GET    /api/students` — List students with search, class, section, and status filters.
-- `POST   /api/students` — Register a new student.
+- `GET    /api/students/next-registration-number` — Fetch preview of the next available sequential registration number (Admin only).
+- `POST   /api/students` — Register a new student (Registration number automatically generated and assigned by backend).
 - `GET    /api/students/:id` — Fetch complete student profile.
-- `PUT    /api/students/:id` — Update student details.
+- `PUT    /api/students/:id` — Update student details (Registration number immutable).
 - `DELETE /api/students/:id` — Archive / delete student record.
 - `PATCH  /api/students/:id/custom-fee` — Set or reset student custom monthly fee override and context note.
-- `POST   /api/students/import` — Upload and process `.xlsx` bulk student file.
+- `GET    /api/students/import/template` — Download bulk import template (.xlsx) without registration number column.
+- `POST   /api/students/import/validate` — Validate spreadsheet and preview auto-assigned registration numbers.
+- `POST   /api/students/import/commit` — Commit validated student records and allocate sequential registration numbers.
 - `GET    /api/students/:id/admission-receipt-pdf` — Download admission receipt PDF.
 
 ### Family Tree & Group Billing (`/api/families`)

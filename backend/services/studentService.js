@@ -6,8 +6,82 @@ const Section = require('../models/Section');
 const Teacher = require('../models/Teacher');
 const Assignment = require('../models/Assignment');
 const FeeRecord = require('../models/FeeRecord');
+const Counter = require('../models/Counter');
 const checkTeacherStudentAccess = require('../middleware/checkTeacherStudentAccess');
 const studentFeeService = require('./studentFeeService');
+
+/**
+ * Synchronize and preview the next available student registration number.
+ */
+const peekNextRegistrationNumber = async () => {
+  let counter = await Counter.findOne({ id: 'student_registration' });
+  let seq = counter ? counter.seq : 0;
+
+  // Defensive sync check against current DB max
+  const students = await Student.find({}, 'registrationNumber').lean();
+  let maxReg = 0;
+  students.forEach(s => {
+    const num = parseInt(s.registrationNumber, 10);
+    if (!isNaN(num) && num > maxReg) maxReg = num;
+  });
+
+  const users = await User.find({ role: 'student' }, 'registrationNumber').lean();
+  users.forEach(u => {
+    const num = parseInt(u.registrationNumber, 10);
+    if (!isNaN(num) && num > maxReg) maxReg = num;
+  });
+
+  const expectedSeq = Math.max(0, maxReg - 26000);
+  if (seq < expectedSeq) {
+    seq = expectedSeq;
+    await Counter.findOneAndUpdate(
+      { id: 'student_registration' },
+      { $set: { seq: expectedSeq } },
+      { upsert: true }
+    );
+  }
+
+  return String(26000 + seq + 1);
+};
+
+/**
+ * Atomically reserve the next unique registration number.
+ */
+const reserveNextRegistrationNumber = async (session = null) => {
+  let attempts = 0;
+  while (attempts < 50) {
+    attempts++;
+    const options = { new: true, upsert: true };
+    if (session) options.session = session;
+
+    const counter = await Counter.findOneAndUpdate(
+      { id: 'student_registration' },
+      { $inc: { seq: 1 } },
+      options
+    );
+
+    const regNumber = String(26000 + counter.seq);
+
+    const query = { registrationNumber: regNumber };
+    const userExistsQuery = User.findOne(query);
+    const studentExistsQuery = Student.findOne(query);
+    if (session) {
+      userExistsQuery.session(session);
+      studentExistsQuery.session(session);
+    }
+
+    const [existingUser, existingStudent] = await Promise.all([
+      userExistsQuery,
+      studentExistsQuery
+    ]);
+
+    if (!existingUser && !existingStudent) {
+      return regNumber;
+    }
+  }
+
+  throw new Error('Unable to generate a unique registration number after multiple attempts.');
+};
 
 /**
  * Business logic for creating a new student.
@@ -64,20 +138,26 @@ const createStudent = async (studentData) => {
     }
   }
 
-  // 0. Check if User with registrationNumber already exists
-  const userExists = await User.findOne({ registrationNumber: registrationNumber.trim() });
-  if (userExists) {
-    const error = new Error('A user with this registration number already exists');
-    error.statusCode = 400;
-    throw error;
-  }
+  // Resolve registration number: auto-generate if omitted/empty
+  let finalRegNumber = (registrationNumber && typeof registrationNumber === 'string') ? registrationNumber.trim() : '';
+  if (!finalRegNumber) {
+    finalRegNumber = await reserveNextRegistrationNumber();
+  } else {
+    // 0. Check if User with registrationNumber already exists
+    const userExists = await User.findOne({ registrationNumber: finalRegNumber });
+    if (userExists) {
+      const error = new Error('A user with this registration number already exists');
+      error.statusCode = 400;
+      throw error;
+    }
 
-  // 1. Check registration number unique
-  const registrationExists = await Student.findOne({ registrationNumber });
-  if (registrationExists) {
-    const error = new Error('A student with this registration number already exists');
-    error.statusCode = 400;
-    throw error;
+    // 1. Check registration number unique
+    const registrationExists = await Student.findOne({ registrationNumber: finalRegNumber });
+    if (registrationExists) {
+      const error = new Error('A student with this registration number already exists');
+      error.statusCode = 400;
+      throw error;
+    }
   }
 
   // 2. Check if Class and Section exist
@@ -142,7 +222,7 @@ const createStudent = async (studentData) => {
   const defaultPassword = 'student123';
   await User.create({
     name: fullName,
-    registrationNumber: registrationNumber.trim(),
+    registrationNumber: finalRegNumber,
     password: defaultPassword,
     role: 'student',
     phone: fatherContact,
@@ -152,7 +232,7 @@ const createStudent = async (studentData) => {
 
   // 3. Create student
   const student = await Student.create({
-    registrationNumber,
+    registrationNumber: finalRegNumber,
     fullName,
     fatherName,
     gender,
@@ -457,16 +537,8 @@ const updateStudent = async (id, studentData) => {
     photoUrl,
   } = studentData;
 
-  // Check unique registration number if changed
-  if (registrationNumber && registrationNumber !== student.registrationNumber) {
-    const duplicate = await Student.findOne({ registrationNumber });
-    if (duplicate) {
-      const error = new Error('A student with this registration number already exists');
-      error.statusCode = 400;
-      throw error;
-    }
-    student.registrationNumber = registrationNumber;
-  }
+  // Registration numbers are system-managed and immutable once assigned.
+  // Manual modification is ignored to preserve data integrity.
 
   if (classId) {
     const classExists = await Class.findById(classId);
@@ -577,4 +649,6 @@ module.exports = {
   updateStudent,
   deleteStudent,
   resetStudentPassword,
+  peekNextRegistrationNumber,
+  reserveNextRegistrationNumber,
 };
