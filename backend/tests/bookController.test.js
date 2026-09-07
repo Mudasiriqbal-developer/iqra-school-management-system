@@ -1,9 +1,10 @@
 const dotenv = require('dotenv');
 
+dotenv.config();
 if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: '.env.production' });
-} else {
-  dotenv.config({ path: '.env.local' });
+  dotenv.config({ path: '.env.production', override: true });
+} else if (process.env.NODE_ENV === 'development') {
+  dotenv.config({ path: '.env.local', override: true });
 }
 const test = require('node:test');
 const assert = require('node:assert');
