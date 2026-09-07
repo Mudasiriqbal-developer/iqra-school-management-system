@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
+    "seed:admin": "node seedAdmin.js",
+    "seed:classes": "node seedClasses.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

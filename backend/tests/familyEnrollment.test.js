@@ -18,6 +18,7 @@ const FeeRecord = require('../models/FeeRecord');
 const BookFee = require('../models/BookFee');
 const User = require('../models/User');
 const Counter = require('../models/Counter');
+const Settings = require('../models/Settings');
 
 const { createFamilyWithEnrollment } = require('../controllers/familyController');
 
@@ -74,8 +75,15 @@ test.describe('Family Pass 3 Enrollment Controller Tests', () => {
       FeeRecord.deleteMany({}),
       BookFee.deleteMany({}),
       User.deleteMany({}),
-      Counter.deleteMany({})
+      Counter.deleteMany({}),
+      Settings.deleteMany({})
     ]);
+
+    await Settings.create({
+      schoolName: 'Iqra School',
+      currentSession: '2026-2027',
+      schoolId: 'default'
+    });
 
     // 1. Seed Class & Section
     testClass = await Class.create({ name: 'Class 1', gender: 'mixed' });
@@ -206,25 +214,22 @@ test.describe('Family Pass 3 Enrollment Controller Tests', () => {
     assert.strictEqual(aliBookFee, null); // should not exist since bookFee = 0
   });
 
-  test('Rollback path: force a duplicate registration number and assert zero database changes persist', async () => {
-    // 1. Pre-insert a student with registration number 26002
+  test('Rollback path: force a duplicate student and assert zero database changes persist', async () => {
+    // 1. Pre-insert a student with matching Name, DOB, and Contact
     await Student.create({
-      registrationNumber: '26002',
-      fullName: 'Pre-existing Duplicate Reg',
-      fatherName: 'Dup Father',
+      registrationNumber: 'stud-dup',
+      fullName: 'Rollback Student 2',
+      fatherName: 'Rollback Parent',
       gender: 'male',
-      dateOfBirth: new Date('2015-05-05'),
-      fatherContact: '03009999999',
+      dateOfBirth: new Date('2019-10-10'),
+      fatherContact: '03007654321',
       classId: testClass._id,
       sectionId: testSection._id,
       monthlyFeeAmount: 5000,
       status: 'active'
     });
 
-    // 2. Prepare request with 2 new students.
-    // The sequence starts at 26000.
-    // 1st student gets 26001 (success).
-    // 2nd student gets 26002 (should trigger duplicate key error on Student write).
+    // 2. Prepare request with 2 new students where 2nd student is a duplicate.
     const reqBody = {
       familyName: 'Rollback Household',
       address: 'House 456, Lahore',
@@ -274,7 +279,7 @@ test.describe('Family Pass 3 Enrollment Controller Tests', () => {
 
     assert.strictEqual(res.statusCode, 400);
     assert.strictEqual(res.body.success, false);
-    assert.ok(res.body.message.includes('unique constraint') || res.body.message.includes('duplicate key') || res.body.message.includes('registration number'));
+    assert.ok(res.body.message.includes('Validation failed') || res.body.message.includes('already exists') || res.body.message.includes('Duplicate'));
 
     // Assert that NO family was created
     const familyCount = await Family.countDocuments({ familyName: 'Rollback Household' });

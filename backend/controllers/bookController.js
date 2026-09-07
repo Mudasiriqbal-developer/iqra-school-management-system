@@ -7,6 +7,7 @@ const Settings = require('../models/Settings');
 const Counter = require('../models/Counter');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
+const { withTransaction } = require('../utils/transactionHelper');
 
 /**
  * @desc    Get summary statistics for books management
@@ -567,9 +568,6 @@ const generateBookReceiptPDF = async (req, res, next) => {
  * @access  Private (Admin Only)
  */
 const issueBookCharge = async (req, res, next) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const {
       targetType, // 'student' | 'class'
@@ -584,82 +582,39 @@ const issueBookCharge = async (req, res, next) => {
 
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
-      await session.abortTransaction();
-      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'Amount must be a positive number'
       });
     }
 
-    const settings = await Settings.findOne({ schoolId: 'default' }).session(session);
-    const sessionYear = academicYear || settings?.currentSession || '2025-2026';
+    const createdRecords = await withTransaction(async (session) => {
+      let settingsQuery = Settings.findOne({ schoolId: 'default' });
+      if (session) settingsQuery = settingsQuery.session(session);
+      const settings = await settingsQuery;
+      const sessionYear = academicYear || settings?.currentSession || '2025-2026';
 
-    const recordsToInsert = [];
+      const recordsToInsert = [];
 
-    if (targetType === 'student') {
-      if (!studentId) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(400).json({
-          success: false,
-          message: 'Student ID is required'
-        });
-      }
+      if (targetType === 'student') {
+        if (!studentId) {
+          const err = new Error('Student ID is required');
+          err.statusCode = 400;
+          throw err;
+        }
 
-      const student = await Student.findById(studentId).session(session);
-      if (!student) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(404).json({
-          success: false,
-          message: 'Student not found'
-        });
-      }
+        let studentQuery = Student.findById(studentId);
+        if (session) studentQuery = studentQuery.session(session);
+        const student = await studentQuery;
+        if (!student) {
+          const err = new Error('Student not found');
+          err.statusCode = 404;
+          throw err;
+        }
 
-      recordsToInsert.push({
-        student: student._id,
-        classId: student.classId || classId || null,
-        academicYear: sessionYear,
-        amount: numAmount,
-        amountPaid: 0,
-        dueDate: dueDate ? new Date(dueDate) : undefined,
-        paid: false,
-        paymentStatus: 'pending',
-        deliveryStatus: 'pending',
-        items: items || [],
-        payments: []
-      });
-    } else {
-      // Bulk issuance for class
-      if (!classId) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(400).json({
-          success: false,
-          message: 'Class ID is required'
-        });
-      }
-
-      const query = { classId, status: 'active' };
-      if (sectionId && sectionId !== '') {
-        query.sectionId = sectionId;
-      }
-
-      const students = await Student.find(query).session(session);
-      if (students.length === 0) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(404).json({
-          success: false,
-          message: 'No active students found matching the selected class/section'
-        });
-      }
-
-      for (const student of students) {
         recordsToInsert.push({
           student: student._id,
-          classId: student.classId || classId,
+          classId: student.classId || classId || null,
           academicYear: sessionYear,
           amount: numAmount,
           amountPaid: 0,
@@ -670,13 +625,47 @@ const issueBookCharge = async (req, res, next) => {
           items: items || [],
           payments: []
         });
+      } else {
+        // Bulk issuance for class
+        if (!classId) {
+          const err = new Error('Class ID is required');
+          err.statusCode = 400;
+          throw err;
+        }
+
+        const query = { classId, status: 'active' };
+        if (sectionId && sectionId !== '') {
+          query.sectionId = sectionId;
+        }
+
+        let studentsQuery = Student.find(query);
+        if (session) studentsQuery = studentsQuery.session(session);
+        const students = await studentsQuery;
+        if (students.length === 0) {
+          const err = new Error('No active students found matching the selected class/section');
+          err.statusCode = 404;
+          throw err;
+        }
+
+        for (const student of students) {
+          recordsToInsert.push({
+            student: student._id,
+            classId: student.classId || classId,
+            academicYear: sessionYear,
+            amount: numAmount,
+            amountPaid: 0,
+            dueDate: dueDate ? new Date(dueDate) : undefined,
+            paid: false,
+            paymentStatus: 'pending',
+            deliveryStatus: 'pending',
+            items: items || [],
+            payments: []
+          });
+        }
       }
-    }
 
-    const createdRecords = await BookFee.insertMany(recordsToInsert, { session });
-
-    await session.commitTransaction();
-    session.endSession();
+      return await BookFee.insertMany(recordsToInsert, session ? { session } : {});
+    });
 
     return res.status(201).json({
       success: true,
@@ -684,8 +673,6 @@ const issueBookCharge = async (req, res, next) => {
       message: `Successfully issued book charge to ${createdRecords.length} student(s)`
     });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     return res.status(error.statusCode || 400).json({
       success: false,
       message: error.message || 'Failed to issue book charge'

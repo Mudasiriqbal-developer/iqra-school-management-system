@@ -1,9 +1,11 @@
 const dotenv = require('dotenv');
 
+// Load base .env first, then override with environment-specific files if present
+dotenv.config();
 if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: '.env.production' });
+  dotenv.config({ path: '.env.production', override: true });
 } else {
-  dotenv.config({ path: '.env.local' });
+  dotenv.config({ path: '.env.local', override: true });
 }
 const express = require('express');
 const cors = require('cors');
@@ -47,9 +49,31 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Explicit CORS Allowlist
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+];
+if (process.env.FRONTEND_URL) {
+  process.env.FRONTEND_URL.split(',').forEach((url) => {
+    const trimmed = url.trim();
+    if (trimmed && !allowedOrigins.includes(trimmed)) {
+      allowedOrigins.push(trimmed);
+    }
+  });
+}
+
 // Middlewares
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, Postman, or local scripts)
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS Error: Origin ${origin} is not allowed`));
+  },
   credentials: true
 }));
 app.use(morgan('dev', {

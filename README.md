@@ -492,15 +492,24 @@ cd ../frontend
 npm install
 ```
 
-#### 3. Seed Initial System Admin
-Initialize database tables and create the default administrator account:
+#### 3. Seed Initial System Admin & Academic Classes
+Initialize database tables and create the default administrator and academic structure:
 
 ```bash
-cd ../backend
-node seedAdmin.js
+cd backend
+npm run seed:admin
+npm run seed:classes
 ```
 
-#### 4. Run Development Servers
+#### 4. Run Development Servers (Two Options)
+
+##### Option A: 1-Click Windows Launcher (Recommended for Manual/Local Client Deployment)
+Double-click `start-local.bat` in the project root directory. This will:
+1. Launch the Backend API server in a separate terminal window on `http://localhost:5000`.
+2. Launch the Frontend Vite client in a separate terminal window on `http://localhost:5173`.
+3. Automatically open your default web browser to the Iqra School Management System.
+
+##### Option B: Manual Terminal Execution
 Open two separate terminal windows or tabs:
 
 **Terminal 1 — Start Backend Server:**
@@ -517,14 +526,22 @@ npm run dev
 ```
 *Frontend application will run on: `http://localhost:5173`*
 
+#### 5. Running Automated Backend Tests
+The backend includes a comprehensive Node test suite validating financial calculations, family enrollment, book transactions, and idempotency:
+
+```bash
+cd backend
+npm test
+```
+
 ---
 
-## 🌱 Database Seeding
+## 🌱 Database Seeding & Maintenance
 
-The backend includes automated helper seeders located in `backend/`:
+The backend includes automated helper seeders and scripts located in `backend/`:
 
-- **`node seedAdmin.js`**: Checks if an administrator exists; if not, creates the default system admin with secure password hashing.
-- **`node seedClasses.js`**: Populates standard school classes (Nursery, Prep, Class 1 through Class 10) and standard sections.
+- **`npm run seed:admin` (`node seedAdmin.js`)**: Checks if an administrator exists; if not, creates the default system admin with secure password hashing.
+- **`npm run seed:classes` (`node seedClasses.js`)**: Populates standard school classes (Nursery, Prep, Class 1 through Class 10) and standard sections.
 - **`node seedBulkTestData.js`**: Generates demo teachers, students, sample fee records, and expense entries for testing.
 - **`node scripts/repairZeroFees.js`**: Maintenance script that migrates legacy student `monthlyFeeAmount` into `customFee`, establishes default class tuition rates, and recalibrates zero-amount fee records in active billing periods.
 - **`node scripts/wipeDatabase.js`**: Complete database wipe and reset utility. Wipes students, teachers, other admin accounts, fees, book fees, expenses, attendance, grades, assignments, payroll, family accounts, and academic structure while safely preserving the primary system administrator account (`iqbal@ihass.edu`) and school profile settings. Atomically resets registration sequences so subsequent admissions start at `26001`.
@@ -533,6 +550,9 @@ The backend includes automated helper seeders located in `backend/`:
 
 ## 🔒 Security & Architectural Best Practices
 
+- **Hybrid MongoDB Transaction Engine**: Financial operations (family fee vouchers, family bulk enrollment, and book inventory charges) use `withTransaction` from `backend/utils/transactionHelper.js`. It utilizes ACID multi-document transactions when running on MongoDB replica sets (such as MongoDB Atlas in production) while automatically falling back to an atomic, two-phase pre-validated flow on standalone local MongoDB instances.
+- **Explicit CORS Allowlist**: CORS origins are strictly restricted to local development addresses (`localhost:5173`, `localhost:3000`, `127.0.0.1`) and explicit comma-separated production domains configured via `FRONTEND_URL` in `.env`. Wildcard (`*`) origins are strictly prohibited.
+- **Defensive Student Account Creation**: Student onboarding enforces a defensive cleanup rollback pattern—if student record creation fails after user authentication creation, the user record is immediately deleted to prevent orphaned accounts.
 - **Token Expiry & Auto-Logout**: JWT tokens are validated on each request. Axios response interceptors immediately wipe local tokens upon `401 Unauthorized` responses and route users to the login screen.
 - **Password Protection**: Passwords are encrypted with Bcrypt.js salt hashing before being committed to MongoDB.
 - **SQL / NoSQL Injection Prevention**: Request parameters and input bodies are sanitized using `express-validator` and typed Mongoose schemas.

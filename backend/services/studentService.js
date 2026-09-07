@@ -282,65 +282,73 @@ const createStudent = async (studentData) => {
 
   // Create student User account immediately active
   const defaultPassword = 'student123';
-  await User.create({
-    name: fullName,
-    registrationNumber: finalRegNumber,
-    password: defaultPassword,
-    role: 'student',
-    phone: fatherContact,
-    isActivated: true,
-    isActive: true,
-  });
+  let createdUser = null;
+  try {
+    createdUser = await User.create({
+      name: fullName,
+      registrationNumber: finalRegNumber,
+      password: defaultPassword,
+      role: 'student',
+      phone: fatherContact,
+      isActivated: true,
+      isActive: true,
+    });
 
-  // 3. Create student
-  const student = await Student.create({
-    registrationNumber: finalRegNumber,
-    fullName,
-    fatherName,
-    gender,
-    dateOfBirth,
-    fatherContact,
-    address,
-    classId,
-    sectionId,
-    customFee: customFee !== undefined && customFee !== null && customFee !== '' ? Number(customFee) : null,
-    customFeeNote: customFeeNote ? customFeeNote.trim() : null,
-    status,
-    photoUrl,
-    admissionFee: Number(admissionFee) || 0,
-    books: books || [],
-    admissionTotal: computedAdmissionTotal,
-    admissionPaymentStatus: finalPaymentStatus,
-    admissionAmountPaid: finalAmountPaid,
-  });
+    // 3. Create student
+    const student = await Student.create({
+      registrationNumber: finalRegNumber,
+      fullName,
+      fatherName,
+      gender,
+      dateOfBirth,
+      fatherContact,
+      address,
+      classId,
+      sectionId,
+      customFee: customFee !== undefined && customFee !== null && customFee !== '' ? Number(customFee) : null,
+      customFeeNote: customFeeNote ? customFeeNote.trim() : null,
+      status,
+      photoUrl,
+      admissionFee: Number(admissionFee) || 0,
+      books: books || [],
+      admissionTotal: computedAdmissionTotal,
+      admissionPaymentStatus: finalPaymentStatus,
+      admissionAmountPaid: finalAmountPaid,
+    });
 
-  // Create FeeRecord if there is a remaining balance
-  if (computedAdmissionTotal > 0 && finalAmountPaid < computedAdmissionTotal) {
-    const now = new Date();
-    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    // Create FeeRecord if there is a remaining balance
+    if (computedAdmissionTotal > 0 && finalAmountPaid < computedAdmissionTotal) {
+      const now = new Date();
+      const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    const paymentsArray = [];
-    if (finalAmountPaid > 0) {
-      paymentsArray.push({
-        amount: finalAmountPaid,
-        type: 'custom',
-        method: 'cash',
-        paidOn: now,
+      const paymentsArray = [];
+      if (finalAmountPaid > 0) {
+        paymentsArray.push({
+          amount: finalAmountPaid,
+          type: 'custom',
+          method: 'cash',
+          paidOn: now,
+        });
+      }
+
+      await FeeRecord.create({
+        studentId: student._id,
+        month: monthStr,
+        amountDue: computedAdmissionTotal,
+        amountPaid: finalAmountPaid,
+        status: finalAmountPaid === 0 ? 'pending' : 'partial',
+        type: 'admission',
+        payments: paymentsArray,
       });
     }
 
-    await FeeRecord.create({
-      studentId: student._id,
-      month: monthStr,
-      amountDue: computedAdmissionTotal,
-      amountPaid: finalAmountPaid,
-      status: finalAmountPaid === 0 ? 'pending' : 'partial',
-      type: 'admission',
-      payments: paymentsArray,
-    });
+    return student;
+  } catch (err) {
+    if (createdUser && createdUser._id) {
+      await User.deleteOne({ _id: createdUser._id }).catch(() => {});
+    }
+    throw err;
   }
-
-  return student;
 };
 
 /**
