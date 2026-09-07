@@ -221,15 +221,16 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Form Controls & Date Pickers**: All inputs, `<select>` menus, `<option>` items, and textareas feature deep `#1e293b` surfaces, crisp white text, slate-700 borders, inverted calendar picker icons, and clear `#94a3b8` placeholder text.
 - **Resilient Status Badges**: `StatusBadge` automatically derives and renders capitalized status labels (`Paid`, `Pending`, `Partial`, etc.) even if the optional `label` prop is omitted.
 
-### 15. Collapsible Mini-Sidebar (Rail Navigation)
-- **Compact Icon Rail by Default**: The sidebar defaults to a high-density 80px (`lg:w-20`) mini-rail showing centered module icons with left cyan glow active indicators, maximizing screen real estate for wide data tables (student registries, monthly fee ledgers, exam grades).
+### 15. Responsive Sidebar with Optional Collapsible Mini-Rail
+- **Full Text & Icon Navigation by Default**: The sidebar defaults to the full expanded navigation panel (`w-64`) with crisp icons, complete module labels (Students, Faculty, Academics, Fees, Books, Payroll, etc.), and school branding for effortless readability and instant navigation.
+- **Optional Collapsible Mini-Rail**: Power users and administrators working with extra-wide data tables can collapse the sidebar into an 80px (`lg:w-20`) mini-rail to maximize table viewing width.
 - **Multi-Way Toggle Controls**:
   - **Click-to-Expand Logo**: When collapsed, clicking the top school emblem logo smoothly expands the full sidebar.
   - **Sidebar Header Chevron**: Sleek `ChevronLeft` / `ChevronRight` button directly in the sidebar header allows instant collapse/expand.
-  - **Top Navbar Menu Button**: The hamburger menu button toggles the mini-sidebar on desktop while toggling the drawer modal on mobile viewports.
-- **Hover Floating Tooltips**: In collapsed mode, hovering over any navigation item, Support link, or Logout displays an instant high-contrast floating tooltip badge (`navy-950` with glassmorphic border) to ensure effortless discoverability.
+  - **Top Navbar Menu Button**: The hamburger menu button toggles the sidebar on desktop and mobile viewports.
+- **Hover Floating Tooltips**: In collapsed mini-rail mode, hovering over any navigation item, Support link, or Logout displays an instant high-contrast floating tooltip badge (`navy-950` with glassmorphic border) to ensure effortless discoverability.
 - **Persistent Workspace Preference**: State is automatically remembered in `localStorage` (`ihass_sidebar_collapsed`), preserving the user's preferred layout across browser refreshes and page transitions.
-- **Fluid Layout Transition**: Main content offset adjusts with synchronized 300ms cubic transitions (`lg:pl-20` vs `lg:pl-64`) without UI stutter or layout snapping.
+- **Fluid Layout Transition**: Main content offset adjusts with synchronized 300ms cubic transitions (`lg:pl-64` vs `lg:pl-20`) without UI stutter or layout snapping.
 
 ### 16. Universal Modal Layout & Viewport Scroll Standard
 - **Problem Solved**: Standardized popup dialog behavior across all screen resolutions and zoom levels to permanently prevent top close buttons (`X`) or bottom action buttons (`Cancel`, `Submit`) from getting clipped or pushed out of viewport bounds.

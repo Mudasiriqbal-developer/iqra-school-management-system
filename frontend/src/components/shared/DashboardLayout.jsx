@@ -11,9 +11,9 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
   const [isCollapsed, setIsCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem('ihass_sidebar_collapsed');
-      return saved !== null ? saved === 'true' : true; // Default to collapsed as requested
+      return saved === 'true'; // Defaults to false (expanded with full text labels)
     } catch {
-      return true;
+      return false;
     }
   });
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);

@@ -7,7 +7,7 @@ const Sidebar = ({
   subtitle = "Administrative Suite", 
   navItems = [], 
   isOpen = false, 
-  isCollapsed = true,
+  isCollapsed = false,
   onToggleCollapse,
   onClose, 
   onLogoutClick, 
