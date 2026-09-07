@@ -10,6 +10,7 @@ const Counter = require('../models/Counter');
 const Settings = require('../models/Settings');
 const checkTeacherStudentAccess = require('../middleware/checkTeacherStudentAccess');
 const studentFeeService = require('./studentFeeService');
+const { escapeRegex } = require('../utils/regexHelper');
 
 /**
  * Helper to retrieve current academic session short year (e.g. '26' for '2026-2027', '27' for '2027-2028')
@@ -371,11 +372,12 @@ const getAllStudents = async (query, user) => {
   }
 
   // Apply search filter on fullName, registrationNumber, or fatherName
-  if (search) {
+  if (search && typeof search === 'string' && search.trim()) {
+    const safeSearch = escapeRegex(search.trim());
     filter.$or = [
-      { fullName: { $regex: search, $options: 'i' } },
-      { registrationNumber: { $regex: search, $options: 'i' } },
-      { fatherName: { $regex: search, $options: 'i' } },
+      { fullName: { $regex: safeSearch, $options: 'i' } },
+      { registrationNumber: { $regex: safeSearch, $options: 'i' } },
+      { fatherName: { $regex: safeSearch, $options: 'i' } },
     ];
   }
 

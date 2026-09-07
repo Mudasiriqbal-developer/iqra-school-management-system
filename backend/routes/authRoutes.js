@@ -12,6 +12,7 @@ const {
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
+const { loginLimiter, forgotPasswordLimiter } = require('../middleware/rateLimitMiddleware');
 
 const router = express.Router();
 
@@ -53,6 +54,7 @@ router.post(
  */
 router.post(
   '/login',
+  loginLimiter,
   [
     check('email', 'Email or Registration Number is required')
       .trim()
@@ -123,6 +125,7 @@ router.put(
  */
 router.post(
   '/forgot-password',
+  forgotPasswordLimiter,
   [
     check('email', 'Please include a valid email address')
       .isEmail()

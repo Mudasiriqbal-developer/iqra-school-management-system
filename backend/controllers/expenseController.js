@@ -1,4 +1,5 @@
 const Expense = require('../models/Expense');
+const { escapeRegex } = require('../utils/regexHelper');
 
 /**
  * @desc    Create a new expense
@@ -43,11 +44,12 @@ const getExpenses = async (req, res, next) => {
       filter.category = category;
     }
 
-    if (searchTerm) {
+    if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {
+      const safeSearch = escapeRegex(searchTerm.trim());
       filter.$or = [
-        { title: { $regex: searchTerm, $options: 'i' } },
-        { paidTo: { $regex: searchTerm, $options: 'i' } },
-        { description: { $regex: searchTerm, $options: 'i' } },
+        { title: { $regex: safeSearch, $options: 'i' } },
+        { paidTo: { $regex: safeSearch, $options: 'i' } },
+        { description: { $regex: safeSearch, $options: 'i' } },
       ];
     }
 

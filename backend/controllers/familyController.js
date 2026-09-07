@@ -16,6 +16,7 @@ const Class = require('../models/Class');
 const Section = require('../models/Section');
 const { reserveNextRegistrationNumber } = require('../services/studentService');
 const { withTransaction } = require('../utils/transactionHelper');
+const { escapeRegex } = require('../utils/regexHelper');
 
 /**
  * Helper: Validates and links students to a family with transaction safety.
@@ -152,11 +153,12 @@ const getFamilies = async (req, res, next) => {
 
     const filter = {};
 
-    if (search) {
+    if (search && typeof search === 'string' && search.trim()) {
+      const safeSearch = escapeRegex(search.trim());
       filter.$or = [
-        { familyName: { $regex: search, $options: 'i' } },
-        { contactNumber: { $regex: search, $options: 'i' } },
-        { guardianName: { $regex: search, $options: 'i' } }
+        { familyName: { $regex: safeSearch, $options: 'i' } },
+        { contactNumber: { $regex: safeSearch, $options: 'i' } },
+        { guardianName: { $regex: safeSearch, $options: 'i' } }
       ];
     }
 

@@ -5,6 +5,7 @@ const Settings = require('../models/Settings');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
 const studentFeeService = require('../services/studentFeeService');
+const { escapeRegex } = require('../utils/regexHelper');
 
 const { getOrCreateCurrentMonthRecord } = studentFeeService;
 
@@ -353,11 +354,12 @@ const getCurrentMonthFeeList = async (req, res, next) => {
     if (sectionId) {
       filter.sectionId = sectionId;
     }
-    if (search) {
+    if (search && typeof search === 'string' && search.trim()) {
+      const safeSearch = escapeRegex(search.trim());
       filter.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { registrationNumber: { $regex: search, $options: 'i' } },
-        { fatherName: { $regex: search, $options: 'i' } },
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { registrationNumber: { $regex: safeSearch, $options: 'i' } },
+        { fatherName: { $regex: safeSearch, $options: 'i' } },
       ];
     }
 
@@ -524,8 +526,8 @@ const getOneTimeChargesReport = async (req, res, next) => {
     if (status && status !== 'all') {
       filter.status = status;
     }
-    if (title && title.trim() !== '') {
-      filter.title = { $regex: title.trim(), $options: 'i' };
+    if (title && typeof title === 'string' && title.trim() !== '') {
+      filter.title = { $regex: escapeRegex(title.trim()), $options: 'i' };
     }
 
     // Student sub-filters
@@ -536,11 +538,12 @@ const getOneTimeChargesReport = async (req, res, next) => {
     if (sectionId && sectionId.trim() !== '') {
       studentFilter.sectionId = sectionId;
     }
-    if (search && search.trim() !== '') {
+    if (search && typeof search === 'string' && search.trim() !== '') {
+      const safeSearch = escapeRegex(search.trim());
       studentFilter.$or = [
-        { fullName: { $regex: search.trim(), $options: 'i' } },
-        { registrationNumber: { $regex: search.trim(), $options: 'i' } },
-        { fatherName: { $regex: search.trim(), $options: 'i' } }
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { registrationNumber: { $regex: safeSearch, $options: 'i' } },
+        { fatherName: { $regex: safeSearch, $options: 'i' } }
       ];
     }
 

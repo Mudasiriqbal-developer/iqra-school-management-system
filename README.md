@@ -79,6 +79,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 | **Multer** (`^2.2.0`) | Multipart form-data handling (`routes/studentRoutes.js`) | Safely handles in-memory buffer streaming for spreadsheet file uploads during bulk imports. |
 | **Nodemailer** (`^9.0.3`) | Email delivery service (`utils/emailService.js`) | Dispatches automated account activation links, password recovery tokens, and transactional notifications via SMTP. |
 | **Express-Validator & Zod** (`^7.1.0`, `^4.4.3`) | Incoming payload validation & sanitization (`middleware/validationMiddleware.js`) | Validates route params, queries, and request bodies before reaching controller logic, guarding against bad inputs and injection attacks. |
+| **Express-Rate-Limit** (`^7.5.0`) | Authentication route protection (`middleware/rateLimitMiddleware.js`, `routes/authRoutes.js`) | Protects sensitive auth endpoints (`/api/auth/login`, `/api/auth/forgot-password`) against automated credential stuffing, brute-force attacks, and SMTP email exhaustion. |
 | **Morgan & Dotenv** (`^1.10.0`, `^16.4.5`) | HTTP logging and environment configuration | Provides clean request/response logging for debugging and isolates sensitive secrets (`JWT_SECRET`, `MONGODB_URI` / `MONGO_URI`, SMTP keys) with dynamic `.env.local` / `.env.production` switching based on `NODE_ENV`. |
 
 ---
@@ -551,6 +552,10 @@ The backend includes automated helper seeders and scripts located in `backend/`:
 
 ## 🔒 Security & Architectural Best Practices
 
+- **Rate Limiting & Anti-Brute-Force Protection**: Sensitive public authentication endpoints are protected by `express-rate-limit`:
+  - `/api/auth/login`: Maximum 10 attempts per 15-minute window per IP, returning a clear friendly message (`429 Too Many Requests`) to guard against credential stuffing without obstructing genuine human mistypes.
+  - `/api/auth/forgot-password`: Maximum 5 requests per 15-minute window per IP to safeguard the Gmail SMTP relay against quota exhaustion and email spamming.
+- **Regex Query Sanitization (Anti-ReDoS)**: All user search inputs across Student Management, Faculty Roster, Fee Inquiries, One-Time Charges, Book Feeds, and Expense Ledgers are escaped using `escapeRegex` (`utils/regexHelper.js`) before reaching MongoDB `$regex` filters, permanently eliminating ReDoS risks and pattern syntax crashes.
 - **Hybrid MongoDB Transaction Engine**: Financial operations (family fee vouchers, family bulk enrollment, and book inventory charges) use `withTransaction` from `backend/utils/transactionHelper.js`. It utilizes ACID multi-document transactions when running on MongoDB replica sets (such as MongoDB Atlas in production) while automatically falling back to an atomic, two-phase pre-validated flow on standalone local MongoDB instances.
 - **Explicit CORS Allowlist**: CORS origins are strictly restricted to local development addresses (`localhost:5173`, `localhost:3000`, `127.0.0.1`) and explicit comma-separated production domains configured via `FRONTEND_URL` in `.env`. Wildcard (`*`) origins are strictly prohibited.
 - **Defensive Student Account Creation**: Student onboarding enforces a defensive cleanup rollback pattern—if student record creation fails after user authentication creation, the user record is immediately deleted to prevent orphaned accounts.

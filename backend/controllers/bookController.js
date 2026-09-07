@@ -8,6 +8,7 @@ const Counter = require('../models/Counter');
 const PDFDocument = require('pdfkit');
 const { drawBrandedHeader, drawFooter, addPageNumbers } = require('../utils/pdfHelper');
 const { withTransaction } = require('../utils/transactionHelper');
+const { escapeRegex } = require('../utils/regexHelper');
 
 /**
  * @desc    Get summary statistics for books management
@@ -140,10 +141,11 @@ const getBookDues = async (req, res, next) => {
     // Student search / Section filter
     if ((search && search.trim() !== '') || (sectionId && sectionId !== '')) {
       const studentQuery = {};
-      if (search && search.trim() !== '') {
+      if (search && typeof search === 'string' && search.trim() !== '') {
+        const safeSearch = escapeRegex(search.trim());
         studentQuery.$or = [
-          { fullName: { $regex: search.trim(), $options: 'i' } },
-          { registrationNumber: { $regex: search.trim(), $options: 'i' } }
+          { fullName: { $regex: safeSearch, $options: 'i' } },
+          { registrationNumber: { $regex: safeSearch, $options: 'i' } }
         ];
       }
       if (sectionId && sectionId !== '') {
@@ -720,11 +722,12 @@ const generateBookReportPDF = async (req, res, next) => {
     }
 
     // Student search
-    if (search && search.trim() !== '') {
+    if (search && typeof search === 'string' && search.trim() !== '') {
+      const safeSearch = escapeRegex(search.trim());
       const matchingStudents = await Student.find({
         $or: [
-          { fullName: { $regex: search.trim(), $options: 'i' } },
-          { registrationNumber: { $regex: search.trim(), $options: 'i' } }
+          { fullName: { $regex: safeSearch, $options: 'i' } },
+          { registrationNumber: { $regex: safeSearch, $options: 'i' } }
         ]
       }).select('_id');
       const studentIds = matchingStudents.map(s => s._id);

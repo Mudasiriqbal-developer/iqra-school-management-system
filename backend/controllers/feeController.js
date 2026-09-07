@@ -3,6 +3,7 @@ const FeeRecord = require('../models/FeeRecord');
 const Expense = require('../models/Expense');
 const Payroll = require('../models/Payroll');
 const { resolveStudentMonthlyFee } = require('../utils/feeHelper');
+const { escapeRegex } = require('../utils/regexHelper');
 
 // Helper to bulk generate current month fee records for active students
 const ensureCurrentMonthRecords = async (currentMonth) => {
@@ -170,9 +171,10 @@ const getCollectedStudents = async (req, res, next) => {
 
     let studentQuery = { status: 'active' };
     if (searchVal) {
+      const safeSearch = escapeRegex(searchVal);
       studentQuery.$or = [
-        { fullName: { $regex: searchVal, $options: 'i' } },
-        { registrationNumber: { $regex: searchVal, $options: 'i' } }
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { registrationNumber: { $regex: safeSearch, $options: 'i' } }
       ];
     }
     const activeStudents = await Student.find(studentQuery).select('_id');
@@ -321,9 +323,10 @@ const getPartialStudents = async (req, res, next) => {
 
     let studentQuery = { status: 'active' };
     if (searchVal) {
+      const safeSearch = escapeRegex(searchVal);
       studentQuery.$or = [
-        { fullName: { $regex: searchVal, $options: 'i' } },
-        { registrationNumber: { $regex: searchVal, $options: 'i' } }
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { registrationNumber: { $regex: safeSearch, $options: 'i' } }
       ];
     }
     const activeStudents = await Student.find(studentQuery).select('_id');
@@ -465,9 +468,10 @@ const getRemainingStudents = async (req, res, next) => {
 
     let studentQuery = { status: 'active' };
     if (searchVal) {
+      const safeSearch = escapeRegex(searchVal);
       studentQuery.$or = [
-        { fullName: { $regex: searchVal, $options: 'i' } },
-        { registrationNumber: { $regex: searchVal, $options: 'i' } }
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { registrationNumber: { $regex: safeSearch, $options: 'i' } }
       ];
     }
     const activeStudents = await Student.find(studentQuery).select('_id');
@@ -609,9 +613,10 @@ const exportDrillDownPDF = async (req, res, next) => {
 
     let studentQuery = { status: 'active' };
     if (searchVal) {
+      const safeSearch = escapeRegex(searchVal);
       studentQuery.$or = [
-        { fullName: { $regex: searchVal, $options: 'i' } },
-        { registrationNumber: { $regex: searchVal, $options: 'i' } }
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { registrationNumber: { $regex: safeSearch, $options: 'i' } }
       ];
     }
     const activeStudents = await Student.find(studentQuery).select('_id');

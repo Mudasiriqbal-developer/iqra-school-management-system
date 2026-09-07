@@ -4,6 +4,7 @@ const Section = require('../models/Section');
 const crypto = require('crypto');
 const { generateActivationToken } = require('../utils/tokenUtils');
 const { sendTeacherInvitationEmail } = require('../utils/emailService');
+const { escapeRegex } = require('../utils/regexHelper');
 
 /**
  * @desc    Create a new teacher (and associated User login)
@@ -106,7 +107,35 @@ const createTeacher = async (req, res, next) => {
  */
 const getAllTeachers = async (req, res, next) => {
   try {
-    const teachers = await Teacher.find()
+    const { search, limit } = req.query;
+    let query = Teacher.find();
+
+    if (search && typeof search === 'string' && search.trim()) {
+      const safeSearch = escapeRegex(search.trim());
+      const matchingUsers = await User.find({
+        role: 'teacher',
+        $or: [
+          { name: { $regex: safeSearch, $options: 'i' } },
+          { email: { $regex: safeSearch, $options: 'i' } },
+          { phone: { $regex: safeSearch, $options: 'i' } }
+        ]
+      }).select('_id');
+      const userIds = matchingUsers.map(u => u._id);
+
+      query = query.where({
+        $or: [
+          { employeeId: { $regex: safeSearch, $options: 'i' } },
+          { qualification: { $regex: safeSearch, $options: 'i' } },
+          { userId: { $in: userIds } }
+        ]
+      });
+    }
+
+    if (limit && !isNaN(parseInt(limit, 10))) {
+      query = query.limit(parseInt(limit, 10));
+    }
+
+    const teachers = await query
       .populate('userId', 'name email phone isActive role isActivated activationTokenExpires')
       .sort({ createdAt: -1 });
 
