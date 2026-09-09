@@ -63,7 +63,7 @@ const AdminFamilyList = () => {
   // Wizard States
   const [step, setStep] = useState(1);
   const [familyName, setFamilyName] = useState('');
-  const [contactInfo, setContactInfo] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
   const [address, setAddress] = useState('');
   const [members, setMembers] = useState([]);
   const [errorsStep1, setErrorsStep1] = useState({});
@@ -278,7 +278,7 @@ const AdminFamilyList = () => {
 
   const handleOpenAddModal = () => {
     setFamilyName('');
-    setContactInfo('');
+    setContactNumber('');
     setAddress('');
     setErrorsStep1({});
     setTouchedStep1({});
@@ -471,11 +471,11 @@ const AdminFamilyList = () => {
 
   const handleNextStep = () => {
     setSubmitAttemptedStep1(true);
-    setTouchedStep1({ familyName: true, contactInfo: true });
+    setTouchedStep1({ familyName: true, contactNumber: true });
 
     const errs = {};
     if (!familyName.trim()) errs.familyName = 'Family Name is required';
-    if (!contactInfo.trim()) errs.contactInfo = 'Contact Number is required';
+    if (!contactNumber.trim()) errs.contactNumber = 'Contact Number is required';
     
     if (Object.keys(errs).length > 0) {
       setErrorsStep1(errs);
@@ -510,7 +510,7 @@ const AdminFamilyList = () => {
 
     const errs1 = {};
     if (!familyName.trim()) errs1.familyName = 'Family Name is required';
-    if (!contactInfo.trim()) errs1.contactInfo = 'Contact Number is required';
+    if (!contactNumber.trim()) errs1.contactNumber = 'Contact Number is required';
     
     if (Object.keys(errs1).length > 0) {
       setErrorsStep1(errs1);
@@ -593,7 +593,8 @@ const AdminFamilyList = () => {
     const payload = {
       familyName: familyName.trim(),
       address: address.trim(),
-      contactInfo: contactInfo.trim(),
+      contactNumber: contactNumber.trim(),
+      contactInfo: contactNumber.trim(),
       members: payloadMembers,
     };
 

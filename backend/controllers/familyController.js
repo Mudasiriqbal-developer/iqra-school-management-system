@@ -1122,9 +1122,9 @@ const createFamilyWithEnrollment = async (req, res, next) => {
 
   while (true) {
     attempt++;
-
     try {
-      const { familyName, address, contactInfo, members } = req.body;
+      const { familyName, address, members } = req.body;
+      const contactInfo = (req.body.contactInfo || req.body.contactNumber || '').trim();
 
       // Top-level family validation
       if (!familyName) {

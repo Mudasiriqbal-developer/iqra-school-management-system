@@ -118,7 +118,7 @@ export const downloadFamilyVoucherPDF = async (familyId, voucherId, fileName) =>
 
 /**
  * Create a family and enroll/link siblings in an atomic transaction.
- * @param {Object} data - { familyName, address, contactInfo, members }
+ * @param {Object} data - { familyName, address, contactNumber, contactInfo, members }
  */
 export const createFamilyWithEnrollment = async (data) => {
   const response = await api.post('/families/create-with-enrollment', data);
