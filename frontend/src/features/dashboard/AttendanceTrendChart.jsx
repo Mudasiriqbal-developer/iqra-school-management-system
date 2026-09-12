@@ -14,7 +14,7 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-[#00153D] text-white text-xs px-3 py-2 rounded-lg shadow-md border border-[#00215E]/30 dark:bg-slate-850 dark:border-slate-700">
+      <div className="bg-[#00153D] text-white text-xs px-3 py-2 rounded-lg shadow-md border border-[#00215E]/30 dark:bg-slate-900 dark:border-slate-700">
         <p className="font-semibold">{`${data.month} ${data.year}: ${payload[0].value}%`}</p>
       </div>
     );
@@ -33,15 +33,15 @@ const AttendanceTrendChart = ({ data = [] }) => {
   const dotFillColor = isDark ? '#1E293B' : '#FFF';
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs overflow-hidden p-6">
       <div className="mb-6">
-        <h2 className="text-lg font-bold text-[#00153D]">Monthly Attendance Trends</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Performance metrics over the last 6 months</p>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Monthly Attendance Trends</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Performance metrics over the last 6 months</p>
       </div>
 
       {hasNoData ? (
-        <div className="h-[300px] flex items-center justify-center border border-dashed border-gray-200/80 rounded-xl bg-gray-50/50">
-          <span className="text-sm font-medium text-gray-400 text-center px-4">
+        <div className="h-[300px] flex items-center justify-center border border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-900/40">
+          <span className="text-sm font-medium text-slate-400 dark:text-slate-400 text-center px-4">
             No attendance data yet — trends will appear as attendance is recorded
           </span>
         </div>
