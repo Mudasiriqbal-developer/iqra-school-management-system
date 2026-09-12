@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Mail, Phone, Loader2, Key, Eye, EyeOff, Sparkles, Copy, Check, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
+import { X, User, Mail, Phone, Loader2, Key, Eye, EyeOff, Sparkles, Copy, Check, Wifi, WifiOff } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { generateSecurePassword } from '../../utils/passwordGenerator';
@@ -48,7 +48,7 @@ const AdminFormModal = ({ isOpen, onClose }) => {
     }
     if (!formData.email.trim()) {
       errs.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    } else if (!/^[^\s@]+@[^\s@]+$/.test(formData.email.trim())) {
       errs.email = 'Please enter a valid email address';
     }
 
@@ -133,8 +133,8 @@ const AdminFormModal = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between border-b border-gray-100 p-6 pb-4 flex-shrink-0">
           <h3 className="text-lg font-bold text-navy-950">Invite New Administrator</h3>
           <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors"
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -151,42 +151,126 @@ const AdminFormModal = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Full Name
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                Activation Link (For Direct Sharing)
               </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                  <User className="h-4 w-4" />
-                </div>
+              <div className="flex items-center space-x-2">
                 <input
                   type="text"
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="e.g. Ahmed Ali"
-                  className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all"
+                  readOnly
+                  value={activationLinkModal.activationLink}
+                  className="block w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono text-gray-700 select-all"
                 />
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-colors flex-shrink-0 cursor-pointer"
+                >
+                  {copied ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
               </div>
+              <p className="text-xxs text-gray-400 mt-1.5 font-medium">
+                The administrator can open this link in any browser to activate their account and set their password.
+              </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Email Address
-              </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                  <Mail className="h-4 w-4" />
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="py-2.5 px-6 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Form */
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              
+              {/* Provisioning Mode Toggle */}
+              <div className="bg-slate-50 border border-gray-200/80 p-4 rounded-xl space-y-2">
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Account Provisioning Mode
+                </label>
+                <div className="grid grid-cols-2 gap-2 bg-gray-200/70 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, requireVerification: false }))}
+                    className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      !formData.requireVerification
+                        ? 'bg-white text-navy-950 shadow-xs'
+                        : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    <WifiOff className="h-3.5 w-3.5 text-navy-800" />
+                    <span>Direct Password (Offline)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, requireVerification: true }))}
+                    className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      formData.requireVerification
+                        ? 'bg-white text-navy-950 shadow-xs'
+                        : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    <Wifi className="h-3.5 w-3.5 text-navy-800" />
+                    <span>Invite Link (Online)</span>
+                  </button>
                 </div>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="e.g. admin@ihass.edu"
-                  className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all"
-                />
+                <p className="text-xxs text-gray-500">
+                  {!formData.requireVerification
+                    ? 'Create admin immediately with a predefined password.'
+                    : 'Generate an activation link for the admin to set their own password.'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <div className="relative rounded-xl shadow-xs">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <User className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="e.g. Ahmed Ali"
+                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all ${
+                      errors.name ? 'border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-navy-900'
+                    }`}
+                  />
+                </div>
+                {errors.name && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.name}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <div className="relative rounded-xl shadow-xs">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="e.g. admin@ihass.edu"
+                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all ${
+                      errors.email ? 'border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-navy-900'
+                    }`}
+                  />
+                </div>
+                {errors.email && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.email}</p>}
               </div>
 
               {/* Password field shown in Direct Mode */}
@@ -222,7 +306,7 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -232,50 +316,51 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                 </div>
               )}
 
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                Phone Number <span className="text-gray-400 font-normal normal-case">(optional)</span>
-              </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                  <Phone className="h-4 w-4" />
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  Phone Number <span className="text-gray-400 font-normal normal-case">(optional)</span>
+                </label>
+                <div className="relative rounded-xl shadow-xs">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="e.g. 03001234567"
+                    className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-hidden focus:border-navy-900 text-sm transition-all"
+                  />
                 </div>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="e.g. 03001234567"
-                  className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all"
-                />
               </div>
             </div>
-          </div>
 
-          <div className="flex space-x-3 justify-end p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
-            <button
-              type="button"
-              onClick={onClose}
-              className="py-2 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="py-2 px-4 rounded-xl bg-navy-900 text-white hover:bg-navy-800 text-sm font-bold shadow-md shadow-navy-900/10 flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Inviting...</span>
-                </>
-              ) : (
-                <span>Send Invitation</span>
-              )}
-            </button>
-          </div>
-        </form>
+            <div className="flex space-x-3 justify-end p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="py-2.5 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="py-2.5 px-5 rounded-xl bg-navy-900 text-white hover:bg-navy-800 text-xs font-extrabold shadow-md flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <span>{!formData.requireVerification ? 'Create & Activate Admin' : 'Send Invitation'}</span>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
