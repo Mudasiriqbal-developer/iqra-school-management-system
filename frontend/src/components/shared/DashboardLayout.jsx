@@ -126,14 +126,14 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
           />
           
           {/* Modal Card */}
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-sm w-full p-6 relative z-10 transform transition-all duration-300 scale-100 flex flex-col items-center text-center my-auto max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 max-w-sm w-full p-6 relative z-10 transform transition-all duration-300 scale-100 flex flex-col items-center text-center my-auto max-h-[90vh] overflow-y-auto">
             {/* Warning Icon Container */}
-            <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 mb-4">
+            <div className="h-12 w-12 rounded-full bg-red-50 dark:bg-red-950/40 flex items-center justify-center text-red-600 dark:text-red-400 mb-4">
               <LogOut className="h-6 w-6" />
             </div>
 
-            <h3 className="text-lg font-bold text-navy-950">Confirm Logout</h3>
-            <p className="text-sm text-gray-500 mt-2">
+            <h3 className="text-lg font-bold text-navy-950 dark:text-white">Confirm Logout</h3>
+            <p className="text-sm text-gray-500 dark:text-slate-300 mt-2">
               Are you sure you want to log out? You will need to sign in again to access the portal.
             </p>
 
@@ -143,7 +143,7 @@ const DashboardLayout = ({ children, navItems, userName, userRole, subtitle }) =
                 type="button"
                 disabled={isLoggingOut}
                 onClick={() => setIsLogoutConfirmOpen(false)}
-                className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors text-xs disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-300 font-bold hover:bg-gray-50 dark:hover:bg-slate-800 dark:hover:text-white rounded-xl transition-colors text-xs disabled:opacity-50"
               >
                 Cancel
               </button>

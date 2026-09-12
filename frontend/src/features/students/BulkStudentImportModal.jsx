@@ -241,10 +241,10 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 flex flex-col max-h-[90vh] my-auto">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden transform transition-all duration-300 scale-100 flex flex-col max-h-[90vh] my-auto">
         
         {/* Modal Header */}
-        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
+        <div className="bg-navy-900 dark:bg-slate-950 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-white/10 rounded-xl">
               <FileSpreadsheet className="h-5 w-5 text-sky-400" />
@@ -257,14 +257,14 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
           <button
             type="button"
             onClick={handleClose}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white focus:outline-none"
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white focus:outline-none cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Step Indicator Bar */}
-        <div className="bg-slate-50 border-b border-gray-200/80 px-6 py-3 flex-shrink-0">
+        <div className="bg-slate-50 dark:bg-slate-800/60 border-b border-gray-200/80 dark:border-slate-700/80 px-6 py-3 flex-shrink-0">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             
             {/* Step 1 */}
@@ -273,17 +273,17 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                 currentStep > 1 
                   ? 'bg-emerald-600 text-white' 
                   : currentStep === 1 
-                    ? 'bg-navy-900 text-white' 
-                    : 'bg-gray-200 text-slate-800'
+                    ? 'bg-navy-900 dark:bg-sky-500 text-white' 
+                    : 'bg-gray-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300'
               }`}>
                 {currentStep > 1 ? <Check className="h-4 w-4" /> : '1'}
               </div>
-              <span className={`text-xs font-bold ${currentStep === 1 ? 'text-navy-950' : 'text-gray-500'} hidden sm:inline`}>
+              <span className={`text-xs font-bold ${currentStep === 1 ? 'text-navy-950 dark:text-white' : 'text-gray-500 dark:text-slate-400'} hidden sm:inline`}>
                 Template
               </span>
             </div>
 
-            <div className="w-8 sm:w-16 h-0.5 bg-gray-200">
+            <div className="w-8 sm:w-16 h-0.5 bg-gray-200 dark:bg-slate-700">
               <div className={`h-full bg-emerald-500 transition-all duration-300 ${currentStep > 1 ? 'w-full' : 'w-0'}`} />
             </div>
 
@@ -293,17 +293,17 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                 currentStep > 2 
                   ? 'bg-emerald-600 text-white' 
                   : currentStep === 2 
-                    ? 'bg-navy-900 text-white' 
-                    : 'bg-gray-200 text-slate-800'
+                    ? 'bg-navy-900 dark:bg-sky-500 text-white' 
+                    : 'bg-gray-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300'
               }`}>
                 {currentStep > 2 ? <Check className="h-4 w-4" /> : '2'}
               </div>
-              <span className={`text-xs font-bold ${currentStep === 2 ? 'text-navy-950' : 'text-gray-500'} hidden sm:inline`}>
+              <span className={`text-xs font-bold ${currentStep === 2 ? 'text-navy-950 dark:text-white' : 'text-gray-500 dark:text-slate-400'} hidden sm:inline`}>
                 Upload
               </span>
             </div>
 
-            <div className="w-8 sm:w-16 h-0.5 bg-gray-200">
+            <div className="w-8 sm:w-16 h-0.5 bg-gray-200 dark:bg-slate-700">
               <div className={`h-full bg-emerald-500 transition-all duration-300 ${currentStep > 2 ? 'w-full' : 'w-0'}`} />
             </div>
 
@@ -313,17 +313,17 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                 currentStep > 3 
                   ? 'bg-emerald-600 text-white' 
                   : currentStep === 3 
-                    ? 'bg-navy-900 text-white' 
-                    : 'bg-gray-200 text-slate-800'
+                    ? 'bg-navy-900 dark:bg-sky-500 text-white' 
+                    : 'bg-gray-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300'
               }`}>
                 {currentStep > 3 ? <Check className="h-4 w-4" /> : '3'}
               </div>
-              <span className={`text-xs font-bold ${currentStep === 3 ? 'text-navy-950' : 'text-gray-500'} hidden sm:inline`}>
+              <span className={`text-xs font-bold ${currentStep === 3 ? 'text-navy-950 dark:text-white' : 'text-gray-500 dark:text-slate-400'} hidden sm:inline`}>
                 Validate & Preview
               </span>
             </div>
 
-            <div className="w-8 sm:w-16 h-0.5 bg-gray-200">
+            <div className="w-8 sm:w-16 h-0.5 bg-gray-200 dark:bg-slate-700">
               <div className={`h-full bg-emerald-500 transition-all duration-300 ${currentStep > 3 ? 'w-full' : 'w-0'}`} />
             </div>
 
@@ -331,12 +331,12 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
             <div className="flex items-center space-x-2">
               <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                 currentStep === 4 
-                  ? 'bg-navy-900 text-white' 
-                  : 'bg-gray-200 text-slate-800'
+                  ? 'bg-navy-900 dark:bg-sky-500 text-white' 
+                  : 'bg-gray-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300'
               }`}>
                 4
               </div>
-              <span className={`text-xs font-bold ${currentStep === 4 ? 'text-navy-950' : 'text-gray-500'} hidden sm:inline`}>
+              <span className={`text-xs font-bold ${currentStep === 4 ? 'text-navy-950 dark:text-white' : 'text-gray-500 dark:text-slate-400'} hidden sm:inline`}>
                 Commit & Report
               </span>
             </div>
@@ -869,7 +869,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         {/* Modal Footer / Navigation Controls */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between flex-shrink-0">
+        <div className="bg-gray-50 dark:bg-slate-900/60 px-6 py-4 border-t border-gray-200 dark:border-slate-800 flex items-center justify-between flex-shrink-0">
           
           {/* Left Button */}
           <div>
@@ -877,7 +877,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(1)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors flex items-center space-x-1.5"
+                className="px-4 py-2 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center space-x-1.5 cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Back to Template</span>
@@ -888,7 +888,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(2)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors flex items-center space-x-1.5"
+                className="px-4 py-2 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center space-x-1.5 cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Upload Different File</span>
@@ -899,7 +899,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2 text-gray-500 hover:text-gray-700 rounded-xl text-xs font-bold transition-colors"
+                className="px-4 py-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -912,7 +912,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(2)}
-                className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-sm"
+                className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 dark:bg-navy-700 dark:hover:bg-navy-600 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-sm cursor-pointer"
               >
                 <span>Continue to Upload</span>
                 <ChevronRight className="h-4 w-4" />
@@ -924,7 +924,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                 type="button"
                 disabled={!selectedFile || isValidating}
                 onClick={handleValidateFile}
-                className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-sm disabled:opacity-40"
+                className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 dark:bg-navy-700 dark:hover:bg-navy-600 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-sm disabled:opacity-40 cursor-pointer"
               >
                 {isValidating ? (
                   <>
@@ -945,7 +945,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
                 type="button"
                 disabled={!validationData || validationData.validCount === 0 || isCommitting}
                 onClick={handleConfirmCommit}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-sm disabled:opacity-40"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 shadow-sm disabled:opacity-40 cursor-pointer"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 <span>Confirm Import ({validationData?.validCount || 0} Students)</span>
@@ -956,7 +956,7 @@ const BulkStudentImportModal = ({ isOpen, onClose, onSuccess }) => {
               <button
                 type="button"
                 onClick={handleFinish}
-                className="px-6 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-colors shadow-sm"
+                className="px-6 py-2.5 bg-navy-900 hover:bg-navy-800 dark:bg-navy-700 dark:hover:bg-navy-600 text-white rounded-xl text-xs font-bold transition-colors shadow-sm cursor-pointer"
               >
                 Done
               </button>

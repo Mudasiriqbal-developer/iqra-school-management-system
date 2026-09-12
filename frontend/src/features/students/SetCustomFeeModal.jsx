@@ -147,7 +147,7 @@ const SetCustomFeeModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
+              className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 dark:hover:text-white transition-colors cursor-pointer"
               disabled={isSubmitting}
             >
               Cancel

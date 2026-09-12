@@ -391,7 +391,7 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Modal Header */}
         <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
@@ -916,19 +916,19 @@ const StudentFormModal = ({ isOpen, onClose, student = null, onSuccess }) => {
           </div>
 
           {/* Form Actions (Pinned at bottom) */}
-          <div className="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
+          <div className="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-900/80 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-white transition-colors focus:outline-none disabled:opacity-50 cursor-pointer"
+              className="px-5 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus:outline-none disabled:opacity-50 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-colors focus:outline-none disabled:bg-navy-900/70 shadow-sm cursor-pointer"
+              className="px-5 py-2.5 bg-navy-900 dark:bg-blue-600 hover:bg-navy-800 dark:hover:bg-blue-500 text-white rounded-xl text-sm font-bold flex items-center justify-center space-x-2 transition-colors focus:outline-none disabled:bg-navy-900/70 shadow-sm cursor-pointer"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>{submitting ? 'Saving...' : 'Save Record'}</span>

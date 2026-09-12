@@ -742,28 +742,28 @@ const AdminPromotion = () => {
         {/* Confirmation Modal */}
         {showConfirmModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-navy-950/60 backdrop-blur-xs overflow-y-auto animate-fadeIn">
-            <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] my-auto overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full shadow-2xl border border-gray-100 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden">
               
               {/* Modal Header */}
-              <div className="flex items-center justify-between p-6 sm:p-7 pb-4 border-b border-gray-100 flex-shrink-0">
+              <div className="flex items-center justify-between p-6 sm:p-7 pb-4 border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
                 <div className="flex items-center gap-3.5">
                   <div className={`p-3 rounded-2xl ${
-                    previewData?.isGraduation ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-[#00215E]'
+                    previewData?.isGraduation ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300' : 'bg-blue-100 dark:bg-sky-950/40 text-[#00215E] dark:text-sky-300'
                   }`}>
-                    {previewData?.isGraduation ? <GraduationCap className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6 text-[#00215E]" />}
+                    {previewData?.isGraduation ? <GraduationCap className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6 text-[#00215E] dark:text-sky-300" />}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-navy-950">
+                    <h3 className="text-lg font-bold text-navy-950 dark:text-slate-100">
                       {previewData?.isGraduation ? 'Confirm Student Graduation' : 'Confirm Cohort Promotion'}
                     </h3>
-                    <p className="text-xs text-gray-500">Please review the summary below before executing</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Please review the summary below before executing</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowConfirmModal(false)}
                   disabled={isExecuting}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -821,13 +821,13 @@ const AdminPromotion = () => {
                 )}
               </div>
 
-              {/* Bottom Action Buttons */}
-              <div className="flex items-center justify-end gap-3 p-4 px-6 sm:px-7 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
+              {/* Modal Footer Actions */}
+              <div className="flex items-center justify-end gap-3 p-4 px-6 sm:px-7 border-t border-gray-100 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-900/80 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowConfirmModal(false)}
                   disabled={isExecuting}
-                  className="px-5 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+                  className="px-5 py-2.5 text-xs font-bold text-gray-600 dark:text-slate-200 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   Cancel
                 </button>

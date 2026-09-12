@@ -841,7 +841,7 @@ const AdminFamilyList = () => {
         {/* Add Family Modal / Wizard */}
         {isAddModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 overflow-y-auto backdrop-blur-xs">
-            <div className={`bg-white rounded-2xl border border-gray-100 shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden my-auto transition-all duration-300 ${step === 1 ? 'max-w-2xl' : 'max-w-5xl'}`}>
+            <div className={`bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden my-auto transition-all duration-300 ${step === 1 ? 'max-w-2xl' : 'max-w-5xl'}`}>
               
               {/* Modal Header */}
               <div className="bg-navy-900 text-white p-5 flex items-center justify-between flex-shrink-0">
@@ -865,14 +865,14 @@ const AdminFamilyList = () => {
                 {step === 1 && (
                   <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                        <span className="text-xs font-bold text-navy-900 bg-navy-50 px-3 py-1 rounded-full uppercase tracking-wider">Step 1 of 2: Family Profile</span>
-                        <span className="text-xs font-semibold text-gray-400">Next: Sibling Members</span>
+                      <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700">
+                        <span className="text-xs font-bold text-navy-900 dark:text-sky-400 bg-navy-50 dark:bg-sky-950/40 px-3 py-1 rounded-full uppercase tracking-wider">Step 1 of 2: Family Profile</span>
+                        <span className="text-xs font-semibold text-gray-400 dark:text-slate-400">Next: Sibling Members</span>
                       </div>
 
                       <div className="grid grid-cols-1 gap-5">
                         <div>
-                          <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
+                          <label className="text-xs font-bold text-navy-950 dark:text-slate-200 uppercase tracking-wide block mb-1.5">
                             Family Name <span className="text-red-500">*</span>
                           </label>
                           <input
@@ -889,7 +889,7 @@ const AdminFamilyList = () => {
                             className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
                               (touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName
                                 ? 'border-red-400 focus:border-red-500 bg-red-50/10'
-                                : 'border-gray-200 focus:border-navy-900 bg-white'
+                                : 'border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100'
                             }`}
                           />
                           {(touchedStep1.familyName || submitAttemptedStep1) && errorsStep1.familyName && (
@@ -901,7 +901,7 @@ const AdminFamilyList = () => {
                         </div>
 
                         <div>
-                          <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
+                          <label className="text-xs font-bold text-navy-950 dark:text-slate-200 uppercase tracking-wide block mb-1.5">
                             Primary Contact <span className="text-red-500">*</span>
                           </label>
                           <input
@@ -918,7 +918,7 @@ const AdminFamilyList = () => {
                             className={`w-full text-sm p-3 rounded-xl border focus:outline-hidden transition-colors ${
                               (touchedStep1.contactNumber || submitAttemptedStep1) && errorsStep1.contactNumber
                                 ? 'border-red-400 focus:border-red-500 bg-red-50/10'
-                                : 'border-gray-200 focus:border-navy-900 bg-white'
+                                : 'border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-400 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100'
                             }`}
                           />
                           {(touchedStep1.contactNumber || submitAttemptedStep1) && errorsStep1.contactNumber && (
@@ -930,7 +930,20 @@ const AdminFamilyList = () => {
                         </div>
 
                         <div>
-                          <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1.5">
+                          <label className="text-xs font-bold text-navy-950 dark:text-slate-200 uppercase tracking-wide block mb-1.5">
+                            Guardian Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Father / Guardian Name"
+                            value={guardianName}
+                            onChange={(e) => setGuardianName(e.target.value)}
+                            className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-400 focus:outline-hidden transition-colors bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-navy-950 dark:text-slate-200 uppercase tracking-wide block mb-1.5">
                             Residential Address
                           </label>
                           <textarea
@@ -938,18 +951,18 @@ const AdminFamilyList = () => {
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
                             rows={3}
-                            className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors resize-none"
+                            className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-400 focus:outline-hidden transition-colors resize-none bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Navigation buttons */}
-                    <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
+                    <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-150 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/80 flex-shrink-0">
                       <button
                         type="button"
                         onClick={() => setIsAddModalOpen(false)}
-                        className="px-5 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs"
+                        className="px-5 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 font-bold hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors text-xs cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -1405,11 +1418,11 @@ const AdminFamilyList = () => {
                   </div>
 
                   {/* Step 2 Form Buttons */}
-                    <div className="flex items-center justify-between p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
+                    <div className="flex items-center justify-between p-4 px-6 border-t border-gray-150 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/80 flex-shrink-0">
                       <button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="px-4 py-2.5 border border-gray-200 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs flex items-center space-x-1 shadow-3xs"
+                        className="px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 font-bold hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors text-xs flex items-center space-x-1 shadow-3xs cursor-pointer"
                       >
                         <ChevronLeft className="h-4 w-4" />
                         <span>Back</span>
@@ -1419,7 +1432,7 @@ const AdminFamilyList = () => {
                         <button
                           type="button"
                           onClick={() => setIsAddModalOpen(false)}
-                          className="px-5 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs shadow-3xs"
+                          className="px-5 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 font-bold hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors text-xs shadow-3xs cursor-pointer"
                         >
                           Cancel
                         </button>

@@ -911,10 +911,10 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
         {/* Edit Family Info Modal */}
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 overflow-y-auto backdrop-blur-xs">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-lg w-full flex flex-col overflow-hidden max-h-[90vh] my-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-2xl max-w-lg w-full flex flex-col overflow-hidden max-h-[90vh] my-auto" onClick={(e) => e.stopPropagation()}>
               
               {/* Modal Header */}
-              <div className="bg-navy-900 text-white p-5 flex items-center justify-between flex-shrink-0">
+              <div className="bg-navy-900 dark:bg-slate-950 text-white p-5 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center space-x-2">
                   <Edit2 className="h-5 w-5 text-sky-400" />
                   <h3 className="text-base font-extrabold tracking-tight">Edit Family Details</h3>
@@ -922,7 +922,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -932,7 +932,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
               <form onSubmit={handleUpdateFamily} className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <div className="p-6 space-y-4 text-left overflow-y-auto flex-1">
                   <div>
-                    <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1">
+                    <label className="text-xs font-bold text-navy-950 dark:text-white uppercase tracking-wide block mb-1">
                       Family Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -940,22 +940,22 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                     value={familyName}
                     onChange={(e) => setFamilyName(e.target.value)}
                     required
-                    className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors"
+                    className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-navy-900 dark:focus:border-sky-500 focus:outline-hidden transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-navy-950 uppercase tracking-wide block mb-1">
+                  <label className="text-xs font-bold text-navy-950 dark:text-white uppercase tracking-wide block mb-1">
                     Guardian Name
                   </label>
                   <input
                     type="text"
                     value={guardianName}
                     onChange={(e) => setGuardianName(e.target.value)}
-                    className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors"
+                    className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-navy-900 dark:focus:border-sky-500 focus:outline-hidden transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block mb-1">
+                  <label className="text-xs font-bold text-navy-955 dark:text-white uppercase tracking-wide block mb-1">
                     Contact Number <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -963,60 +963,60 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                     value={contactNumber}
                     onChange={(e) => setContactNumber(e.target.value)}
                     required
-                    className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors"
+                    className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-navy-900 dark:focus:border-sky-500 focus:outline-hidden transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block mb-1">
+                  <label className="text-xs font-bold text-navy-955 dark:text-white uppercase tracking-wide block mb-1">
                     Alternate Contact
                   </label>
                   <input
                     type="text"
                     value={alternateContact}
                     onChange={(e) => setAlternateContact(e.target.value)}
-                    className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors"
+                    className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-navy-900 dark:focus:border-sky-500 focus:outline-hidden transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block mb-1">
+                  <label className="text-xs font-bold text-navy-955 dark:text-white uppercase tracking-wide block mb-1">
                     Residential Address
                   </label>
                   <input
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors"
+                    className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-navy-900 dark:focus:border-sky-500 focus:outline-hidden transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-navy-955 uppercase tracking-wide block mb-1">
+                  <label className="text-xs font-bold text-navy-955 dark:text-white uppercase tracking-wide block mb-1">
                     Admin Notes
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
-                    className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:border-navy-900 focus:outline-hidden transition-colors resize-none"
+                    className="w-full text-sm p-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:border-navy-900 dark:focus:border-sky-500 focus:outline-hidden transition-colors resize-none"
                   />
                 </div>
 
                 </div>
 
                 {/* Form Buttons */}
-                <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
+                <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-150 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/60 flex-shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-5 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs"
+                    className="px-5 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-300 font-bold hover:bg-gray-100 dark:hover:bg-slate-800 dark:hover:text-white rounded-xl transition-colors text-xs cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    disabled={updating}
-                    className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 flex items-center space-x-1"
+                    disabled={updatingFamily}
+                    className="px-6 py-2.5 bg-navy-900 hover:bg-navy-800 dark:bg-navy-700 dark:hover:bg-navy-600 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 flex items-center space-x-1.5 cursor-pointer"
                   >
-                    {updating && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    {updatingFamily && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                     <span>Save Changes</span>
                   </button>
                 </div>
@@ -1039,10 +1039,10 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
         {/* Pay as Family Modal */}
         {isPayModalOpen && (
           <div className="fixed inset-0 z-55 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 overflow-y-auto backdrop-blur-xs">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl max-w-xl w-full flex flex-col overflow-hidden max-h-[90vh] my-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-2xl max-w-xl w-full flex flex-col overflow-hidden max-h-[90vh] my-auto" onClick={(e) => e.stopPropagation()}>
               
               {/* Modal Header */}
-              <div className="bg-navy-900 text-white p-5 flex items-center justify-between flex-shrink-0">
+              <div className="bg-navy-900 dark:bg-slate-950 text-white p-5 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center space-x-2">
                   {payType === 'book' ? (
                     <BookOpen className="h-5 w-5 text-sky-400" />
@@ -1056,7 +1056,7 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                 <button
                   type="button"
                   onClick={() => setIsPayModalOpen(false)}
-                  className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -1069,14 +1069,14 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                     <div className="p-6 space-y-5 text-left overflow-y-auto flex-1">
                     
                     {/* Header info */}
-                    <div className="p-3.5 bg-slate-50 border border-gray-150 rounded-xl text-xs space-y-1">
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-gray-150 dark:border-slate-700 rounded-xl text-xs space-y-1">
                       <div className="flex justify-between">
-                        <span className="font-bold text-gray-550">Family Name:</span>
-                        <span className="font-extrabold text-navy-950">{family?.familyName}</span>
+                        <span className="font-bold text-gray-500 dark:text-slate-400">Family Name:</span>
+                        <span className="font-extrabold text-navy-950 dark:text-white">{family?.familyName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="font-bold text-gray-555">Idempotency Key:</span>
-                        <span className="text-[10px] font-mono text-gray-400">{idempotencyKey}</span>
+                        <span className="font-bold text-gray-500 dark:text-slate-400">Idempotency Key:</span>
+                        <span className="text-[10px] font-mono text-gray-400 dark:text-slate-400">{idempotencyKey}</span>
                       </div>
                     </div>
 
@@ -1208,10 +1208,10 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                     </div>
 
                     {/* Running Total & Submit */}
-                    <div className="flex items-center justify-between p-4 px-6 border-t border-gray-150 bg-gray-50 flex-shrink-0">
+                    <div className="flex items-center justify-between p-4 px-6 border-t border-gray-150 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/60 flex-shrink-0">
                       <div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Running Total (Selected)</span>
-                        <span className="text-lg font-black text-navy-955">
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider block">Running Total (Selected)</span>
+                        <span className="text-lg font-black text-navy-955 dark:text-white">
                           Rs. {
                             payType === 'fee'
                               ? (
@@ -1235,14 +1235,14 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
                         <button
                           type="button"
                           onClick={() => setIsPayModalOpen(false)}
-                          className="px-4 py-2.5 border border-gray-200 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors text-xs"
+                          className="px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-300 font-bold hover:bg-gray-100 dark:hover:bg-slate-800 dark:hover:text-white rounded-xl transition-colors text-xs cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={isPaying || (payType === 'fee' ? selectedFeeRecordIds.length === 0 : selectedBookFeeRecordIds.length === 0)}
-                          className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5"
+                          className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 dark:bg-navy-700 dark:hover:bg-navy-600 text-white font-bold rounded-xl transition-colors text-xs shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1.5 cursor-pointer"
                         >
                           {isPaying && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                           <span>Confirm Payment</span>
@@ -1327,11 +1327,11 @@ const FamilyDetailModal = ({ familyId, onClose, isFullPage = false }) => {
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs overflow-y-auto" onClick={onClose}>
       <div 
-        className="bg-white w-full max-w-6xl rounded-3xl shadow-2xl border border-gray-150 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in fade-in zoom-in-95 duration-250"
+        className="bg-white dark:bg-slate-900 w-full max-w-6xl rounded-3xl shadow-2xl border border-gray-150 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] my-auto animate-in fade-in zoom-in-95 duration-250"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-navy-900 text-white p-5 flex items-center justify-between flex-shrink-0">
+        <div className="bg-navy-900 dark:bg-slate-950 text-white p-5 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-3">
             <User className="h-5 w-5 text-sky-400" />
             <h3 className="text-lg font-extrabold tracking-tight">Family Profile Detail</h3>

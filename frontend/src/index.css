@@ -85,12 +85,30 @@
   background-color: #475569 !important; /* slate-600 */
 }
 
+.dark .bg-gray-50\/40,
 .dark .bg-gray-50\/50,
+.dark .bg-gray-50\/60,
+.dark .bg-gray-50\/70,
+.dark .bg-gray-50\/80,
+.dark .bg-gray-50\/90,
+.dark .bg-slate-50\/40,
 .dark .bg-slate-50\/50,
+.dark .bg-slate-50\/60,
 .dark .bg-slate-50\/70,
 .dark .bg-slate-50\/80,
+.dark .bg-slate-50\/90,
+.dark .bg-slate-100\/50,
 .dark .bg-slate-100\/75 {
-  background-color: rgba(15, 23, 42, 0.6) !important;
+  background-color: rgba(15, 23, 42, 0.75) !important;
+}
+
+.dark .bg-gray-200\/60,
+.dark .bg-gray-200\/70,
+.dark .bg-gray-200\/80,
+.dark .bg-slate-200\/60,
+.dark .bg-slate-200\/70,
+.dark .bg-slate-200\/80 {
+  background-color: #334155 !important;
 }
 
 /* Colored Background Tints in Dark Mode */
@@ -504,10 +522,228 @@ tbody tr:hover {
    MODALS, DIALOGS & POPUPS IN DARK MODE
    ========================================== */
 
+/* Backdrop dimming */
 .dark .bg-slate-900\/40,
-.dark .bg-slate-900\/60 {
+.dark .bg-slate-900\/60,
+.dark .bg-slate-900\/65,
+.dark .bg-slate-900\/70,
+.dark .bg-slate-900\/75,
+.dark .bg-navy-950\/60 {
   background-color: rgba(15, 23, 42, 0.85) !important;
   backdrop-filter: blur(4px);
+}
+
+/* Modal Frame / Main Popup Surface */
+.dark .fixed.inset-0 .bg-white,
+.dark .fixed.inset-0 .bg-surface,
+.dark [role="dialog"] .bg-white {
+  background-color: #1e293b !important; /* slate-800 */
+  border-color: #334155 !important; /* slate-700 */
+  color: #f8fafc !important;
+}
+
+/* Modal Headers, Footers & Internal Sub-containers */
+.dark .fixed.inset-0 .bg-gray-50,
+.dark .fixed.inset-0 .bg-gray-50\/50,
+.dark .fixed.inset-0 .bg-gray-50\/60,
+.dark .fixed.inset-0 .bg-gray-50\/70,
+.dark .fixed.inset-0 .bg-gray-50\/80,
+.dark .fixed.inset-0 .bg-gray-50\/90,
+.dark .fixed.inset-0 .bg-slate-50,
+.dark .fixed.inset-0 .bg-slate-50\/50,
+.dark .fixed.inset-0 .bg-slate-50\/60,
+.dark .fixed.inset-0 .bg-slate-50\/70,
+.dark .fixed.inset-0 .bg-slate-50\/80,
+.dark .fixed.inset-0 .bg-slate-50\/90,
+.dark .fixed.inset-0 .bg-slate-100,
+.dark .fixed.inset-0 .bg-gray-100,
+.dark [role="dialog"] .bg-gray-50,
+.dark [role="dialog"] .bg-gray-50\/80,
+.dark [role="dialog"] .bg-slate-50,
+.dark [role="dialog"] .bg-slate-50\/80 {
+  background-color: #0f172a !important; /* slate-900 */
+  border-color: #334155 !important;
+}
+
+/* Modal Toggle / Segmented Control Tracks (e.g. Account Provisioning Mode) */
+.dark .fixed.inset-0 .bg-gray-200\/70,
+.dark .fixed.inset-0 .bg-gray-200\/80,
+.dark .fixed.inset-0 .bg-gray-200,
+.dark .fixed.inset-0 .bg-slate-200,
+.dark .fixed.inset-0 .bg-slate-200\/70,
+.dark .fixed.inset-0 .bg-slate-100\/50,
+.dark [role="dialog"] .bg-gray-200\/70 {
+  background-color: #0b1120 !important; /* deep slate-950 track */
+  border: 1px solid #334155 !important;
+}
+
+/* Active Button in Segmented Toggles */
+.dark .fixed.inset-0 .bg-gray-200\/70 button.bg-white,
+.dark .fixed.inset-0 .bg-slate-200 button.bg-white,
+.dark .fixed.inset-0 [class*="bg-gray-200"] button.bg-white,
+.dark .fixed.inset-0 [class*="bg-slate-200"] button.bg-white {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border: 1px solid #475569 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .fixed.inset-0 .bg-gray-200\/70 button.bg-white svg,
+.dark .fixed.inset-0 [class*="bg-gray-200"] button.bg-white svg {
+  color: #38bdf8 !important; /* sky-400 */
+}
+
+/* Inactive Button in Segmented Toggles */
+.dark .fixed.inset-0 .bg-gray-200\/70 button.text-gray-500,
+.dark .fixed.inset-0 [class*="bg-gray-200"] button.text-gray-500,
+.dark .fixed.inset-0 [class*="bg-gray-200"] button.text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .fixed.inset-0 .bg-gray-200\/70 button.text-gray-500 svg,
+.dark .fixed.inset-0 [class*="bg-gray-200"] button.text-gray-500 svg {
+  color: #94a3b8 !important;
+}
+
+.dark .fixed.inset-0 .bg-gray-200\/70 button.text-gray-500:hover,
+.dark .fixed.inset-0 [class*="bg-gray-200"] button.text-gray-500:hover,
+.dark .fixed.inset-0 [class*="bg-gray-200"] button.text-slate-500:hover {
+  color: #ffffff !important;
+  background-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Cancel, Close, Back & Secondary Outlined Buttons in Popups */
+.dark .fixed.inset-0 button.border-gray-200,
+.dark .fixed.inset-0 button.border-gray-300,
+.dark .fixed.inset-0 button.border-slate-200,
+.dark .fixed.inset-0 button.border-slate-300,
+.dark .fixed.inset-0 button.text-gray-500:not(.bg-navy-900):not(.bg-blue-600):not(.bg-red-600):not(.bg-emerald-600),
+.dark .fixed.inset-0 button.text-gray-600:not(.bg-navy-900):not(.bg-blue-600):not(.bg-red-600):not(.bg-emerald-600),
+.dark .fixed.inset-0 button.text-gray-700:not(.bg-navy-900):not(.bg-blue-600):not(.bg-red-600):not(.bg-emerald-600),
+.dark .fixed.inset-0 button.text-slate-600:not(.bg-navy-900):not(.bg-blue-600):not(.bg-red-600):not(.bg-emerald-600),
+.dark .fixed.inset-0 button.text-slate-700:not(.bg-navy-900):not(.bg-blue-600):not(.bg-red-600):not(.bg-emerald-600),
+.dark [role="dialog"] button.border-gray-200,
+.dark [role="dialog"] button.text-gray-600 {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important; /* crisp high contrast slate-200 */
+  border: 1px solid #475569 !important; /* clearly visible slate-600 border */
+}
+
+.dark .fixed.inset-0 button.border-gray-200:hover,
+.dark .fixed.inset-0 button.border-gray-300:hover,
+.dark .fixed.inset-0 button.border-slate-200:hover,
+.dark .fixed.inset-0 button.border-slate-300:hover,
+.dark .fixed.inset-0 button.text-gray-500:hover,
+.dark .fixed.inset-0 button.text-gray-600:hover,
+.dark .fixed.inset-0 button.text-gray-700:hover,
+.dark .fixed.inset-0 button.text-slate-600:hover,
+.dark .fixed.inset-0 button.text-slate-700:hover,
+.dark [role="dialog"] button.border-gray-200:hover,
+.dark [role="dialog"] button.text-gray-600:hover {
+  background-color: #334155 !important; /* slate-700 */
+  color: #ffffff !important;
+  border-color: #64748b !important;
+}
+
+/* Modal Close Icon Buttons (X icon) */
+.dark .fixed.inset-0 button.text-gray-400,
+.dark .fixed.inset-0 button.text-slate-400,
+.dark [role="dialog"] button.text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+.dark .fixed.inset-0 button.text-gray-400:hover,
+.dark .fixed.inset-0 button.text-slate-400:hover,
+.dark [role="dialog"] button.text-gray-400:hover {
+  color: #ffffff !important;
+  background-color: #334155 !important;
+}
+
+/* Modal Lines, Borders & Dividers */
+.dark .fixed.inset-0 .border-gray-100,
+.dark .fixed.inset-0 .border-gray-150,
+.dark .fixed.inset-0 .border-gray-200,
+.dark .fixed.inset-0 .border-gray-200\/80,
+.dark .fixed.inset-0 .border-gray-300,
+.dark .fixed.inset-0 .border-slate-100,
+.dark .fixed.inset-0 .border-slate-150,
+.dark .fixed.inset-0 .border-slate-200,
+.dark .fixed.inset-0 .border-slate-300,
+.dark .fixed.inset-0 .border-t,
+.dark .fixed.inset-0 .border-b,
+.dark [role="dialog"] .border-gray-100,
+.dark [role="dialog"] .border-t,
+.dark [role="dialog"] .border-b {
+  border-color: #334155 !important; /* slate-700 */
+}
+
+/* Modal Form Inputs, Textareas & Selects */
+.dark .fixed.inset-0 input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),
+.dark .fixed.inset-0 select,
+.dark .fixed.inset-0 textarea,
+.dark [role="dialog"] input:not([type="checkbox"]):not([type="radio"]) {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+.dark .fixed.inset-0 input:focus,
+.dark .fixed.inset-0 select:focus,
+.dark .fixed.inset-0 textarea:focus,
+.dark [role="dialog"] input:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+}
+
+.dark .fixed.inset-0 input::placeholder,
+.dark .fixed.inset-0 textarea::placeholder,
+.dark [role="dialog"] input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+/* Modal Labels & Supporting Text */
+.dark .fixed.inset-0 label,
+.dark [role="dialog"] label {
+  color: #e2e8f0 !important;
+}
+
+.dark .fixed.inset-0 h2,
+.dark .fixed.inset-0 h3,
+.dark .fixed.inset-0 h4,
+.dark [role="dialog"] h2,
+.dark [role="dialog"] h3 {
+  color: #f8fafc !important;
+}
+
+.dark .fixed.inset-0 p.text-gray-500,
+.dark .fixed.inset-0 p.text-slate-500,
+.dark .fixed.inset-0 span.text-gray-400,
+.dark .fixed.inset-0 span.text-slate-400,
+.dark .fixed.inset-0 .text-xxs {
+  color: #94a3b8 !important;
+}
+
+/* Input Icon Container in Modals */
+.dark .fixed.inset-0 .pointer-events-none.text-gray-400,
+.dark .fixed.inset-0 .pointer-events-none .text-gray-400,
+.dark [role="dialog"] .pointer-events-none.text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+/* Primary Action Buttons in Popups */
+.dark .fixed.inset-0 button.bg-navy-900,
+.dark .fixed.inset-0 button.bg-\[\#00215E\],
+.dark [role="dialog"] button.bg-navy-900 {
+  background-color: #2563eb !important; /* blue-600 */
+  color: #ffffff !important;
+  border-color: rgba(147, 197, 253, 0.3) !important;
+}
+
+.dark .fixed.inset-0 button.bg-navy-900:hover,
+.dark .fixed.inset-0 button.bg-\[\#00215E\]:hover,
+.dark [role="dialog"] button.bg-navy-900:hover {
+  background-color: #1d4ed8 !important; /* blue-700 */
 }
 
 /* Light & Dark Theme Hover Consistency Overrides */

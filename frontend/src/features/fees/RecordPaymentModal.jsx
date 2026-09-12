@@ -85,10 +85,10 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-gray-150 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Header */}
-        <div className="relative bg-navy-900 px-6 py-5 text-white flex justify-between items-center flex-shrink-0">
+        <div className="relative bg-navy-900 dark:bg-slate-950 px-6 py-5 text-white flex justify-between items-center flex-shrink-0">
           <div className="flex items-center space-x-2">
             <Receipt className="h-5 w-5 text-sky-400" />
             <div>
@@ -104,7 +104,7 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white focus:outline-none"
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white focus:outline-none cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -115,34 +115,34 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
           <div className="p-6 space-y-6 overflow-y-auto flex-1">
           
           {/* Outstanding Balance Banner */}
-          <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-4 flex justify-between items-center">
+          <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700 rounded-xl p-4 flex justify-between items-center">
             <div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Remaining Balance</span>
-              <p className="text-2xl font-black text-rose-600 mt-0.5">Rs. {remainingBalance.toLocaleString()}</p>
+              <span className="text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Remaining Balance</span>
+              <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-0.5">Rs. {remainingBalance.toLocaleString()}</p>
             </div>
-            <div className="text-right text-xs text-gray-500 font-semibold space-y-1">
-              <div>Total Bill: <span className="text-navy-950 font-bold">Rs. {amountDue.toLocaleString()}</span></div>
-              <div>Collected So Far: <span className="text-emerald-600 font-bold">Rs. {amountPaid.toLocaleString()}</span></div>
+            <div className="text-right text-xs text-gray-500 dark:text-slate-400 font-semibold space-y-1">
+              <div>Total Bill: <span className="text-navy-950 dark:text-white font-bold">Rs. {amountDue.toLocaleString()}</span></div>
+              <div>Collected So Far: <span className="text-emerald-600 dark:text-emerald-400 font-bold">Rs. {amountPaid.toLocaleString()}</span></div>
             </div>
           </div>
 
           {/* Payment Option Cards */}
           <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Select Collected Amount</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Select Collected Amount</label>
             <div className={`grid grid-cols-1 ${feeRecord.type === 'admission' || feeRecord.type === 'one_time' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-3`}>
               
               {/* Full Payment */}
               <button
                 type="button"
                 onClick={() => setSelectedOption('full')}
-                className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 ${
+                className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                   selectedOption === 'full'
-                    ? 'border-navy-primary bg-navy-50/40 ring-2 ring-navy-primary/20'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-navy-primary dark:border-sky-500 bg-navy-50/40 dark:bg-sky-950/40 ring-2 ring-navy-primary/20 dark:ring-sky-500/20'
+                    : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800/70'
                 }`}
               >
-                <span className="text-xs font-bold text-navy-950">Full Payment</span>
-                <span className="text-sm font-black text-navy-primary mt-2">Rs. {remainingBalance.toLocaleString()}</span>
+                <span className="text-xs font-bold text-navy-950 dark:text-white">Full Payment</span>
+                <span className="text-sm font-black text-navy-primary dark:text-sky-400 mt-2">Rs. {remainingBalance.toLocaleString()}</span>
               </button>
 
               {/* Half Payment */}
@@ -150,17 +150,17 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
                 <button
                   type="button"
                   onClick={() => setSelectedOption('half')}
-                  className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 ${
+                  className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                     selectedOption === 'half'
-                      ? 'border-navy-primary bg-navy-50/40 ring-2 ring-navy-primary/20'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                      ? 'border-navy-primary dark:border-sky-500 bg-navy-50/40 dark:bg-sky-950/40 ring-2 ring-navy-primary/20 dark:ring-sky-500/20'
+                      : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800/70'
                   }`}
                 >
                   <div>
-                    <span className="text-xs font-bold text-navy-950">Half Payment</span>
-                    <p className="text-[9px] text-gray-400 font-semibold mt-0.5">(50% of original bill)</p>
+                    <span className="text-xs font-bold text-navy-950 dark:text-white">Half Payment</span>
+                    <p className="text-[9px] text-gray-400 dark:text-slate-400 font-semibold mt-0.5">(50% of original bill)</p>
                   </div>
-                  <span className="text-sm font-black text-navy-primary mt-2">Rs. {halfAmount.toLocaleString()}</span>
+                  <span className="text-sm font-black text-navy-primary dark:text-sky-400 mt-2">Rs. {halfAmount.toLocaleString()}</span>
                 </button>
               )}
 
@@ -168,14 +168,14 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
               <button
                 type="button"
                 onClick={() => setSelectedOption('custom')}
-                className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 ${
+                className={`p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                   selectedOption === 'custom'
-                    ? 'border-navy-primary bg-navy-50/40 ring-2 ring-navy-primary/20'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-navy-primary dark:border-sky-500 bg-navy-50/40 dark:bg-sky-950/40 ring-2 ring-navy-primary/20 dark:ring-sky-500/20'
+                    : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 bg-white dark:bg-slate-800/70'
                 }`}
               >
-                <span className="text-xs font-bold text-navy-950">Custom Amount</span>
-                <span className="text-xs text-slate-500 font-bold mt-2">Enter manually</span>
+                <span className="text-xs font-bold text-navy-950 dark:text-white">Custom Amount</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-bold mt-2">Enter manually</span>
               </button>
 
             </div>
@@ -184,7 +184,7 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
           {/* Conditional Custom Amount Input */}
           {selectedOption === 'custom' && (
             <div className="space-y-1.5 animate-fadeIn">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Custom Amount Collected (Rs.)</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Custom Amount Collected (Rs.)</label>
               <input
                 type="number"
                 step="any"
@@ -192,11 +192,11 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
                 placeholder="Enter exact amount collected"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-primary/20 focus:border-navy-primary"
+                className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-primary/20 focus:border-navy-primary"
                 required
               />
               {parseFloat(customAmount) > remainingBalance && (
-                <div className="flex items-center space-x-1.5 text-amber-600 text-xxs font-medium bg-amber-50 p-2 rounded-lg border border-amber-100">
+                <div className="flex items-center space-x-1.5 text-amber-600 dark:text-amber-400 text-xxs font-medium bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-100 dark:border-amber-900/50">
                   <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
                   <span>Amount exceeds remaining balance. Capped at Rs. {remainingBalance}.</span>
                 </div>
@@ -206,35 +206,35 @@ const RecordPaymentModal = ({ isOpen, feeRecord, studentName, onSuccess, onClose
 
           {/* Method Selection */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Payment Method</label>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Payment Method</label>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-primary/20 focus:border-navy-primary font-semibold"
+              className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 dark:text-white border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-navy-primary/20 focus:border-navy-primary font-semibold"
               required
             >
-              <option value="cash">Cash</option>
-              <option value="bank_transfer">Bank Transfer</option>
-              <option value="card">Card (Manual Swipe)</option>
-              <option value="other">Other</option>
+              <option value="cash" className="dark:bg-slate-800">Cash</option>
+              <option value="bank_transfer" className="dark:bg-slate-800">Bank Transfer</option>
+              <option value="card" className="dark:bg-slate-800">Card (Manual Swipe)</option>
+              <option value="other" className="dark:bg-slate-800">Other</option>
             </select>
           </div>
 
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 px-6 border-t border-slate-100 bg-slate-50 flex justify-end space-x-3 flex-shrink-0">
+          <div className="p-4 px-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex justify-end space-x-3 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors"
+              className="px-4 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 dark:hover:text-white transition-colors cursor-pointer"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-2 disabled:opacity-40 disabled:hover:opacity-40"
+              className="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 dark:bg-navy-700 dark:hover:bg-navy-600 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-2 disabled:opacity-40 disabled:hover:opacity-40 cursor-pointer"
               disabled={isConfirmDisabled}
             >
               {loading ? (

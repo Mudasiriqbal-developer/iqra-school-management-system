@@ -1091,40 +1091,40 @@ const AdminStudents = () => {
       {/* Delete Confirmation Modal */}
       {isDeleteConfirmOpen && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 flex-shrink-0">
-              <div className="flex items-center space-x-3 text-amber-600">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
+              <div className="flex items-center space-x-3 text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="h-6 w-6" />
-                <h3 className="text-lg font-bold text-navy-950">Confirm Deactivation</h3>
+                <h3 className="text-lg font-bold text-navy-950 dark:text-slate-100">Confirm Deactivation</h3>
               </div>
               <button
                 onClick={() => {
                   setIsDeleteConfirmOpen(false);
                   setStudentToDelete(null);
                 }}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="p-6 overflow-y-auto flex-1">
-              <p className="text-sm text-gray-500">
-                Are you sure you want to deactivate <span className="font-bold text-navy-900">{studentToDelete?.fullName}</span>? This can be reversed by an admin later.
+              <p className="text-sm text-gray-500 dark:text-slate-300">
+                Are you sure you want to deactivate <span className="font-bold text-navy-900 dark:text-sky-400">{studentToDelete?.fullName}</span>? This can be reversed by an admin later.
               </p>
             </div>
-            <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+            <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/80 flex-shrink-0">
               <button
                 onClick={() => {
                   setIsDeleteConfirmOpen(false);
                   setStudentToDelete(null);
                 }}
-                className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-colors"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-colors cursor-pointer"
               >
                 Deactivate
               </button>
@@ -1136,18 +1136,18 @@ const AdminStudents = () => {
       {/* Reset Student Password Modal */}
       {isResetModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 flex-shrink-0">
-              <div className="flex items-center space-x-3 text-navy-900">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
+              <div className="flex items-center space-x-3 text-navy-900 dark:text-sky-400">
                 <Key className="h-6 w-6" />
-                <h3 className="text-lg font-bold text-navy-950">Reset Student Password</h3>
+                <h3 className="text-lg font-bold text-navy-950 dark:text-slate-100">Reset Student Password</h3>
               </div>
               <button
                 onClick={() => {
                   setIsResetModalOpen(false);
                   setStudentToResetPassword(null);
                 }}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1155,12 +1155,12 @@ const AdminStudents = () => {
             
             <form onSubmit={handleResetPasswordSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                <p className="text-sm text-gray-500">
-                  Set a new password for <span className="font-bold text-navy-900">{studentToResetPassword?.fullName}</span> (Roll No: {studentToResetPassword?.registrationNumber}).
+                <p className="text-sm text-gray-500 dark:text-slate-300">
+                  Set a new password for <span className="font-bold text-navy-900 dark:text-sky-400">{studentToResetPassword?.fullName}</span> (Roll No: {studentToResetPassword?.registrationNumber}).
                 </p>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                     New Password
                   </label>
                   <input
@@ -1168,7 +1168,7 @@ const AdminStudents = () => {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="block w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 bg-gray-50 focus:bg-white transition-all font-medium"
+                    className="block w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-700 dark:focus:ring-sky-400 focus:border-navy-700 dark:focus:border-sky-400 bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-900 transition-all font-medium"
                     required
                   />
                 </div>
@@ -1177,21 +1177,21 @@ const AdminStudents = () => {
                   <button
                     type="button"
                     onClick={() => setNewPassword('student123')}
-                    className="text-xs font-semibold text-navy-800 hover:text-navy-700 transition-colors"
+                    className="text-xs font-semibold text-navy-800 dark:text-sky-400 hover:text-navy-700 dark:hover:text-sky-300 transition-colors cursor-pointer"
                   >
                     Reset to Default (student123)
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+              <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/80 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => {
                     setIsResetModalOpen(false);
                     setStudentToResetPassword(null);
                   }}
-                  className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-100 transition-colors"
+                  className="px-4 py-2 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                   disabled={isResettingPassword}
                 >
                   Cancel
@@ -1199,7 +1199,7 @@ const AdminStudents = () => {
                 <button
                   type="submit"
                   disabled={isResettingPassword}
-                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center"
+                  className="px-4 py-2 bg-navy-900 dark:bg-blue-600 hover:bg-navy-800 dark:hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center cursor-pointer"
                 >
                   {isResettingPassword ? 'Resetting...' : 'Reset Password'}
                 </button>
@@ -1212,34 +1212,34 @@ const AdminStudents = () => {
       {/* Receipt Download Confirmation Modal */}
       {isReceiptConfirmOpen && (
         <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 flex-shrink-0">
-              <div className="flex items-center space-x-3 text-navy-900">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
+              <div className="flex items-center space-x-3 text-navy-900 dark:text-sky-400">
                 <BookOpen className="h-6 w-6" />
-                <h3 className="text-lg font-bold text-navy-950">Download Receipt?</h3>
+                <h3 className="text-lg font-bold text-navy-950 dark:text-slate-100">Download Receipt?</h3>
               </div>
               <button
                 onClick={() => {
                   setIsReceiptConfirmOpen(false);
                   setCreatedStudentForReceipt(null);
                 }}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="p-6 overflow-y-auto flex-1">
-              <p className="text-sm text-gray-500">
-                Do you want to download the admission receipt for <span className="font-bold text-navy-900">{createdStudentForReceipt?.fullName}</span>?
+              <p className="text-sm text-gray-500 dark:text-slate-300">
+                Do you want to download the admission receipt for <span className="font-bold text-navy-900 dark:text-sky-400">{createdStudentForReceipt?.fullName}</span>?
               </p>
             </div>
-            <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 bg-gray-50 flex-shrink-0">
+            <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/80 flex-shrink-0">
               <button
                 onClick={() => {
                   setIsReceiptConfirmOpen(false);
                   setCreatedStudentForReceipt(null);
                 }}
-                className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 No
               </button>

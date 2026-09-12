@@ -171,10 +171,10 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Header */}
-        <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
+        <div className="bg-navy-900 dark:bg-slate-950 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
           <div>
             <h2 className="text-base font-bold">Assign Class & Subject</h2>
             <p className="text-[10px] text-slate-300 font-semibold uppercase mt-0.5">
@@ -195,7 +195,7 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
           <div className="p-6 overflow-y-auto flex-1 space-y-5">
           {/* Class Select */}
           <div className="flex flex-col">
-            <label htmlFor="classId" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
+            <label htmlFor="classId" className="text-xs font-bold text-navy-950 dark:text-slate-200 uppercase mb-1.5">
               Class <span className="text-red-500">*</span>
             </label>
             <select
@@ -204,8 +204,8 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
               value={formData.classId}
               onChange={handleChange}
               disabled={loadingClasses}
-              className={`w-full px-4 py-2 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
-                errors.classId ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-navy-700'
+              className={`w-full px-4 py-2 border rounded-xl bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
+                errors.classId ? 'border-red-400 focus:border-red-500' : 'border-gray-200 dark:border-slate-700 focus:border-navy-700'
               }`}
             >
               <option value="">-- Select Class --</option>
@@ -222,7 +222,7 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
           {/* Section Select */}
           <div className="flex flex-col">
-            <label htmlFor="sectionId" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
+            <label htmlFor="sectionId" className="text-xs font-bold text-navy-950 dark:text-slate-200 uppercase mb-1.5">
               Section <span className="text-red-500">*</span>
             </label>
             <select
@@ -231,9 +231,9 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
               value={formData.sectionId}
               onChange={handleChange}
               disabled={!formData.classId || loadingSections}
-              className={`w-full px-4 py-2 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
-                errors.sectionId ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-navy-700'
-              } disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-2 border rounded-xl bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
+                errors.sectionId ? 'border-red-400 focus:border-red-500' : 'border-gray-200 dark:border-slate-700 focus:border-navy-700'
+              } disabled:bg-gray-50 dark:disabled:bg-slate-800/40 disabled:text-gray-400 dark:disabled:text-slate-600 disabled:cursor-not-allowed`}
             >
               <option value="">
                 {!formData.classId ? 'Select a class first' : '-- Select Section --'}
@@ -251,7 +251,7 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
 
           {/* Subject Select */}
           <div className="flex flex-col">
-            <label htmlFor="subjectId" className="text-xs font-bold text-navy-950 uppercase mb-1.5">
+            <label htmlFor="subjectId" className="text-xs font-bold text-navy-950 dark:text-slate-200 uppercase mb-1.5">
               Subject <span className="text-red-500">*</span>
             </label>
             <select
@@ -260,9 +260,9 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
               value={formData.subjectId}
               onChange={handleChange}
               disabled={!formData.classId || loadingSubjects}
-              className={`w-full px-4 py-2 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
-                errors.subjectId ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-navy-700'
-              } disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-2 border rounded-xl bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-navy-700/50 text-sm ${
+                errors.subjectId ? 'border-red-400 focus:border-red-500' : 'border-gray-200 dark:border-slate-700 focus:border-navy-700'
+              } disabled:bg-gray-50 dark:disabled:bg-slate-800/40 disabled:text-gray-400 dark:disabled:text-slate-600 disabled:cursor-not-allowed`}
             >
               <option value="">
                 {!formData.classId ? 'Select a class first' : '-- Select Subject --'}
@@ -281,18 +281,18 @@ const AssignmentFormModal = ({ isOpen, onClose, teacher, onSuccess }) => {
           </div>
 
           {/* Footer Actions (Pinned at bottom) */}
-          <div className="px-6 py-4 border-t border-gray-100 bg-slate-50 flex justify-end space-x-3 flex-shrink-0">
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex justify-end space-x-3 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors focus:outline-none cursor-pointer"
+              className="px-4 py-2 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-gray-50 dark:hover:bg-slate-800 dark:hover:text-white transition-colors focus:outline-none cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="bg-navy-900 hover:bg-navy-800 text-white font-bold py-2 px-4 rounded-xl flex items-center transition-colors text-sm shadow-sm focus:outline-none disabled:opacity-50 cursor-pointer"
+              className="bg-navy-900 hover:bg-navy-800 dark:bg-navy-700 dark:hover:bg-navy-600 text-white font-bold py-2 px-4 rounded-xl flex items-center transition-colors text-sm shadow-sm focus:outline-none disabled:opacity-50 cursor-pointer"
             >
               {submitting ? (
                 <>

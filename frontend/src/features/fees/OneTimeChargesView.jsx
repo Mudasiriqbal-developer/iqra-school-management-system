@@ -669,7 +669,7 @@ const OneTimeChargesView = () => {
                 <button
                   type="button"
                   onClick={() => setEditingRecord(null)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 dark:hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

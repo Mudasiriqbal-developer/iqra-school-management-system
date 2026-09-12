@@ -127,14 +127,14 @@ const AdminFormModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white text-left shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] my-auto">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white dark:bg-slate-800 text-left shadow-2xl border border-gray-100 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 p-6 pb-4 flex-shrink-0">
-          <h3 className="text-lg font-bold text-navy-950">Invite New Administrator</h3>
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-700 p-6 pb-4 flex-shrink-0">
+          <h3 className="text-lg font-bold text-navy-950 dark:text-slate-100">Invite New Administrator</h3>
           <button 
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg p-1 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -143,15 +143,15 @@ const AdminFormModal = ({ isOpen, onClose }) => {
         {/* If activation link modal is shown after online invite */}
         {activationLinkModal ? (
           <div className="p-6 space-y-5">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
-              <h4 className="text-sm font-extrabold text-emerald-900">Administrator Account Created</h4>
-              <p className="text-xs text-emerald-700 mt-1">
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-4 text-center">
+              <h4 className="text-sm font-extrabold text-emerald-900 dark:text-emerald-300">Administrator Account Created</h4>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">
                 An activation link was created for <span className="font-bold">{activationLinkModal.email}</span>.
               </p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Activation Link (For Direct Sharing)
               </label>
               <div className="flex items-center space-x-2">
@@ -159,18 +159,18 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                   type="text"
                   readOnly
                   value={activationLinkModal.activationLink}
-                  className="block w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono text-gray-700 select-all"
+                  className="block w-full px-3 py-2 text-xs bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl font-mono text-gray-700 dark:text-slate-200 select-all"
                 />
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-colors flex-shrink-0 cursor-pointer"
+                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-colors flex-shrink-0 cursor-pointer"
                 >
                   {copied ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
-              <p className="text-xxs text-gray-400 mt-1.5 font-medium">
+              <p className="text-xxs text-gray-400 dark:text-slate-400 mt-1.5 font-medium">
                 The administrator can open this link in any browser to activate their account and set their password.
               </p>
             </div>
@@ -179,7 +179,7 @@ const AdminFormModal = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="py-2.5 px-6 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition-colors cursor-pointer"
+                className="py-2.5 px-6 rounded-xl bg-navy-900 hover:bg-navy-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer"
               >
                 Done
               </button>
@@ -191,21 +191,21 @@ const AdminFormModal = ({ isOpen, onClose }) => {
             <div className="p-6 space-y-4 overflow-y-auto flex-1">
               
               {/* Provisioning Mode Toggle */}
-              <div className="bg-slate-50 border border-gray-200/80 p-4 rounded-xl space-y-2">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <div className="bg-slate-50 dark:bg-slate-900/60 border border-gray-200/80 dark:border-slate-700 p-4 rounded-xl space-y-2">
+                <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                   Account Provisioning Mode
                 </label>
-                <div className="grid grid-cols-2 gap-2 bg-gray-200/70 p-1 rounded-xl">
+                <div className="grid grid-cols-2 gap-2 bg-gray-200/70 dark:bg-slate-950 p-1 rounded-xl border border-transparent dark:border-slate-800">
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, requireVerification: false }))}
                     className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       !formData.requireVerification
-                        ? 'bg-white text-navy-950 shadow-xs'
-                        : 'text-gray-500 hover:text-gray-800'
+                        ? 'bg-white text-navy-950 dark:bg-slate-800 dark:text-white shadow-xs border border-transparent dark:border-slate-700'
+                        : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'
                     }`}
                   >
-                    <WifiOff className="h-3.5 w-3.5 text-navy-800" />
+                    <WifiOff className={`h-3.5 w-3.5 ${!formData.requireVerification ? 'text-navy-800 dark:text-sky-400' : 'text-gray-400 dark:text-slate-400'}`} />
                     <span>Direct Password (Offline)</span>
                   </button>
 
@@ -214,15 +214,15 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                     onClick={() => setFormData(prev => ({ ...prev, requireVerification: true }))}
                     className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       formData.requireVerification
-                        ? 'bg-white text-navy-950 shadow-xs'
-                        : 'text-gray-500 hover:text-gray-800'
+                        ? 'bg-white text-navy-950 dark:bg-slate-800 dark:text-white shadow-xs border border-transparent dark:border-slate-700'
+                        : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'
                     }`}
                   >
-                    <Wifi className="h-3.5 w-3.5 text-navy-800" />
+                    <Wifi className={`h-3.5 w-3.5 ${formData.requireVerification ? 'text-navy-800 dark:text-sky-400' : 'text-gray-400 dark:text-slate-400'}`} />
                     <span>Invite Link (Online)</span>
                   </button>
                 </div>
-                <p className="text-xxs text-gray-500">
+                <p className="text-xxs text-gray-500 dark:text-slate-400">
                   {!formData.requireVerification
                     ? 'Create admin immediately with a predefined password.'
                     : 'Generate an activation link for the admin to set their own password.'}
@@ -230,7 +230,7 @@ const AdminFormModal = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Full Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative rounded-xl shadow-xs">
@@ -243,8 +243,8 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="e.g. Ahmed Ali"
-                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all ${
-                      errors.name ? 'border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-navy-900'
+                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 ${
+                      errors.name ? 'border-red-400 bg-red-50/20' : 'border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-400'
                     }`}
                   />
                 </div>
@@ -252,11 +252,11 @@ const AdminFormModal = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Email Address <span className="text-red-500">*</span>
                 </label>
                 <div className="relative rounded-xl shadow-xs">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-slate-400">
                     <Mail className="h-4 w-4" />
                   </div>
                   <input
@@ -265,8 +265,8 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="e.g. admin@ihass.edu"
-                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all ${
-                      errors.email ? 'border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-navy-900'
+                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 ${
+                      errors.email ? 'border-red-400 bg-red-50/20' : 'border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-400'
                     }`}
                   />
                 </div>
@@ -277,20 +277,20 @@ const AdminFormModal = ({ isOpen, onClose }) => {
               {!formData.requireVerification && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                       Initial Password <span className="text-red-500">*</span>
                     </label>
                     <button
                       type="button"
                       onClick={handleGeneratePassword}
-                      className="text-navy-900 hover:text-navy-800 text-xs font-bold flex items-center space-x-1 hover:underline cursor-pointer"
+                      className="text-navy-900 dark:text-sky-400 hover:text-navy-800 dark:hover:text-sky-300 text-xs font-bold flex items-center space-x-1 hover:underline cursor-pointer"
                     >
                       <Sparkles className="h-3 w-3 text-amber-500" />
                       <span>Generate Password</span>
                     </button>
                   </div>
                   <div className="relative rounded-xl shadow-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-slate-400">
                       <Key className="h-4 w-4" />
                     </div>
                     <input
@@ -299,29 +299,29 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Minimum 8 characters"
-                      className={`block w-full pl-9 pr-10 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all ${
-                        errors.password ? 'border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-navy-900'
+                      className={`block w-full pl-9 pr-10 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 ${
+                        errors.password ? 'border-red-400 bg-red-50/20' : 'border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-400'
                       }`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                   {errors.password && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.password}</p>}
-                  <p className="text-xxs text-gray-400 mt-1">Must be at least 8 characters. Administrator can change it after login.</p>
+                  <p className="text-xxs text-gray-400 dark:text-slate-400 mt-1">Must be at least 8 characters. Administrator can change it after login.</p>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                  Phone Number <span className="text-gray-400 font-normal normal-case">(optional)</span>
+                <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                  Phone Number <span className="text-gray-400 dark:text-slate-400 font-normal normal-case">(optional)</span>
                 </label>
                 <div className="relative rounded-xl shadow-xs">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-slate-400">
                     <Phone className="h-4 w-4" />
                   </div>
                   <input
@@ -330,24 +330,24 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="e.g. 03001234567"
-                    className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-hidden focus:border-navy-900 text-sm transition-all"
+                    className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-xl focus:outline-hidden focus:border-navy-900 dark:focus:border-sky-400 text-sm transition-all"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex space-x-3 justify-end p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
+            <div className="flex space-x-3 justify-end p-4 px-6 border-t border-gray-100 dark:border-slate-700 bg-gray-50/80 dark:bg-slate-900/80 flex-shrink-0">
               <button
                 type="button"
                 onClick={handleClose}
-                className="py-2.5 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                className="py-2.5 px-4 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="py-2.5 px-5 rounded-xl bg-navy-900 text-white hover:bg-navy-800 text-xs font-extrabold shadow-md flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="py-2.5 px-5 rounded-xl bg-navy-900 dark:bg-blue-600 text-white hover:bg-navy-800 dark:hover:bg-blue-500 text-xs font-extrabold shadow-md flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? (
                   <>

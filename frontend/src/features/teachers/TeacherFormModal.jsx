@@ -197,7 +197,7 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+      <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh] my-auto">
         
         {/* Modal Header */}
         <div className="bg-navy-900 px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
@@ -221,34 +221,34 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
         {/* If activation link modal is shown after online invite */}
         {activationLinkModal ? (
           <div className="p-6 space-y-5">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
-              <h4 className="text-sm font-extrabold text-emerald-900">Teacher Account Created</h4>
-              <p className="text-xs text-emerald-700 mt-1">
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-4 text-center">
+              <h4 className="text-sm font-extrabold text-emerald-900 dark:text-emerald-300">Teacher Account Created</h4>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">
                 An activation link was created for <span className="font-bold">{activationLinkModal.email}</span>.
               </p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Activation Link (For Offline or Direct Sharing)
+              <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                Activation Link (For Direct Sharing)
               </label>
               <div className="flex items-center space-x-2">
                 <input
                   type="text"
                   readOnly
                   value={activationLinkModal.activationLink}
-                  className="block w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono text-gray-700 select-all"
+                  className="block w-full px-3 py-2 text-xs bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl font-mono text-gray-700 dark:text-slate-200 select-all"
                 />
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-colors flex-shrink-0"
+                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-colors flex-shrink-0 cursor-pointer"
                 >
                   {copied ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
-              <p className="text-xxs text-gray-400 mt-1.5 font-medium">
+              <p className="text-xxs text-gray-400 dark:text-slate-400 mt-1.5 font-medium">
                 The teacher can open this link in any browser to activate their account and set their password.
               </p>
             </div>
@@ -256,35 +256,35 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
             <div className="pt-2 flex justify-end">
               <button
                 type="button"
-                onClick={onClose}
-                className="py-2.5 px-6 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition-colors"
+                onClick={handleClose}
+                className="py-2.5 px-6 rounded-xl bg-navy-900 hover:bg-navy-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-xs font-bold transition-colors cursor-pointer"
               >
                 Done
               </button>
             </div>
           </div>
         ) : (
-          /* Modal Body / Form */
+          /* Main Form */
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="p-6 overflow-y-auto flex-1 space-y-5">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
               
               {/* Provisioning Mode Toggle for new teachers */}
               {!teacher && (
-                <div className="bg-slate-50 border border-gray-200/80 p-4 rounded-xl space-y-2">
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <div className="bg-slate-50 dark:bg-slate-900/60 border border-gray-200/80 dark:border-slate-700 p-4 rounded-xl space-y-2">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
                     Account Provisioning Mode
                   </label>
-                  <div className="grid grid-cols-2 gap-2 bg-gray-200/70 p-1 rounded-xl">
+                  <div className="grid grid-cols-2 gap-2 bg-gray-200/70 dark:bg-slate-950 p-1 rounded-xl border border-transparent dark:border-slate-800">
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, requireVerification: false }))}
                       className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
                         !formData.requireVerification
-                          ? 'bg-white text-navy-950 shadow-xs'
-                          : 'text-gray-500 hover:text-gray-800'
+                          ? 'bg-white text-navy-950 dark:bg-slate-800 dark:text-white shadow-xs border border-transparent dark:border-slate-700'
+                          : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'
                       }`}
                     >
-                      <WifiOff className="h-3.5 w-3.5 text-navy-800" />
+                      <WifiOff className={`h-3.5 w-3.5 ${!formData.requireVerification ? 'text-navy-800 dark:text-sky-400' : 'text-gray-400 dark:text-slate-400'}`} />
                       <span>Direct Password (Offline)</span>
                     </button>
 
@@ -293,15 +293,15 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
                       onClick={() => setFormData(prev => ({ ...prev, requireVerification: true }))}
                       className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
                         formData.requireVerification
-                          ? 'bg-white text-navy-950 shadow-xs'
-                          : 'text-gray-500 hover:text-gray-800'
+                          ? 'bg-white text-navy-950 dark:bg-slate-800 dark:text-white shadow-xs border border-transparent dark:border-slate-700'
+                          : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'
                       }`}
                     >
-                      <Wifi className="h-3.5 w-3.5 text-navy-800" />
+                      <Wifi className={`h-3.5 w-3.5 ${formData.requireVerification ? 'text-navy-800 dark:text-sky-400' : 'text-gray-400 dark:text-slate-400'}`} />
                       <span>Email Invitation (Online)</span>
                     </button>
                   </div>
-                  <p className="text-xxs text-gray-500 font-medium">
+                  <p className="text-xxs text-gray-500 dark:text-slate-400 font-medium">
                     {!formData.requireVerification
                       ? 'Default: Account is activated immediately with password. Works offline with zero internet needed.'
                       : 'Online: Sends an activation link to the teacher email so they can set their password.'}
@@ -500,18 +500,18 @@ const TeacherFormModal = ({ isOpen, onClose, teacher = null, onSuccess }) => {
             </div>
 
             {/* Modal Actions (Pinned at bottom) */}
-            <div className="bg-slate-50 border-t border-gray-100 px-6 py-4 flex justify-end space-x-3 flex-shrink-0">
+            <div className="bg-slate-50 dark:bg-slate-900/80 border-t border-gray-100 dark:border-slate-700 px-6 py-4 flex justify-end space-x-3 flex-shrink-0">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 border border-gray-200 text-gray-500 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors focus:outline-none"
+                className="px-5 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-200 bg-white dark:bg-slate-800 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus:outline-none cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-navy-900 hover:bg-navy-800 text-white font-bold py-2.5 px-5 rounded-xl flex items-center transition-colors text-sm shadow-sm focus:outline-none disabled:opacity-50"
+                className="bg-navy-900 dark:bg-blue-600 hover:bg-navy-800 dark:hover:bg-blue-500 text-white font-bold py-2.5 px-5 rounded-xl flex items-center transition-colors text-sm shadow-sm focus:outline-none disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? (
                   <>
