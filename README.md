@@ -221,6 +221,7 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 - **Sleek Dark Preset Chips & Badges**: Secondary buttons and preset bundle pills (`bg-slate-100`) render as sleek `#334155` dark chips with light text `#f8fafc` and hover highlights, replacing glaring white boxes.
 - **Form Controls & Date Pickers**: All inputs, `<select>` menus, `<option>` items, and textareas feature deep `#1e293b` surfaces, crisp white text, slate-700 borders, inverted calendar picker icons, and clear `#94a3b8` placeholder text.
 - **Resilient Status Badges**: `StatusBadge` automatically derives and renders capitalized status labels (`Paid`, `Pending`, `Partial`, etc.) even if the optional `label` prop is omitted.
+- **Admin Dashboard UI & Responsiveness**: Clean, balanced StatCard grid layout (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6`) across mobile, tablet, and desktop viewports, preventing metric/badge clipping. Standardized dark mode tokens across dashboard header, quick action buttons, Recharts attendance trend visualizations, fee drill-down modals, and the Recent Registrations dual-mode table/card views.
 
 ### 15. Responsive Sidebar with Optional Collapsible Mini-Rail
 - **Full Text & Icon Navigation by Default**: The sidebar defaults to the full expanded navigation panel (`w-64`) with crisp icons, complete module labels (Students, Faculty, Academics, Fees, Books, Payroll, etc.), and school branding for effortless readability and instant navigation.
