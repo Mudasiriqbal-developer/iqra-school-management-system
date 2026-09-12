@@ -127,21 +127,14 @@ const AdminFormModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white text-left shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] my-auto">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white text-left shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] my-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 p-6 pb-4 flex-shrink-0 bg-navy-950 text-white">
-          <div className="flex items-center space-x-2.5">
-            <ShieldCheck className="h-5 w-5 text-sky-400" />
-            <div>
-              <h3 className="text-base font-extrabold tracking-tight">Create Administrator</h3>
-              <p className="text-xs text-gray-300 font-medium">Dual-Mode: Direct Password (Offline) or Email Invite (Online)</p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between border-b border-gray-100 p-6 pb-4 flex-shrink-0">
+          <h3 className="text-lg font-bold text-navy-950">Invite New Administrator</h3>
           <button 
-            type="button"
-            onClick={handleClose}
-            className="text-gray-300 hover:text-white rounded-lg p-1 hover:bg-white/10 transition-colors"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-50 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -158,126 +151,42 @@ const AdminFormModal = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Activation Link (For Offline or Direct Sharing)
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                Full Name
               </label>
-              <div className="flex items-center space-x-2">
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <User className="h-4 w-4" />
+                </div>
                 <input
                   type="text"
-                  readOnly
-                  value={activationLinkModal.activationLink}
-                  className="block w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl font-mono text-gray-700 select-all"
+                  name="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Ahmed Ali"
+                  className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all"
                 />
-                <button
-                  type="button"
-                  onClick={handleCopyLink}
-                  className="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-colors flex-shrink-0"
-                >
-                  {copied ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
-                  <span>{copied ? 'Copied' : 'Copy'}</span>
-                </button>
               </div>
-              <p className="text-xxs text-gray-400 mt-1.5 font-medium">
-                The administrator can open this link in any browser to activate their account and set their password.
-              </p>
             </div>
 
-            <div className="pt-2 flex justify-end">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="py-2.5 px-6 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition-colors"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* Form */
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="p-6 space-y-4 overflow-y-auto flex-1">
-              
-              {/* Provisioning Mode Toggle */}
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                  Account Provisioning Mode
-                </label>
-                <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, requireVerification: false }))}
-                    className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                      !formData.requireVerification
-                        ? 'bg-white text-navy-950 shadow-xs'
-                        : 'text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    <WifiOff className="h-3.5 w-3.5 text-navy-800" />
-                    <span>Direct Password (Offline)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, requireVerification: true }))}
-                    className={`flex items-center justify-center space-x-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                      formData.requireVerification
-                        ? 'bg-white text-navy-950 shadow-xs'
-                        : 'text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    <Wifi className="h-3.5 w-3.5 text-navy-800" />
-                    <span>Email Invitation (Online)</span>
-                  </button>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                Email Address
+              </label>
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Mail className="h-4 w-4" />
                 </div>
-                <p className="text-xxs text-gray-500 mt-1.5 font-medium">
-                  {!formData.requireVerification
-                    ? 'Default: Account is activated immediately with password. No email or internet connection required.'
-                    : 'Online: Sends an activation link to the administrator email to set their own password.'}
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <div className="relative rounded-xl shadow-xs">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="e.g. Ahmed Ali"
-                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all ${
-                      errors.name ? 'border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-navy-900'
-                    }`}
-                  />
-                </div>
-                {errors.name && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.name}</p>}
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <div className="relative rounded-xl shadow-xs">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                    <Mail className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="e.g. admin@ihass.edu"
-                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl focus:outline-hidden text-sm transition-all ${
-                      errors.email ? 'border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-navy-900'
-                    }`}
-                  />
-                </div>
-                {errors.email && <p className="text-red-500 text-xs mt-1 font-semibold">{errors.email}</p>}
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="e.g. admin@ihass.edu"
+                  className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all"
+                />
               </div>
 
               {/* Password field shown in Direct Mode */}
@@ -323,51 +232,50 @@ const AdminFormModal = ({ isOpen, onClose }) => {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                  Phone Number <span className="text-gray-400 font-normal normal-case">(optional)</span>
-                </label>
-                <div className="relative rounded-xl shadow-xs">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                    <Phone className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="e.g. 03001234567"
-                    className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-hidden focus:border-navy-900 text-sm transition-all"
-                  />
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                Phone Number <span className="text-gray-400 font-normal normal-case">(optional)</span>
+              </label>
+              <div className="relative rounded-xl shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Phone className="h-4 w-4" />
                 </div>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="e.g. 03001234567"
+                  className="block w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-700 focus:border-navy-700 text-sm transition-all"
+                />
               </div>
             </div>
+          </div>
 
-            <div className="flex space-x-3 justify-end p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="py-2.5 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="py-2.5 px-5 rounded-xl bg-navy-900 text-white hover:bg-navy-800 text-xs font-extrabold shadow-md flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  <span>{!formData.requireVerification ? 'Create & Activate Admin' : 'Send Invitation'}</span>
-                )}
-              </button>
-            </div>
-          </form>
-        )}
+          <div className="flex space-x-3 justify-end p-4 px-6 border-t border-gray-100 bg-gray-50/80 flex-shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="py-2 px-4 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="py-2 px-4 rounded-xl bg-navy-900 text-white hover:bg-navy-800 text-sm font-bold shadow-md shadow-navy-900/10 flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Inviting...</span>
+                </>
+              ) : (
+                <span>Send Invitation</span>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
