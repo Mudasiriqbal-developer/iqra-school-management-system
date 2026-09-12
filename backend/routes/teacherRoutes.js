@@ -7,6 +7,7 @@ const {
   deleteTeacher,
   getMyClassSection,
   resendInvitation,
+  activateTeacherDirectly,
 } = require('../controllers/teacherController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { validateRequest } = require('../middleware/validationMiddleware');
@@ -55,6 +56,8 @@ router.post(
     check('phone', 'Phone must be a string').optional().trim(),
     check('joiningDate', 'Joining date must be a valid date').optional().isISO8601(),
     check('photoUrl', 'Photo URL must be a valid URL string').optional().trim(),
+    check('password', 'Password must be at least 8 characters long').optional().isLength({ min: 8 }),
+    check('requireVerification', 'requireVerification must be a boolean').optional().isBoolean(),
   ],
   validateRequest,
   createTeacher
@@ -104,5 +107,20 @@ router.delete('/:id', authorize('admin'), deleteTeacher);
  * @access  Private (Admin Only)
  */
 router.patch('/:id/resend-invitation', authorize('admin'), resendInvitation);
+
+/**
+ * @route   POST /api/teachers/:id/activate-direct
+ * @desc    Directly activate a teacher with a new password (Admin Only)
+ * @access  Private (Admin Only)
+ */
+router.post(
+  '/:id/activate-direct',
+  authorize('admin'),
+  [
+    check('password', 'Password must be at least 8 characters long').isLength({ min: 8 }),
+  ],
+  validateRequest,
+  activateTeacherDirectly
+);
 
 module.exports = router;

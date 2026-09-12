@@ -18,8 +18,8 @@ export const getTeacherById = async (id) => {
 };
 
 /**
- * Create a new teacher and user login.
- * @param {Object} data - Teacher details (name, email, password, employeeId, qualification, phone, joiningDate, photoUrl)
+ * Create a new teacher and user login (supports direct password or email invitation).
+ * @param {Object} data - { name, email, password, requireVerification, employeeId, qualification, phone, joiningDate, photoUrl, baseSalary }
  */
 export const createTeacher = async (data) => {
   const response = await api.post('/teachers', data);
@@ -123,5 +123,15 @@ export const getSubjectsByClass = async (classId) => {
  */
 export const resendInvitation = async (teacherId) => {
   const response = await api.patch(`/teachers/${teacherId}/resend-invitation`);
+  return response.data;
+};
+
+/**
+ * Directly activate an unactivated teacher with a new password (offline recovery).
+ * @param {string} teacherId - Teacher MongoDB ID
+ * @param {Object} data - { password }
+ */
+export const activateTeacherDirectly = async (teacherId, data) => {
+  const response = await api.post(`/teachers/${teacherId}/activate-direct`, data);
   return response.data;
 };

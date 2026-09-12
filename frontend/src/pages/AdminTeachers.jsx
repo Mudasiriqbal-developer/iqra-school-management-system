@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom';
 import { 
   Users, Award, CalendarCheck, DollarSign, LayoutDashboard, BarChart3, 
   Plus, Eye, Pencil, Trash2, Search, ChevronLeft, ChevronRight,
-  AlertTriangle, BookOpen, Wallet, TrendingUp, MailPlus, MoreVertical, Settings, X
+  AlertTriangle, BookOpen, Wallet, TrendingUp, MailPlus, MoreVertical, Settings, X,
+  Copy, Key, Sparkles, EyeOff, Loader2, ShieldCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -12,11 +13,12 @@ import DashboardLayout from '../components/shared/DashboardLayout';
 import StatCard from '../components/shared/StatCard';
 import StatusBadge from '../components/shared/StatusBadge';
 
-import { getTeachers, deleteTeacher, resendInvitation } from '../features/teachers/teacherService';
+import { getTeachers, deleteTeacher, resendInvitation, activateTeacherDirectly } from '../features/teachers/teacherService';
 import api from '../services/api';
 import TeacherFormModal from '../features/teachers/TeacherFormModal';
 import TeacherViewDrawer from '../features/teachers/TeacherViewDrawer';
 import AssignmentFormModal from '../features/teachers/AssignmentFormModal';
+import { generateSecurePassword } from '../utils/passwordGenerator';
 
 const AdminTeachers = () => {
   const [searchParams] = useSearchParams();
@@ -88,6 +90,13 @@ const AdminTeachers = () => {
   // Deactivation confirmation modal states
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState(null);
+
+  // Direct activation modal states
+  const [teacherToDirectActivate, setTeacherToDirectActivate] = useState(null);
+  const [directPassword, setDirectPassword] = useState('');
+  const [showDirectPassword, setShowDirectPassword] = useState(false);
+  const [directActivating, setDirectActivating] = useState(false);
+  const [directActivateError, setDirectActivateError] = useState('');
 
   // Debounce search input
   useEffect(() => {
@@ -186,6 +195,55 @@ const AdminTeachers = () => {
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || 'Server error occurred during resend');
+    }
+  };
+
+  const handleCopyActivationLink = async (teacherId) => {
+    try {
+      const res = await resendInvitation(teacherId);
+      if (res.success && res.data?.activationLink) {
+        await navigator.clipboard.writeText(res.data.activationLink);
+        toast.success('Activation link copied to clipboard!');
+        fetchData();
+      } else {
+        toast.error(res.message || 'Failed to retrieve activation link');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Server error copying activation link');
+    }
+  };
+
+  const handleGenerateDirectPassword = () => {
+    const pwd = generateSecurePassword();
+    setDirectPassword(pwd);
+    setShowDirectPassword(true);
+    setDirectActivateError('');
+  };
+
+  const handleDirectActivate = async (e) => {
+    e.preventDefault();
+    if (!directPassword || directPassword.length < 8) {
+      setDirectActivateError('Password must be at least 8 characters long');
+      return;
+    }
+    try {
+      setDirectActivating(true);
+      const res = await activateTeacherDirectly(teacherToDirectActivate._id, { password: directPassword });
+      if (res.success) {
+        toast.success(`Successfully activated ${teacherToDirectActivate.userId?.name}! Ready to log in.`);
+        setTeacherToDirectActivate(null);
+        setDirectPassword('');
+        setDirectActivateError('');
+        fetchData();
+      } else {
+        toast.error(res.message || 'Failed to activate teacher');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Server error during activation');
+    } finally {
+      setDirectActivating(false);
     }
   };
 
@@ -477,18 +535,46 @@ const AdminTeachers = () => {
                                 >
                                   <div className="py-1">
                                     {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setActiveDropdownId(null);
-                                          setDropdownCoords(null);
-                                          handleResendInvitation(teacher._id);
-                                        }}
-                                        className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                      >
-                                        <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                        Resend Invite
-                                      </button>
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleCopyActivationLink(teacher._id);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <Copy className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          Copy Activation Link
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            setTeacherToDirectActivate(teacher);
+                                            setDirectPassword('');
+                                            setDirectActivateError('');
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50 transition-colors text-left"
+                                        >
+                                          <Key className="h-4.5 w-4.5 text-emerald-600 mr-3" />
+                                          Set Password & Activate
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setActiveDropdownId(null);
+                                            setDropdownCoords(null);
+                                            handleResendInvitation(teacher._id);
+                                          }}
+                                          className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                        >
+                                          <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                          Resend Invite
+                                        </button>
+                                      </>
                                     )}
                                     <button
                                       type="button"
@@ -691,18 +777,46 @@ const AdminTeachers = () => {
                                     >
                                       <div className="py-1">
                                         {teacher.userId?.isActivated === false && teacher.userId?.isActive !== false && (
-                                          <button
-                                            type="button"
-                                            onClick={() => {
-                                              setActiveDropdownId(null);
-                                              setDropdownCoords(null);
-                                              handleResendInvitation(teacher._id);
-                                            }}
-                                            className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
-                                          >
-                                            <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
-                                            Resend Invite
-                                          </button>
+                                          <>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setActiveDropdownId(null);
+                                                setDropdownCoords(null);
+                                                handleCopyActivationLink(teacher._id);
+                                              }}
+                                              className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                            >
+                                              <Copy className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                              Copy Activation Link
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setActiveDropdownId(null);
+                                                setDropdownCoords(null);
+                                                setTeacherToDirectActivate(teacher);
+                                                setDirectPassword('');
+                                                setDirectActivateError('');
+                                              }}
+                                              className="flex w-full items-center px-4 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-50 transition-colors text-left"
+                                            >
+                                              <Key className="h-4.5 w-4.5 text-emerald-600 mr-3" />
+                                              Set Password & Activate
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setActiveDropdownId(null);
+                                                setDropdownCoords(null);
+                                                handleResendInvitation(teacher._id);
+                                              }}
+                                              className="flex w-full items-center px-4 py-3 text-sm font-bold text-text-primary hover:bg-background transition-colors text-left"
+                                            >
+                                              <MailPlus className="h-4.5 w-4.5 text-text-secondary mr-3" />
+                                              Resend Invite
+                                            </button>
+                                          </>
                                         )}
                                         <button
                                           type="button"
@@ -926,6 +1040,134 @@ const AdminTeachers = () => {
                 Deactivate
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Set Password & Activate Faculty Member Modal */}
+      {teacherToDirectActivate && (
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] my-auto">
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 dark:border-slate-800 flex-shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
+                  <Key className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-navy-950 dark:text-white">Set Password & Activate</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Offline Direct Provisioning</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setTeacherToDirectActivate(null);
+                  setDirectPassword('');
+                  setDirectActivateError('');
+                  setShowDirectPassword(false);
+                }}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleDirectActivate} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                {/* Teacher Details summary */}
+                <div className="p-3 bg-gray-50 dark:bg-slate-800/60 rounded-xl border border-gray-100 dark:border-slate-700">
+                  <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Faculty Member</div>
+                  <div className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">
+                    {teacherToDirectActivate.userId?.name}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-0.5">
+                    {teacherToDirectActivate.userId?.email}
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Set a secure password to immediately activate this faculty member for direct login without email verification.
+                </p>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">
+                      Initial Password <span className="text-red-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleGenerateDirectPassword}
+                      className="text-navy-900 dark:text-sky-400 hover:underline text-xs font-bold flex items-center space-x-1 cursor-pointer"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                      <span>Generate Password</span>
+                    </button>
+                  </div>
+                  <div className="relative rounded-xl shadow-xs">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <Key className="h-4 w-4" />
+                    </div>
+                    <input
+                      type={showDirectPassword ? 'text' : 'password'}
+                      value={directPassword}
+                      onChange={(e) => {
+                        setDirectPassword(e.target.value);
+                        setDirectActivateError('');
+                      }}
+                      placeholder="Minimum 8 characters"
+                      className={`block w-full pl-9 pr-10 py-2.5 border rounded-xl text-sm transition-all dark:bg-slate-800 dark:text-white focus:outline-hidden ${
+                        directActivateError
+                          ? 'border-red-400 bg-red-50/20 dark:border-red-500'
+                          : 'border-gray-200 dark:border-slate-700 focus:border-navy-900 dark:focus:border-sky-500'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDirectPassword(!showDirectPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                      {showDirectPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {directActivateError && (
+                    <p className="text-red-500 text-xs mt-1 font-semibold">{directActivateError}</p>
+                  )}
+                  <p className="text-xxs text-gray-400 mt-1">Must be at least 8 characters. Faculty can change it after login.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 p-4 px-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTeacherToDirectActivate(null);
+                    setDirectPassword('');
+                    setDirectActivateError('');
+                    setShowDirectPassword(false);
+                  }}
+                  className="px-4 py-2 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 rounded-xl text-sm font-semibold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={directActivating || !directPassword}
+                  className="inline-flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                >
+                  {directActivating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Activating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>Activate Faculty</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

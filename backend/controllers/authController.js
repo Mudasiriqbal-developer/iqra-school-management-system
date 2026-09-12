@@ -25,10 +25,14 @@ const generateToken = (id, role, rememberMe = false) => {
  */
 const registerUser = async (req, res, next) => {
   try {
-    const { name, email, role, phone } = req.body;
+    const { name, email, role, phone, password, requireVerification = false } = req.body;
+
+    // Normalize email and name (lowercase + trim)
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const normalizedName = typeof name === 'string' ? name.trim() : '';
 
     // Check if email already exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -37,44 +41,86 @@ const registerUser = async (req, res, next) => {
       });
     }
 
-    // Generate activation token & placeholder password
-    const tokenData = generateActivationToken();
-    const placeholderPassword = crypto.randomBytes(24).toString('hex');
+    // Determine verification mode (strictly check for true boolean or "true" string)
+    const isVerificationMode = (requireVerification === true || requireVerification === 'true') || !password;
 
-    // Create user (password is hashed in pre-save hook)
-    const user = await User.create({
-      name,
-      email,
-      password: placeholderPassword,
-      role,
-      phone,
-      isActivated: false,
-      activationTokenHash: tokenData.tokenHash,
-      activationTokenExpires: tokenData.expiresAt,
-    });
+    if (isVerificationMode) {
+      // Generate activation token & placeholder password
+      const tokenData = generateActivationToken();
+      const placeholderPassword = crypto.randomBytes(24).toString('hex');
 
-    // Send activation link email
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
-    
-    // Fire-and-forget invitation email asynchronously so we do not block the HTTP response
-    sendInvitationEmail(email, name, role.charAt(0).toUpperCase() + role.slice(1), activationLink)
-      .catch((mailErr) => {
-        console.error('Failed to send invitation email asynchronously:', mailErr);
+      // Create user (plain placeholder password passed; hashed in User pre-save hook)
+      const user = await User.create({
+        name: normalizedName,
+        email: normalizedEmail,
+        password: placeholderPassword,
+        role,
+        phone: typeof phone === 'string' ? phone.trim() : phone,
+        isActivated: false,
+        activationTokenHash: tokenData.tokenHash,
+        activationTokenExpires: tokenData.expiresAt,
       });
 
-    return res.status(201).json({
-      success: true,
-      data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+      // Send activation link email
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const activationLink = `${frontendUrl}/activate/${tokenData.rawToken}`;
+      
+      // Fire-and-forget invitation email asynchronously so we do not block the HTTP response
+      sendInvitationEmail(normalizedEmail, normalizedName, role.charAt(0).toUpperCase() + role.slice(1), activationLink)
+        .catch((mailErr) => {
+          console.error('Failed to send invitation email asynchronously:', mailErr);
+        });
+
+      return res.status(201).json({
+        success: true,
+        data: {
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            isActivated: user.isActivated,
+          },
+          activationLink,
         },
-      },
-      message: 'User registered successfully and activation email sent',
-    });
+        message: 'User registered successfully and activation email sent',
+      });
+    } else {
+      // Direct Password Mode (Offline Provisioning)
+      if (!password || password.length < 8) {
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Password must be at least 8 characters long',
+        });
+      }
+
+      // Create active user directly (plain password assigned; hashed in User pre-save hook)
+      const user = await User.create({
+        name: normalizedName,
+        email: normalizedEmail,
+        password,
+        role,
+        phone: typeof phone === 'string' ? phone.trim() : phone,
+        isActivated: true,
+        activationTokenHash: null,
+        activationTokenExpires: null,
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: {
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            isActivated: user.isActivated,
+          },
+        },
+        message: 'User registered and activated successfully',
+      });
+    }
   } catch (error) {
     next(error);
   }
@@ -89,15 +135,11 @@ const loginUser = async (req, res, next) => {
   try {
     const { email, password, rememberMe } = req.body;
 
-    // Determine query based on whether input is email or registration number
-    let user;
-    if (email && email.includes('@')) {
-      user = await User.findOne({ email: email.toLowerCase() });
-    } else if (email) {
-      user = await User.findOne({ registrationNumber: email.toLowerCase() });
-    }
+    // Normalize identifier (email or registration number: trimmed and lowercased)
+    const normalizedIdentifier = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const plainPassword = typeof password === 'string' ? password : '';
 
-    if (!user) {
+    if (!normalizedIdentifier || !plainPassword) {
       return res.status(401).json({
         success: false,
         data: null,
@@ -105,9 +147,15 @@ const loginUser = async (req, res, next) => {
       });
     }
 
-    // Compare passwords
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
+    // Determine query based on whether input is email or registration number
+    let user;
+    if (normalizedIdentifier.includes('@')) {
+      user = await User.findOne({ email: normalizedIdentifier });
+    } else {
+      user = await User.findOne({ registrationNumber: normalizedIdentifier });
+    }
+
+    if (!user) {
       return res.status(401).json({
         success: false,
         data: null,
@@ -124,12 +172,22 @@ const loginUser = async (req, res, next) => {
       });
     }
 
-    // Check if user is activated
+    // Check if user is activated (checked BEFORE comparePassword so pending accounts receive the right error message)
     if (user.isActivated === false) {
       return res.status(403).json({
         success: false,
         data: null,
         message: 'Your account has not been activated yet. Please check your email for the activation link, or ask your admin to resend it.',
+      });
+    }
+
+    // Compare passwords (plain password compared with single-hashed password in DB)
+    const isMatch = await user.comparePassword(plainPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        data: null,
+        message: 'Invalid credentials',
       });
     }
 

@@ -42,6 +42,12 @@ router.post(
     check('role', 'Role must be admin, teacher, or student')
       .trim()
       .isIn(['admin', 'teacher', 'student']),
+    check('password', 'Password must be at least 8 characters long')
+      .optional()
+      .isLength({ min: 8 }),
+    check('requireVerification', 'requireVerification must be a boolean')
+      .optional()
+      .isBoolean(),
   ],
   validateRequest,
   registerUser

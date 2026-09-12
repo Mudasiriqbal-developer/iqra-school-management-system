@@ -127,10 +127,13 @@ The Iqra School Management System is designed as a decoupled **Client-Server Arc
 ## 🚀 Key Features & Modules
 
 ### 1. Authentication & Security
-- **Multi-Role Login**: Unified login portal supporting email or registration number.
-- **Account Activation Workflow**: Admins register teachers and students; users receive an activation token to set their password.
-- **Password Recovery**: Secure, tokenized password reset flow with expiry checks.
-- **Route Guards**: `ProtectedRoute` checks active tokens and restricts routes according to the user's role.
+- **Multi-Role Login**: Unified login portal supporting email or registration number across Admin, Teacher, and Student roles.
+- **Dual-Mode Account Provisioning (Offline Direct Password & Online Gmail Invitation)**:
+  - **Direct Password Mode (Offline / Default)**: Administrators specify an initial secure password (minimum 8 characters) or click "Generate Password" to produce a client-side cryptographically random 10-12 character password (mixed case, numbers, symbols). The account is activated immediately (`isActivated: true`), allowing instant offline login without requiring email dispatch, token verification, or internet connectivity.
+  - **Email Invitation Mode (Online)**: Administrators can choose to send an invitation email via Nodemailer. The user account is created in a pending state (`isActivated: false`) with a secure, time-limited activation token. The system also surfaces a copyable activation link directly in the admin UI dialog so links can be shared through local channels if needed.
+  - **Direct Faculty Activation & Recovery**: In the Faculty Management roster, administrators can directly assign a password and activate any pending faculty member via `POST /api/teachers/:id/activate-direct`, enabling smooth recovery from unverified states in offline deployments.
+- **Password Recovery**: Secure, tokenized password reset flow with expiry checks and rate-limiting.
+- **Route Guards**: `ProtectedRoute` checks active tokens and restricts routes according to the user's role (`admin`, `teacher`, `student`).
 
 ### 2. Student Information System (SIS) & Bulk Excel Import
 - **Automated Dynamic Academic Year Registration Numbers**: Registration numbers follow the standard format `[YY][NNN]` (2-digit academic year prefix + 3-digit sequential number, e.g., `26001` for the 2026-2027 session). The system dynamically derives the year prefix from `Settings.currentSession`, automatically advancing when the academic year changes (e.g. `27001` for 2027-2028) with isolated atomic per-year sequence tracking in MongoDB (`Counter`).
@@ -313,13 +316,22 @@ iqra-school-management-system/
 
 ### Auth & User Routes (`/api/auth`)
 - `POST /api/auth/login` — Authenticate user and receive JWT.
-- `POST /api/auth/register` — Admin creation of new user.
+- `POST /api/auth/register` — Register a new administrator or user (Admin only). Supports dual-mode provisioning: `password` (string, min 8 chars, optional) and `requireVerification` (boolean, optional, default `false`). In direct mode (`requireVerification: false`), creates an active user (`isActivated: true`) without requiring email; in invitation mode (`requireVerification: true`), creates an unactivated user, sends an email invite, and returns `data.activationLink`.
 - `GET  /api/auth/me` — Retrieve profile of the currently logged-in user.
 - `GET  /api/auth/activate/:token` — Validate account activation token.
 - `POST /api/auth/activate/:token` — Complete activation and establish password.
 - `POST /api/auth/forgot-password` — Generate and email password reset link.
 - `POST /api/auth/reset-password/:token` — Update password using reset token.
 - `PUT  /api/auth/change-password` — Change password for authenticated session.
+
+### Faculty & Teachers (`/api/teachers`)
+- `GET    /api/teachers` — List all teachers with user profile info, employment details, and assignment counts (Admin only).
+- `POST   /api/teachers` — Create a new teacher profile & user login (Admin only). Supports dual-mode provisioning: `password` (string, min 8 chars, optional) and `requireVerification` (boolean, optional, default `false`). In direct mode, creates an activated user (`isActivated: true`) ready to log in immediately; in invitation mode, sends an invitation email and returns `data.activationLink`.
+- `PUT    /api/teachers/:id` — Update teacher profile details (Admin only).
+- `DELETE /api/teachers/:id` — Soft-delete / deactivate teacher account (Admin only).
+- `PATCH  /api/teachers/:id/resend-invitation` — Resend activation email to an unactivated teacher and return `data.activationLink` in response (Admin only).
+- `POST   /api/teachers/:id/activate-direct` — Directly set an initial password (min 8 chars) and activate an unactivated teacher (`isActivated: true`, `isActive: true`), enabling instant offline access without email verification (Admin only).
+- `GET    /api/teachers/my-class` — Get assigned class and section details for the currently logged-in faculty member (Teacher only).
 
 ### Students & Admissions (`/api/students`)
 - `GET    /api/students` — List students with search, class, section, and status filters.
@@ -529,12 +541,24 @@ npm run dev
 *Frontend application will run on: `http://localhost:5173`*
 
 #### 5. Running Automated Backend Tests
-The backend includes a comprehensive Node test suite validating financial calculations, family enrollment, book transactions, and idempotency:
+The backend includes a comprehensive Node test suite validating financial calculations, family enrollment, book transactions, dual-mode provisioning, and idempotency:
 
 ```bash
 cd backend
 npm test
 ```
+
+#### 6. Offline Deployment & Account Provisioning Guide
+The system is built to operate **100% offline** in on-premises school environments without internet access or an active Gmail/SMTP connection:
+
+1. **Local Database Connection**: The application connects to local MongoDB via `backend/.env.local` (`MONGODB_URI=mongodb://localhost:27017/ihass`), eliminating cloud dependencies.
+2. **Direct Account Provisioning (Default Mode)**:
+   - When creating a new Administrator (`AdminFormModal`) or Teacher (`TeacherFormModal`), the interface defaults to **Direct Password (Offline)** mode.
+   - Administrators can type a password (minimum 8 characters) or click **Generate Password** to instantly produce a cryptographically random, secure 10-12 character password (mixed case, numbers, symbols).
+   - Accounts created in this mode are immediately active (`isActivated: true`), and the faculty member or admin can log in right away on the local network without waiting for email delivery.
+3. **Offline Activation for Existing Pending Accounts**:
+   - If an account was previously created in Email Invitation mode or requires a password reset offline, administrators can open the action menu on the Faculty roster (`/admin/teachers`) and choose **Set Password & Activate**.
+   - This executes `POST /api/teachers/:id/activate-direct`, directly establishing a new password and marking the user active (`isActivated: true, isActive: true`) without requiring email verification tokens.
 
 ---
 
